@@ -1,0 +1,18 @@
+machine:
+  pre:
+    - cd /opt/circleci/.pyenv; git pull
+  python:
+    version: 2.7.12
+
+dependencies:
+  cache_directories:
+  pre:
+  override:
+    - pip install -r requirements.txt
+    - pip install flake8
+
+test:
+  override:
+    - python2 -m pytest tests
+    - flake8 --config flake8 uplink
+    - '! grep -P pdb */*.py'

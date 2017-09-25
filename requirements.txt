@@ -1,0 +1,11 @@
+requests == 2.11.1
+ecdsa == 0.13
+cryptography >= 1.7.1
+pytest>=2.6.4
+pysha3 >= 1.0.2
+base58 >= 0.2.4
+
+hexdump
+# git+git://github.com/lincolnloop/python-qrcode.git
+# git+git://github.com/ojii/pymaging.git#egg=pymaging
+# git+git://github.com/ojii/pymaging-png.git#egg=pymaging-png

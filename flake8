@@ -1,0 +1,5 @@
+[flake8]
+ignore = E302,E203,E231,E265,Q000,D102,D103,D100,D104,D105,D400,D101,D205,D300,I001,F403,N803
+max-line-length = 120
+exclude =
+  uplink/__init__.py

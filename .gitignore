@@ -1,0 +1,9 @@
+*.sw[pon]
+.vscode
+**/*.pyc
+__pycache__
+.cache
+Uplink_Python_SDK.egg-info
+build
+.tox
+MANIFEST

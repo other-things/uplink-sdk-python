@@ -1,0 +1,26 @@
+{
+    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
+    "header": {
+        "tag": "TxContract", 
+        "contents": {
+            "tag": "Call", 
+            "contents": {
+                "args": [
+                    {
+                        "tag": "VInt", 
+                        "contents": 1
+                    }, 
+                    {
+                        "tag": "VInt", 
+                        "contents": 1
+                    }
+                ], 
+                "method": "get", 
+                "address": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve"
+            }
+        }
+    }, 
+    "signature": "AE4xMTUxMzY4MDA4MjA0NTY4MzM3Mzc5OTQxMjY3NzEzODYwMTUwMjYyODcwOTUwMzQ2MjU2MjM2NDQxODYyNzgxMDg5MjY2OTA3Nzk1Njc6AE04MjI5ODE0Njk2NDYzNTU3NDkzMjI4Njc0MTAwNzkyMjQ4OTk2NDk4MTM3MTAzODYxMTkwMjE5MTU2MzM0OTk3NDcyMTgyMTk0NDQ3MA==", 
+    "timestamp": 1231006505, 
+    "to": null
+}

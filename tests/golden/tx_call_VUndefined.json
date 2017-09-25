@@ -1,0 +1,21 @@
+{
+    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
+    "header": {
+        "tag": "TxContract", 
+        "contents": {
+            "tag": "Call", 
+            "contents": {
+                "args": [
+                    {
+                        "tag": "VUndefined"
+                    }
+                ], 
+                "method": "get", 
+                "address": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve"
+            }
+        }
+    }, 
+    "signature": "AE4xMTUxMzY4MDA4MjA0NTY4MzM3Mzc5OTQxMjY3NzEzODYwMTUwMjYyODcwOTUwMzQ2MjU2MjM2NDQxODYyNzgxMDg5MjY2OTA3Nzk1Njc6AE0yNTgxNzY5OTE3NTY4NjUzMjA3NjAwMDU1NDMwNjM4MjU3MDg5MjU1Nzg5NzE5MzgzMDkwODc2MDgzNjMxMTcyMjE5MzIzMDU4MTI5NQ==", 
+    "timestamp": 1231006505, 
+    "to": null
+}

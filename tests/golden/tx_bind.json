@@ -1,0 +1,17 @@
+{
+    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
+    "header": {
+        "tag": "TxAsset", 
+        "contents": {
+            "tag": "Bind", 
+            "contents": {
+                "asset": "43WRxMNcnYgZFcE36iohqrXKQdajUdAxeSn9mzE1ZedB", 
+                "contract": "7mR5d7s6cKB4qjuX1kiwwNtygfURhFQ9TKvEd9kmq6QL", 
+                "proof": "AE4xMTUxMzY4MDA4MjA0NTY4MzM3Mzc5OTQxMjY3NzEzODYwMTUwMjYyODcwOTUwMzQ2MjU2MjM2NDQxODYyNzgxMDg5MjY2OTA3Nzk1Njc6AE05ODI0NTI4MDUyMjAwMzUwNTY0NDc5NzY3MDg0MzEwNzI3NjEzMjYwMjA1MDEzMzA4MjYyNTc2ODcwNjQ5MTYwMjg3NTcyNTc4ODQ2Nw=="
+            }
+        }
+    }, 
+    "signature": "AE4xMTUxMzY4MDA4MjA0NTY4MzM3Mzc5OTQxMjY3NzEzODYwMTUwMjYyODcwOTUwMzQ2MjU2MjM2NDQxODYyNzgxMDg5MjY2OTA3Nzk1Njc6AE0yNjAzNzE3MjA0NTE1MDYwODI3MjE0MTQ5NzUyNTgwMTA1Mjc1NjE1NDY1ODYwODY1MjEwMTA1NzY4MTEwNjY0NTgwOTg2MDA0MDc1NA==", 
+    "timestamp": 1231006505, 
+    "to": null
+}
