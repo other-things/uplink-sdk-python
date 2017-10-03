@@ -6,7 +6,7 @@
 Python SDK
 ==========
 
-[![CircleCI](https://circleci.com/gh/adjoint-io/uplink-sdk-py.svg?style=svg&circle-token=ed3c8fcfd2dd7740a65da6b697a10150dc341191)](https://circleci.com/gh/adjoint-io/uplink-sdk-py)
+[![CircleCI](https://circleci.com/gh/adjoint-io/uplink-sdk-python.svg?style=svg)](https://circleci.com/gh/adjoint-io/uplink-sdk-python)
 
 Installation
 ------------
