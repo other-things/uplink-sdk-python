@@ -39,7 +39,7 @@ def sha256d(data):
 def derive_contract_address(ts, script):
     """Contract address derives from storage"""
 
-    hashed = hashlib.sha3_256(str(ts) + script).digest()
+    hashed = hashlib.sha3_256((str(ts) + script).encode()).digest()
     contract_address = b58encode(hashed)
     return contract_address
 
@@ -48,13 +48,13 @@ def derive_asset_address(r, s, ts, issuer):
     """Asset address derives from b58(sha256(r+s+timestamp+issuer's acct address)"""
     # rb = base64.b64encode(str(r))
     # sb = base64.b64encode(str(s))
-    issuer = b58decode(issuer)
+    issuer = b58encode(issuer.encode())
     rb = str(r)
     sb = str(s)
 
     # ts = 1501583007516024
-    concat = "{}{}{}{}".format(rb, sb, str(ts), issuer)
-    hashed = hashlib.sha3_256(concat).digest()
+    concat = "{}{}{}{}".format(rb, sb, str(ts), issuer.encode())
+    hashed = hashlib.sha3_256(concat.encode()).digest()
     asset_address = b58encode(hashed)
     return asset_address
 
@@ -64,7 +64,7 @@ def derive_account_address(pubkey):
     x = pubkey.pubkey.point.x()
     y = pubkey.pubkey.point.y()
 
-    sha_step1 = hashlib.sha3_256(str(x) + str(y)).digest()
+    sha_step1 = hashlib.sha3_256((str(x) + str(y)).encode()).digest()
 
     ripe = hashlib.new('ripemd160')
     ripe.update(sha_step1)
@@ -142,13 +142,12 @@ def pack_signature(r, s):
     """
     rb = str(r)
     lenrb = struct.pack(">h", len(rb))
-    rEnc = lenrb + rb
+    rEnc = lenrb + rb.encode()
 
     sb = str(s)
     lensb = struct.pack(">h", len(sb))
-    sEnc = lensb + sb
-
-    signature = base64.b64encode('{}:{}'.format(rEnc, sEnc))
+    sEnc = lensb + sb.encode()
+    signature = base64.b64encode('{}:{}'.format(rEnc.decode(), sEnc.decode()).encode())
     return signature
 
 

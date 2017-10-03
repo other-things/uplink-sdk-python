@@ -1,21 +1,21 @@
 {
-    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
     "header": {
-        "tag": "TxAccount", 
+        "tag": "TxAccount",
         "contents": {
-            "tag": "CreateAccount", 
+            "tag": "CreateAccount",
             "contents": {
-                "timezone": "GMT", 
-                "pubKey": "af0b33d9e8af2b771200a87012fc6aa07b391d8ac01b40975359a7d35d38f13b9d1d65b28a9a1a413436cf6dc5bafcb551a4953b8f30c751d111262ed07a13fd", 
+                "pubKey": "af0b33d9e8af2b771200a87012fc6aa07b391d8ac01b40975359a7d35d38f13b9d1d65b28a9a1a413436cf6dc5bafcb551a4953b8f30c751d111262ed07a13fd",
+                "timezone": "GMT",
                 "metadata": {
-                    "fax": "bar", 
-                    "stuff": "key", 
-                    "bax": "foo"
+                    "stuff": "key",
+                    "bax": "foo",
+                    "fax": "bar"
                 }
             }
         }
-    }, 
-    "signature": "AE4xMTUxMzY4MDA4MjA0NTY4MzM3Mzc5OTQxMjY3NzEzODYwMTUwMjYyODcwOTUwMzQ2MjU2MjM2NDQxODYyNzgxMDg5MjY2OTA3Nzk1Njc6AE0zNDc4Nzc5MTYwMDEzMDk0MzI1NTkxODc3NDU4NTE5NzQ0MDUzMDk2NjMxNjQ3MjA3Nzc1NDAwNDc4MDExNDAwNTA5MTYzNjYwOTcxNw==", 
-    "timestamp": 1231006505, 
+    },
+    "signature": "AE4xMTUxMzY4MDA4MjA0NTY4MzM3Mzc5OTQxMjY3NzEzODYwMTUwMjYyODcwOTUwMzQ2MjU2MjM2NDQxODYyNzgxMDg5MjY2OTA3Nzk1Njc6AE0zNDc4Nzc5MTYwMDEzMDk0MzI1NTkxODc3NDU4NTE5NzQ0MDUzMDk2NjMxNjQ3MjA3Nzc1NDAwNDc4MDExNDAwNTA5MTYzNjYwOTcxNw==",
+    "timestamp": 1231006505,
+    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve",
     "to": null
 }

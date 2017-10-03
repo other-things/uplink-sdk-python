@@ -1,6 +1,6 @@
 from uplink.cryptography import derive_account_address
 
-import reference
+from . import reference
 
 
 def test_address_derive():

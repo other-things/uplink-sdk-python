@@ -1,5 +1,6 @@
 import json
 import struct
+import six
 
 from base58 import b58decode
 from collections import namedtuple
@@ -31,18 +32,20 @@ def _to_dict(obj, classkey=None, *args, **kwargs):
         return _to_dict(obj._asdict())
     elif hasattr(obj, "_ast"):
         return _to_dict(obj._ast())
-    elif hasattr(obj, "__iter__") and not isinstance(obj, str):
+    elif hasattr(obj, "__iter__") and not (isinstance(obj, str) or isinstance(obj, bytes)):
         return [_to_dict(v, classkey) for v in obj]
     elif hasattr(obj, "__dict__"):
 
         data = dict([(key, _to_dict(value, classkey))
-                     for key, value in obj.__dict__.iteritems()
+                     for key, value in six.iteritems(obj.__dict__)
                      if not callable(value) and not key.startswith('_')])
 
         if classkey is not None and hasattr(obj, "__class__"):
             data[classkey] = obj.__class__.__name__
         return data
     else:
+        if isinstance(obj, bytes):
+            obj = obj.decode()
         return obj
 
 
@@ -130,12 +133,12 @@ class Account(object):
         self.timezone = timezone
         self.public_key = publicKey
         self.node_key = nodeKey
-        self.address = address.encode('utf-8')
+        self.address = address
 
         assert type(metadata) is dict
 
         if metadata is not None:
-            self.metadata = {k: v for k, v in metadata.iteritems()}
+            self.metadata = {k: v for k, v in six.iteritems(metadata)}
         else:
             self.metadata = {}
 
@@ -230,7 +233,7 @@ class VContract(Tagged, Serializable, namedtuple('VContract', 'contents')):
 class VMsg(Tagged, Serializable, namedtuple('VMsg', 'contents')):
 
     def to_binary(self):
-        return struct.pack('>bQ{}s'.format(str(len(self.contents))), enum.VTypeMsg, len(self.contents), self.contents)
+        return struct.pack('>bQ{}s'.format(str(len(self.contents))), enum.VTypeMsg, len(self.contents), self.contents.encode())
 
 
 # class  Tagged, VSigSerializabl, (namedtuple('VSig', 'v')):
@@ -368,14 +371,14 @@ class CreateAccountHeader(Serializable):
 
             package = ">HH" + pack_pubkey + "H" + pack_timezone
             structured = struct.pack(
-                package, enum.TxTypeCreateAccount, pubkey_len, key_str, timezone_len, self.timezone)
+                package, enum.TxTypeCreateAccount, pubkey_len, key_str, timezone_len, self.timezone.encode())
 
             len_pack = struct.pack(">H", len(self.metadata))
             structured = structured + len_pack
 
-            meta_structure = ""
+            meta_structure = b""
 
-            for key in sorted(self.metadata.iterkeys()):
+            for key in sorted(six.iterkeys(self.metadata)):
                 value = self.metadata[key]
                 pack_key = str(len(key)) + "s"
                 key_len = len(key)
@@ -383,17 +386,18 @@ class CreateAccountHeader(Serializable):
                 pack_value = str(len(value)) + "s"
                 value_len = len(value)
 
-                metapack = ">H" + pack_key + "H" + pack_value
+                metapack = (">H" + pack_key + "H" + pack_value).encode()
 
                 meta_structure = meta_structure + \
-                    struct.pack(metapack, key_len, key, value_len, value)
+                    struct.pack(metapack, key_len, key.encode(), value_len, value.encode())
 
             structured = structured + meta_structure
 
         else:
             package = ">HH" + pack_pubkey + "H" + pack_timezone + "H"
             structured = struct.pack(package, enum.TxTypeCreateAccount,
-                                     pubkey_len, self.pubKey, timezone_len, self.timezone, 0)
+                                     pubkey_len, self.pubKey, timezone_len,
+                                     self.timezone.encode(), 0)
 
         return structured
 
@@ -423,7 +427,7 @@ class CreateAssetHeader(Serializable):
 
     def to_binary(self):
         precision = self.assetType.contents
-        _asset_type = self.assetType.tag
+        _asset_type = bytes(self.assetType.tag)
         name_len = str(len(self.assetName)) + "s"
         asset_len = str(len(_asset_type)) + "s"
         reference_len = str(len(self.reference)) + "s"
@@ -434,13 +438,13 @@ class CreateAssetHeader(Serializable):
                 package,
                 enum.TxTypeCreateAsset,
                 len(self.assetName),
-                str(self.assetName),
+                self.assetName.encode(),
                 self.supply,
                 1,
                 len(self.reference),
-                str(self.reference),
+                self.reference.encode(),
                 len(_asset_type),
-                str(_asset_type),
+                _asset_type,
                 int(precision))
         else:
             package = ">HH" + name_len + "QHH" + reference_len + "H" + asset_len
@@ -448,13 +452,13 @@ class CreateAssetHeader(Serializable):
                 package,
                 enum.TxTypeCreateAsset,
                 len(self.assetName),
-                str(self.assetName),
+                self.assetName.encode(),
                 self.supply,
                 1,
                 len(self.reference),
-                str(self.reference),
+                self.reference.encode(),
                 len(_asset_type),
-                str(_asset_type))
+                _asset_type)
 
         return structured
 
@@ -463,7 +467,7 @@ class AssetTypeParams(Serializable):
     """Asset Type"""
 
     def __init__(self, type_, precision):
-        self.tag = bytes(type_)
+        self.tag = type_.encode()
         self.contents = precision
 
 
@@ -497,7 +501,7 @@ class CreateContractHeader(Serializable):
         address = b58decode(self.address)
 
         structured = struct.pack(
-            ">H32sH" + pack_script, enum.TxTypeCreateContract, address, pack_len, self.script)
+            ">H32sH" + pack_script, enum.TxTypeCreateContract, address, pack_len, self.script.encode())
 
         return structured
 
@@ -618,13 +622,13 @@ class CallHeader(Serializable):
         self.args = args
 
     def to_binary(self):
-        binary_args = ''.join([arg.to_binary() for arg in self.args])
+        binary_args = b''.join([arg.to_binary() for arg in self.args])
 
         structured = struct.pack(
             ">H32sQ{}sQ{}s".format(str(len(self.method)), str(
                 len(binary_args))), enum.TxTypeCall,
             b58decode(self.address),
-            len(self.method), self.method, len(self.args), binary_args)
+            len(self.method), self.method.encode(), len(self.args), binary_args)
         return structured
 
 
@@ -651,9 +655,10 @@ class BindHeader(Serializable):
 
     def to_binary(self):
         """Convert bytes for binding asset to a contract"""
+
         structured = struct.pack(
             ">H32s32s{}s".format(len(self.proof)),
-            enum.TxTypeBind, self.contract, self.asset, self.proof)
+            enum.TxTypeBind, self.contract.encode(), self.asset.encode(), self.proof)
         return structured
 
 

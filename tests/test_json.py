@@ -4,7 +4,7 @@ import os.path
 from uplink import *
 
 import codecs
-import reference
+from . import reference
 import json
 
 golden_output = "tests/golden/"

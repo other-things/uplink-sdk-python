@@ -270,12 +270,10 @@ class UplinkJsonRpc(object):
         r, s = hdr.sign(private_key)
         signature = pack_signature(r, s)
 
-        tx = Transaction(txb, signature, timestamp,
+        tx = Transaction(txb, signature.decode(), timestamp,
                          origin=from_address, to=None)
         params = tx.to_dict()
-
         result = self._call('Transaction', params=params, endpoint='')
-
         if self._handle_success(result):
             return result
         else:

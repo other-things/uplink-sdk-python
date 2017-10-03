@@ -4,8 +4,7 @@ import os.path
 from uplink import *
 from uplink.utils import *
 import pytest
-import reference
-
+from . import reference
 golden_output = "tests/golden/"
 
 

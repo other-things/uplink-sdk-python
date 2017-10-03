@@ -1,18 +1,38 @@
-machine:
-  pre:
-    - cd /opt/circleci/.pyenv; git pull
-  python:
-    version: 2.7.12
+#machine:
 
-dependencies:
-  cache_directories:
-  pre:
-  override:
-    - pip install -r requirements.txt
-    - pip install flake8
+ #dependencies:
+  #cache_directories:
+ #pre:
+  #override:
+    #- apt-get update && apt-get install python3 python2
+    #- pip install -r requirements.txt
+    #- pip install flake8 tox
 
-test:
-  override:
-    - python2 -m pytest tests
-    - flake8 --config flake8 uplink
-    - '! grep -P pdb */*.py'
+#test:
+  #override:
+    #- tox
+    #- flake8 --config flake8 uplink
+    #- '! grep -P pdb */*.py'
+
+version: 2
+jobs:
+  py2:
+    docker:
+      - image: circleci/python:2
+    steps:
+      - checkout
+      - run: sudo pip install tox
+      - run: sudo tox -e py2
+  py3:
+    docker:
+      - image: circleci/python:3
+    steps:
+      - checkout
+      - run: sudo pip install tox
+      - run: sudo tox -e py3
+workflows:
+  version: 2
+  test:
+    jobs:
+      - py2
+      - py3

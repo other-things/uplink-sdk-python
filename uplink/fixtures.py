@@ -45,38 +45,35 @@ def bob_account(rpc):
 
 
 @pytest.fixture(scope="session")
-def gold_asset(rpc, alice_account):
-    status, address = rpc.uplink_create_asset(
-        private_key=alice_account.private_key,
-        origin=alice_account.address,
-        name="Gold",
-        supply=1000,
-        asset_type="Discrete",
-        reference="Token",
-        issuer=alice_account.address,
-        precision=0
-    )
-    assert is_rpc_ok(status)
-    asset = wait_until_doesnt_raise(
-        lambda: rpc.uplink_get_asset(address), UplinkJsonRpcError)
+def asset_gen(rpc):
+    def _asset(asset_name, issuer_account, supply=10000):
+        status, address = rpc.uplink_create_asset(
+            private_key=issuer_account.private_key,
+            origin=issuer_account.address,
+            name=asset_name,
+            supply=supply,
+            asset_type="Discrete",
+            reference="Token",
+            issuer=issuer_account.address,
+            precision=0
+        )
+        assert is_rpc_ok(status)
+        asset = wait_until_doesnt_raise(
+            lambda: rpc.uplink_get_asset(address), UplinkJsonRpcError)
+        return asset
+
+    return _asset
+
+
+@pytest.fixture(scope="session")
+def gold_asset(rpc, asset_gen, alice_account):
+    asset = asset_gen("Gold", alice_account)
     return asset
 
 
 @pytest.fixture(scope="session")
-def silver_asset(rpc, bob_account):
-    status, address = rpc.uplink_create_asset(
-        private_key=bob_account.private_key,
-        origin=bob_account.address,
-        name="Silver",
-        supply=1000,
-        asset_type="Discrete",
-        reference="Token",
-        issuer=bob_account.address,
-        precision=0
-    )
-    assert is_rpc_ok(status)
-    asset = wait_until_doesnt_raise(
-        lambda: rpc.uplink_get_asset(address), UplinkJsonRpcError)
+def silver_asset(rpc, asset_gen, bob_account):
+    asset = asset_gen("Silver", bob_account)
     return asset
 
 

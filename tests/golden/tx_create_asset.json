@@ -1,22 +1,22 @@
 {
-    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
     "header": {
-        "tag": "TxAsset", 
+        "tag": "TxAsset",
         "contents": {
-            "tag": "CreateAsset", 
+            "tag": "CreateAsset",
             "contents": {
-                "assetName": "test", 
+                "assetName": "test",
+                "supply": 1000,
+                "issuer": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve",
+                "reference": "Token",
                 "assetType": {
-                    "tag": "Discrete", 
+                    "tag": "Discrete",
                     "contents": 0
-                }, 
-                "supply": 1000, 
-                "reference": "Token", 
-                "issuer": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve"
+                }
             }
         }
-    }, 
-    "signature": "AE4xMTUxMzY4MDA4MjA0NTY4MzM3Mzc5OTQxMjY3NzEzODYwMTUwMjYyODcwOTUwMzQ2MjU2MjM2NDQxODYyNzgxMDg5MjY2OTA3Nzk1Njc6AE00NTk4NTI0OTM0OTY3MDUzMDI4ODYzODI2NTg1NTQxNzQxNDExMjk1MDYzNTUwNDYyODkyNDk4MzczODc3MzYyMDM5MzEzMzEyNTc2Ng==", 
-    "timestamp": 1231006505, 
+    },
+    "signature": "AE4xMTUxMzY4MDA4MjA0NTY4MzM3Mzc5OTQxMjY3NzEzODYwMTUwMjYyODcwOTUwMzQ2MjU2MjM2NDQxODYyNzgxMDg5MjY2OTA3Nzk1Njc6AE00NTk4NTI0OTM0OTY3MDUzMDI4ODYzODI2NTg1NTQxNzQxNDExMjk1MDYzNTUwNDYyODkyNDk4MzczODc3MzYyMDM5MzEzMzEyNTc2Ng==",
+    "timestamp": 1231006505,
+    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve",
     "to": null
 }
