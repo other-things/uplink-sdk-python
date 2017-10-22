@@ -1,10 +1,10 @@
 {
-    "assetName": "test",
-    "supply": 1000,
-    "issuer": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve",
-    "reference": "Token",
+    "reference": "Token", 
+    "supply": 1000, 
+    "assetName": "test", 
+    "issuer": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
     "assetType": {
-        "tag": "Discrete",
+        "tag": "Discrete", 
         "contents": 0
     }
 }

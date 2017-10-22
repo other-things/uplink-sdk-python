@@ -15,8 +15,9 @@ AssetBinary = "binary"
 
 # Value types
 VTypeInt = 0
+# VTypeCrypto = 1
 VTypeFloat = 2
-VTypeFixed = 2
+VTypeFixed = 3
 VTypeBool = 4
 VTypeAddress = 5
 VTypeAccount = 6
@@ -25,6 +26,7 @@ VTypeContract = 8
 VTypeMsg = 9
 VTypeSig = 10
 VTypeVoid = 11
-VTypeDate = 12
-VTypeState = 13
-VTypeUndefined = 14
+VTypeDateTime = 12
+VTypeTimeDelta = 13
+VTypeState = 14
+VTypeUndefined = 15

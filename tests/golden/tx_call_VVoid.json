@@ -1,21 +1,21 @@
 {
+    "timestamp": 1231006505, 
+    "to": null, 
     "header": {
-        "tag": "TxContract",
+        "tag": "TxContract", 
         "contents": {
-            "tag": "Call",
+            "tag": "Call", 
             "contents": {
-                "address": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve",
-                "method": "get",
                 "args": [
                     {
                         "tag": "VVoid"
                     }
-                ]
+                ], 
+                "address": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
+                "method": "get"
             }
         }
-    },
-    "signature": "AE4xMTUxMzY4MDA4MjA0NTY4MzM3Mzc5OTQxMjY3NzEzODYwMTUwMjYyODcwOTUwMzQ2MjU2MjM2NDQxODYyNzgxMDg5MjY2OTA3Nzk1Njc6AE0yNDE0ODU3OTQyNDM4MjEzOTI4ODQwOTAzMzUyOTU4NTIzMzEwODAxMzQxNTA5NjY5MjUzNTY0MjA4OTg2Mjk0MjU2OTE2MDQxOTQ1NA==",
-    "timestamp": 1231006505,
-    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve",
-    "to": null
+    }, 
+    "signature": "AE4xMTUxMzY4MDA4MjA0NTY4MzM3Mzc5OTQxMjY3NzEzODYwMTUwMjYyODcwOTUwMzQ2MjU2MjM2NDQxODYyNzgxMDg5MjY2OTA3Nzk1Njc6AE0yNDE0ODU3OTQyNDM4MjEzOTI4ODQwOTAzMzUyOTU4NTIzMzEwODAxMzQxNTA5NjY5MjUzNTY0MjA4OTg2Mjk0MjU2OTE2MDQxOTQ1NA==", 
+    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve"
 }

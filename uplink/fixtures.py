@@ -148,32 +148,64 @@ end() {
 
 @pytest.fixture(scope="session")
 def all_args_contract(contract_gen):
+
     contract = contract_gen(script="""
 transition initial -> end;
 transition end -> terminal;
 
 @initial
-everything (
-    int a
-  , float b
-  , bool x
-  , msg c
-  , account d
-  , asset e
-  , contract f
-  , void i
-) {
-  transitionTo(:end);
+fn_int(int a) {
+  
   return void;
 }
+
+@initial
+fn_float(float b) {
+    return void;
+}
+
+@initial
+fn_bool(bool x) {
+    return void;
+}
+
+@initial
+fn_msg(msg c) {
+    return void;
+}
+
+@initial
+fn_account() {
+    return void;
+}
+
+@initial
+fn_asset(asset a) {
+    return void;
+}
+
+@initial
+fn_contract(contract e) {
+    return void;
+}
+
+@initial
+fn_void(void a) {
+    return void;
+}
+
+@initial
+never_called(void a) {
+    transitionTo(:end);
+    return void;
+}
+
 @end
 end() {
   if (sender() == deployer()) {
     terminate("This is the end");
   };
 }
-
-
 """
                             )
 

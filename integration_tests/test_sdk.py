@@ -77,12 +77,21 @@ def test_oracle_contract(rpc, oracle_contract, alice_account, contract_using_ora
     assert is_rpc_ok(result)
 
 
-def test_all_args_contract(rpc, all_args_contract, alice_account):
+@pytest.mark.parametrize(("method_name", "arg"), [
+    ("fn_int", VInt(404)),
+    ("fn_float", VFloat(2)),
+    ("fn_bool", VBool(False)),
+    ("fn_msg", VMsg("Hello World")),
+    ("fn_account", VAccount(testAddr)),
+    ("fn_asset", VAsset(testAddr)),
+    ("fn_contract", VContract(testAddr)),
+    ("fn_void", VVoid)
+])
+def test_all_args_contract(rpc, all_args_contract, alice_account, method_name, arg):
     result = rpc.uplink_call_contract(private_key=alice_account.private_key, from_address=alice_account.address,
                                       contract_addr=all_args_contract.address,
-                                      method='everything',
-                                      args=[VInt(2), VFloat(2), VBool(False), VMsg("Hello World"), VAccount(testAddr),
-                                            VAsset(testAddr), VContract(testAddr), VVoid])
+                                      method=method_name,
+                                      args=[arg])
     assert is_rpc_ok(result)
 
 

@@ -4,7 +4,7 @@ import six
 
 from base58 import b58decode
 from collections import namedtuple
-
+import datetime
 import uplink.enum as enum
 from uplink.cryptography import ecdsa_sign
 
@@ -233,31 +233,43 @@ class VContract(Tagged, Serializable, namedtuple('VContract', 'contents')):
 class VMsg(Tagged, Serializable, namedtuple('VMsg', 'contents')):
 
     def to_binary(self):
-        return struct.pack('>bQ{}s'.format(str(len(self.contents))), enum.VTypeMsg, len(self.contents), self.contents.encode())
-
-
-# class  Tagged, VSigSerializabl, (namedtuple('VSig', 'v')):
-#     def to_binary(self):
-#         return struct.pack('>H32s', enum.VTypeSig, self.v)
+        return struct.pack('>bH{}s'.format(str(len(self.contents))), enum.VTypeMsg, len(self.contents), self.contents.encode())
 
 
 class VVoid(Tagged, Serializable, namedtuple('VVoid', '')):
-
+                                                            
     def to_binary(self):
         return struct.pack('>b', enum.VTypeVoid)
-
 
 VVoid = VVoid()
 
 
-# class Tagged, VDateSerializable, (namedtuple('VDate', 'v')):
-#     def to_binary(self):
-#         return struct.pack('>H32s', enum.VTypeDate, self.v)
+class VDateTime(Tagged, Serializable, namedtuple('VDateTime', 'contents')):
+
+    def to_binary(self):
+        year = self.contents.year
+        month = self.contents.month
+        day = self.contents.day
+        hour = self.contents.hour
+        minute = self.contents.minute
+        second = self.contents.second
+        tz = self.contents.tzinfo
+        dayofweek = datetime.date(year, month, day).weekday()
+
+        return struct.pack('>bQQQQQQQ', enum.VTypeDateTime, year, month, day, hour, minute, second, tx, dayofweek)
 
 
-# class Tagged, VStateSerializable, (namedtuple('VState', 'v')):
-#     def to_binary(self):
-#         return struct.pack('>H32s', enum.VTypeState, self.v)
+class VTimeDelta(Tagged, Serializable, namedtuple('VTimeDelta', 'contents')):
+
+    def to_binary(self):
+        year = self.contents.year
+        month = self.contents.month
+        day = self.contents.day
+        hour = self.contents.hour
+        minute = self.contents.minute
+        second = self.contents.second
+        nanosec = self.contents.microsecond * 1000
+        return struct.pack('>bQQQQQQQ', enum.VTypeTimeDelta, year, month, day, hour, minute, second, nanosec)
 
 
 class VUndefined(Tagged, Serializable, namedtuple('VUndefined', '')):
@@ -389,7 +401,8 @@ class CreateAccountHeader(Serializable):
                 metapack = (">H" + pack_key + "H" + pack_value).encode()
 
                 meta_structure = meta_structure + \
-                    struct.pack(metapack, key_len, key.encode(), value_len, value.encode())
+                    struct.pack(metapack, key_len, key.encode(),
+                                value_len, value.encode())
 
             structured = structured + meta_structure
 
