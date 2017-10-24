@@ -135,6 +135,14 @@ def test_get_contract(rpc, example_contract):
     assert result
 
 
+def test_get_contract_callable(rpc, all_args_contract):
+    result = rpc.uplink_get_contract_callable(all_args_contract.address)
+    assert result == {u'fn_void': [[u'a', u'void']], u'fn_account': [[u'a', u'account']],
+                      u'fn_asset': [[u'a', u'asset']], u'fn_contract': [[u'e', u'contract']],
+                      u'fn_int': [[u'a', u'int']], u'fn_msg': [[u'c', u'msg']], u'fn_float': [[u'b', u'float']],
+                      u'never_called': [[u'a', u'void']], u'fn_bool': [[u'x', u'bool']]}
+
+
 def test_assets(rpc):
     result = rpc.uplink_assets()
     assert (len(result) > 0)

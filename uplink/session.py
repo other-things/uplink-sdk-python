@@ -109,6 +109,10 @@ class UplinkSession(object):
         """Get Specific Contract"""
         return self.conn.uplink_get_contract(address)
 
+    def get_contract_callable(self, address):
+        """Get Specific Contract"""
+        return self.conn.uplink_get_contract_callable(address)
+
     def create_contract(self, private_key, from_address, script):
         """Create New Contract"""
         new_contract = self.conn.uplink_create_contract(

@@ -175,7 +175,7 @@ fn_msg(msg c) {
 }
 
 @initial
-fn_account() {
+fn_account(account a) {
     return void;
 }
 

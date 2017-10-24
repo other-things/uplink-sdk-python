@@ -164,6 +164,13 @@ class UplinkJsonRpc(object):
         elems = self._handle_response(result, many=False, contracts=False)
         return Contract(**elems)
 
+    def uplink_get_contract_callable(self, address):
+        """Get individual contract by address [/contracts/<address>]"""
+        contract_by_address = 'contracts/{}/callable'.format(address)
+        result = self._call('GET', endpoint=contract_by_address)
+        elems = self._handle_response(result, many=False)
+        return elems
+
     def uplink_get_mempool(self):
         """Get list of unconfirmed transactions"""
         result = self._call('GET', endpoint='transactions/pool')
