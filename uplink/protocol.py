@@ -256,7 +256,7 @@ class VDateTime(Tagged, Serializable, namedtuple('VDateTime', 'contents')):
         tz = self.contents.tzinfo
         dayofweek = datetime.date(year, month, day).weekday()
 
-        return struct.pack('>bQQQQQQQ', enum.VTypeDateTime, year, month, day, hour, minute, second, tz, dayofweek)
+        return struct.pack('>bQQQQQQQQ', enum.VTypeDateTime, year, month, day, hour, minute, second, tz, dayofweek)
 
 
 class VTimeDelta(Tagged, Serializable, namedtuple('VTimeDelta', 'contents')):
