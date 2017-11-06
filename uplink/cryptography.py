@@ -44,19 +44,23 @@ def derive_contract_address(ts, script):
     return contract_address
 
 
-def derive_asset_address(r, s, ts, issuer):
-    """Asset address derives from b58(sha256(r+s+timestamp+issuer's acct address)"""
-    # rb = base64.b64encode(str(r))
-    # sb = base64.b64encode(str(s))
-    issuer = b58encode(issuer.encode())
-    rb = str(r)
-    sb = str(s)
+def derive_asset_address(name, issuer, supply, mref, typ):
 
-    # ts = 1501583007516024
-    concat = "{}{}{}{}".format(rb, sb, str(ts), issuer.encode())
-    hashed = hashlib.sha3_256(concat.encode()).digest()
-    asset_address = b58encode(hashed)
-    return asset_address
+    n = name.encode()
+    i = issuer.encode()
+    s = struct.pack(">Q", supply)
+
+    mrefPref = 0 if (mref is None) else 1
+    mrefPrefBS = struct.pack(">B", mrefPref)
+    refBS = mrefPrefBS + (mref.to_binary() if (mref is None) else b'')
+
+    tBS = typ.to_binary()
+
+    final = n + i + s + refBS + tBS
+    finalHash = hashlib.sha3_256(final).digest()
+
+    addr = b58encode(finalHash)
+    return addr
 
 
 def derive_account_address(pubkey):

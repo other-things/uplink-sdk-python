@@ -55,7 +55,7 @@ def asset_gen(rpc):
             asset_type="Discrete",
             reference="Token",
             issuer=issuer_account.address,
-            precision=0
+            precision=None
         )
         assert is_rpc_ok(status)
         asset = wait_until_doesnt_raise(
@@ -155,7 +155,6 @@ transition end -> terminal;
 
 @initial
 fn_int(int a) {
-  
   return void;
 }
 

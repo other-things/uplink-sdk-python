@@ -1,6 +1,5 @@
 {
-    "timestamp": 1231006505, 
-    "to": null, 
+    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
     "header": {
         "tag": "TxAsset", 
         "contents": {
@@ -12,6 +11,6 @@
             }
         }
     }, 
-    "signature": "AE4xMTUxMzY4MDA4MjA0NTY4MzM3Mzc5OTQxMjY3NzEzODYwMTUwMjYyODcwOTUwMzQ2MjU2MjM2NDQxODYyNzgxMDg5MjY2OTA3Nzk1Njc6AE0yNjAzNzE3MjA0NTE1MDYwODI3MjE0MTQ5NzUyNTgwMTA1Mjc1NjE1NDY1ODYwODY1MjEwMTA1NzY4MTEwNjY0NTgwOTg2MDA0MDc1NA==", 
-    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve"
+    "signature": "AE4xMTUxMzY4MDA4MjA0NTY4MzM3Mzc5OTQxMjY3NzEzODYwMTUwMjYyODcwOTUwMzQ2MjU2MjM2NDQxODYyNzgxMDg5MjY2OTA3Nzk1Njc6AE0zNDk5MzYwMTgzNTU4OTg0ODMxNjA5MzYxODU4NzcxMDczMDI5OTY3NzUzMTk3MzA1Nzg3Mzg4MjQ1MTI5MzAxNTk4MDQ4MDg3ODkxNQ==", 
+    "timestamp": 1231006505
 }

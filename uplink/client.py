@@ -4,20 +4,20 @@ import json
 import time
 import codecs
 import requests
-
 from requests.exceptions import ConnectionError as RequestsConnectionError
 from .protocol import (Block, Peer, Account, Asset, Assets, Contract, Transaction,
                        MemPool, Transfer, TxAccount, TxAsset, TxContract, CreateAccount,
                        CreateAsset, CreateContract, RevokeAccount, Call, SyncLocal, Bind,
-                       CreateAccountHeader, CreateAssetHeader, TransferAssetHeader,
-                       CreateContractHeader, RevokeAccountHeader, CallHeader, BindHeader, SyncHeader)
+                       CreateAccountHeader, CreateAssetHeader, TransferAssetHeader, Circulate, CirculateAssetHeader, AssetType,
+                       CreateContractHeader, RevokeAccountHeader, RevokeAsset, RevokeAssetHeader, CallHeader, BindHeader, SyncHeader)
 from .exceptions import (RpcConnectionFail, BadStatusCodeError, BadJsonError,
                          BadResponseError, UplinkJsonRpcError)
 from .cryptography import (pack_signature,
                            get_time,
                            derive_contract_address,
                            derive_account_address,
-                           derive_asset_address)
+                           derive_asset_address,
+                           ecdsa_sign)
 
 UPLINK_PORT = 8545
 
@@ -80,6 +80,23 @@ class UplinkJsonRpc(object):
             return True
         else:
             return False
+
+    def uplink_reset_db(self, private_key, public_key):
+        """Reset uplink database"""
+        address = derive_account_address(public_key)
+        r, s = ecdsa_sign(private_key, address)
+        signature = pack_signature(r, s)
+
+        params = {
+            "method": "ResetDB",
+            "params": {
+                "address": address,
+                "signature": signature
+            }
+        }
+
+        result = self._call("Test", params=params)
+        return result
 
     def uplink_block(self, block_id):
         """Get a block by index"""
@@ -210,7 +227,7 @@ class UplinkJsonRpc(object):
         return self._call("Test", params)
 
     def uplink_create_account(self, private_key, public_key,
-                              from_address=None, metadata=None, timezone=None, nodekey=0):
+                              from_address=None, metadata=None, timezone=None):
         """Create new account"""
         if timezone is None:
             timezone, localtz = time.tzname
@@ -223,7 +240,7 @@ class UplinkJsonRpc(object):
         acc_address = derive_account_address(public_key)
 
         hdr = CreateAccountHeader(
-            public_key_hex, metadata, acc_address, timezone, nodekey)
+            public_key_hex, metadata, acc_address, timezone)
         txb = TxAccount(CreateAccount(hdr))
 
         r, s = hdr.sign(private_key)
@@ -231,19 +248,20 @@ class UplinkJsonRpc(object):
 
         origin = acc_address if from_address is None else from_address
         tx = Transaction(txb, signature, timestamp,
-                         origin=origin, to=acc_address)
+                         origin=origin)
 
         params = tx.to_dict()
 
         result = self._call('Transaction', params=params, endpoint='')
 
         if self._handle_success(result):
-            return Account(timezone, public_key, metadata, nodekey, acc_address)
+            return Account(timezone, public_key, metadata, acc_address)
         else:
             raise UplinkJsonRpcError("Malformed CreateAccount", result)
 
     def uplink_create_asset(self, private_key, origin, name,
-                            supply, asset_type, reference, issuer, precision=0):
+                            supply, asset_type, reference, issuer,
+                            precision=0):
         """Create Asset - returns (result, to_address)"""
         timestamp = get_time()
 
@@ -254,17 +272,19 @@ class UplinkJsonRpc(object):
         r, s = hdr.sign(private_key)
         signature = pack_signature(r, s)
 
-        to_address = derive_asset_address(r, s, timestamp, issuer)
-
-        tx = Transaction(txb, signature, timestamp,
-                         origin=origin, to=to_address)
+        tx = Transaction(txb, signature, timestamp, origin=origin)
         params = tx.to_dict()
 
         result = self._call('Transaction', params=params, endpoint='')
 
+        asset_type_dict = dict(type=asset_type, precision=precision)
+        assetAddr = derive_asset_address(name, issuer, supply, reference,
+                                         AssetType(asset_type_dict))
+
         if self._handle_success(result):
-            return (result, to_address)
+            return (result, assetAddr)
         else:
+            print(result)
             raise UplinkJsonRpcError("Malformed CreateAsset", result)
 
     def uplink_transfer_asset(self, private_key, from_address, to_address, balance, asset_address):
@@ -278,13 +298,33 @@ class UplinkJsonRpc(object):
         signature = pack_signature(r, s)
 
         tx = Transaction(txb, signature.decode(), timestamp,
-                         origin=from_address, to=None)
+                         origin=from_address)
         params = tx.to_dict()
         result = self._call('Transaction', params=params, endpoint='')
         if self._handle_success(result):
             return result
         else:
             raise UplinkJsonRpcError("Malformed TransferAsset", result)
+
+    def uplink_circulate_asset(self, private_key, from_address, amount, asset_address):
+        """Circulate assets"""
+        timestamp = get_time()
+
+        hdr = CirculateAssetHeader(asset_address, amount)
+        txb = TxAsset(Circulate(hdr))
+
+        r, s = hdr.sign(private_key)
+        signature = pack_signature(r, s)
+
+        tx = Transaction(txb, signature.decode(), timestamp,
+                         origin=from_address)
+        params = tx.to_dict()
+        print(params)
+        result = self._call('Transaction', params=params, endpoint='')
+        if self._handle_success(result):
+            return result
+        else:
+            raise UplinkJsonRpcError("Malformed CirculateAsset", result)
 
     def uplink_create_contract(self, private_key, from_address, script):
         """Create a new Contract"""
@@ -301,7 +341,7 @@ class UplinkJsonRpc(object):
         signature = pack_signature(r, s)
 
         tx = Transaction(txb, signature, timestamp,
-                         origin=from_address, to=raw_addr)
+                         origin=from_address)
         params = tx.to_dict()
 
         result = self._call('Transaction', params=params, endpoint='')
@@ -309,6 +349,26 @@ class UplinkJsonRpc(object):
             return result, raw_addr
         else:
             raise UplinkJsonRpcError("create contract error", result)
+
+    def uplink_revoke_asset(self, private_key, from_address, asset_addr):
+        """Revoke Asset"""
+        timestamp = get_time()
+
+        hdr = RevokeAssetHeader(asset_addr)
+        txb = TxAsset(RevokeAsset(hdr))
+
+        r, s = hdr.sign(private_key)
+        signature = pack_signature(r, s)
+
+        # to_address=to_address)
+        tx = Transaction(txb, signature, timestamp, origin=from_address)
+        params = tx.to_dict()
+
+        result = self._call('Transaction', params=params, endpoint='')
+        if self._handle_success(result):
+            return result
+        else:
+            raise UplinkJsonRpcError("Malformed RevokeAsset", result)
 
     def uplink_revoke_account(self, private_key, from_address, account_addr):
         """Revoke account access"""

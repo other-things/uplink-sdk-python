@@ -6,7 +6,7 @@ from base58 import b58decode
 from collections import namedtuple
 import datetime
 import uplink.enum as enum
-from uplink.cryptography import ecdsa_sign
+from uplink.cryptography import (ecdsa_sign, derive_asset_address)
 
 
 # ------------------------------------------------------------------------
@@ -129,10 +129,9 @@ class PeerContents(object):
 class Account(object):
     """Account Object"""
 
-    def __init__(self, timezone, publicKey, metadata, nodeKey, address):
+    def __init__(self, timezone, publicKey, metadata, address):
         self.timezone = timezone
         self.public_key = publicKey
-        self.node_key = nodeKey
         self.address = address
 
         assert type(metadata) is dict
@@ -184,8 +183,49 @@ class AssetType(Serializable):
     """Asset Type"""
 
     def __init__(self, asset_type):
-        self.type = asset_type['type']
-        self.precision = asset_type['precision'] or None
+        asset_types = ["Fractional", "Discrete", "Binary"]
+        if asset_type['type'] in asset_types:
+            self.type = asset_type['type']
+            if self.type == enum.AssetFractional:
+                if asset_type['precision'] in [x for x in range(1, 7)]:
+                    self.precision = asset_type['precision'] or None
+                else:
+                    self.precision = None
+                    valerr = "Invalid precision for Fractional asset type."
+                    raise ValueError(valerr)
+            elif asset_type["precision"] is not None:
+                self.precision = None
+                valerr = "Cannot specify precision of Non-Fractional asset."
+                raise ValueError(valerr)
+            else:
+                self.precision = None
+        else:
+            self.type = asset_type['type']
+            self.precision = None
+            raise ValueError("Invalid asset type: " + asset_type['type'])
+
+    def to_binary(self):
+        fmt = ">H{}s".format(len(self.type))
+        typ = struct.pack(fmt, len(self.type), self.type.encode())
+
+        prec = self.precision
+        mprec = b'' if prec is None else struct.pack(">q", self.precision)
+        return (typ + mprec)
+
+
+class AssetRef(Serializable):
+    """Asset Ref"""
+
+    def __init__(self, asset_ref):
+        if asset_ref in ["USD", "GBP", "EUR", "CHF", "Token", "Security"]:
+            self.ref = asset_ref
+        else:
+            raise ValueError(str(asset_ref) + "is not a valid asset reference")
+
+    def to_binary(self):
+        fmt = ">H{}s".format(len(self.type))
+        byts = struct.pack(fmt, len(self.ref))
+        return struct.pack(fmt, len(self.ref), byts)
 
 
 class VInt(Tagged, Serializable, namedtuple("VInt", 'contents')):
@@ -237,9 +277,10 @@ class VMsg(Tagged, Serializable, namedtuple('VMsg', 'contents')):
 
 
 class VVoid(Tagged, Serializable, namedtuple('VVoid', '')):
-                                                            
+
     def to_binary(self):
         return struct.pack('>b', enum.VTypeVoid)
+
 
 VVoid = VVoid()
 
@@ -306,12 +347,11 @@ class Contract(Serializable):
 class Transaction(Serializable):
     """Transactions Object"""
 
-    def __init__(self, header, signature, timestamp, origin=None, to=None):
+    def __init__(self, header, signature, timestamp, origin):
         self.header = header
         self.signature = signature
         self.timestamp = timestamp
         self.origin = origin
-        self.to = to
 
     def __repr__(self):
         return "<Transaction(signature=%s)>" % self.signature
@@ -362,13 +402,11 @@ class CreateAccount(Serializable):
 class CreateAccountHeader(Serializable):
     """Create account transaction header"""
 
-    def __init__(self, new_pubkey, metadata, address, timezone, nodekey=0):
+    def __init__(self, new_pubkey, metadata, address, timezone):
         self.pubKey = new_pubkey
         self.timezone = timezone
         # self.address = address
-        # self.nodeKey = nodekey
         self.metadata = metadata
-        assert type(nodekey) is int
         assert type(metadata) is dict
 
     def to_binary(self):
@@ -432,6 +470,9 @@ class CreateAssetHeader(Serializable):
     """Create Asset Header"""
 
     def __init__(self, name, supply, asset_type, reference, issuer, precision):
+        asset_type_ = AssetType(dict(type=asset_type, precision=precision))
+        self.assetAddr = derive_asset_address(name, issuer, supply, reference,
+                                              asset_type_)
         self.assetName = name
         self.supply = int(supply)
         self.issuer = issuer
@@ -446,10 +487,11 @@ class CreateAssetHeader(Serializable):
         reference_len = str(len(self.reference)) + "s"
 
         if _asset_type == 'Fractional':
-            package = ">HH" + name_len + "QHH" + reference_len + "H" + asset_len + "Q"
+            package = ">H32sH" + name_len + "QHH" + reference_len + "H" + asset_len + "Q"
             structured = struct.pack(
                 package,
                 enum.TxTypeCreateAsset,
+                b58decode(self.assetAddr),
                 len(self.assetName),
                 self.assetName.encode(),
                 self.supply,
@@ -460,10 +502,11 @@ class CreateAssetHeader(Serializable):
                 _asset_type,
                 int(precision))
         else:
-            package = ">HH" + name_len + "QHH" + reference_len + "H" + asset_len
+            package = ">H32sH" + name_len + "QHH" + reference_len + "H" + asset_len
             structured = struct.pack(
                 package,
                 enum.TxTypeCreateAsset,
+                b58decode(self.assetAddr),
                 len(self.assetName),
                 self.assetName.encode(),
                 self.supply,
@@ -587,6 +630,30 @@ class TransferAssetHeader(Serializable):
             ">H32s32sq", enum.TxTypeTransfer, b58decode(self.assetAddr), b58decode(self.toAddr), self.balance)
         return structured
 
+# ------------------------------------------------------------------------
+# Asset Circulate
+# ------------------------------------------------------------------------
+
+
+class Circulate(Serializable):
+    """Circulate object"""
+
+    def __init__(self, contents):
+        self.tag = tag_from_contents(self)
+        self.contents = contents
+
+
+class CirculateAssetHeader(Serializable):
+    """Asset Circulate Header"""
+
+    def __init__(self, assetAddr, amount):
+        self.assetAddr = assetAddr
+        self.amount = amount
+
+    def to_binary(self):
+        structured = struct.pack(
+            ">H32sq", enum.TxTypeCirculate, b58decode(self.assetAddr), self.amount)
+        return structured
 
 # ------------------------------------------------------------------------
 # Revoke Account
@@ -612,6 +679,29 @@ class RevokeAccountHeader(Serializable):
             ">H32s", enum.TxTypeRevokeAccount, b58decode(self.address))
         return structured
 
+# ------------------------------------------------------------------------
+# Revoke Asset
+# ------------------------------------------------------------------------
+
+
+class RevokeAsset(Serializable):
+    """Revoke Asset Object"""
+
+    def __init__(self, contents):
+        self.tag = tag_from_contents(self)
+        self.contents = contents
+
+
+class RevokeAssetHeader(Serializable):
+    """Revoke Asset Header object"""
+
+    def __init__(self, asset_addr):
+        self.address = asset_addr
+
+    def to_binary(self):
+        structured = struct.pack(
+            ">H32s", enum.TxTypeRevokeAsset, b58decode(self.address))
+        return structured
 
 # ------------------------------------------------------------------------
 # Call Contract

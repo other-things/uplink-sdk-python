@@ -1,6 +1,5 @@
 {
-    "timestamp": 1231006505, 
-    "to": null, 
+    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
     "header": {
         "tag": "TxContract", 
         "contents": {
@@ -20,11 +19,11 @@
                         "contents": 1
                     }
                 ], 
-                "address": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
-                "method": "get"
+                "method": "get", 
+                "address": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve"
             }
         }
     }, 
     "signature": "AE4xMTUxMzY4MDA4MjA0NTY4MzM3Mzc5OTQxMjY3NzEzODYwMTUwMjYyODcwOTUwMzQ2MjU2MjM2NDQxODYyNzgxMDg5MjY2OTA3Nzk1Njc6AE04NTE2MTk1NDIyMTI2MDY2NjgzNzA2NDUyMjgwNjcyNzYzMjkzNjgxNDIyNDk0MDk1NTU2NDM1MDIzMTU2NTIzMTMyOTk1MTQ1MTY3NA==", 
-    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve"
+    "timestamp": 1231006505
 }

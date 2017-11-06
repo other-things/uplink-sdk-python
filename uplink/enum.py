@@ -4,14 +4,16 @@ TxTypeSyncLocal = 1001
 TxTypeCall = 1002
 TxTypeCreateAsset = 1003
 TxTypeTransfer = 1004
-TxTypeBind = 1005
-TxTypeCreateAccount = 1006
-TxTypeRevokeAccount = 1007
+TxTypeCirculate = 1005
+TxTypeBind = 1006
+TxTypeRevokeAsset = 1007
+TxTypeCreateAccount = 1008
+TxTypeRevokeAccount = 1009
 
 # Asset types
-AssetFractional = "fractional"
-AssetDiscrete = "discrete"
-AssetBinary = "binary"
+AssetFractional = "Fractional"
+AssetDiscrete = "Discrete"
+AssetBinary = "Binary"
 
 # Value types
 VTypeInt = 0

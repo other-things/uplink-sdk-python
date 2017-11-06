@@ -58,10 +58,8 @@ def _testCreateAccount():
     metadata = dict(stuff="key", bax="foo", fax="bar")
     address = derive_account_address(vkey)
     timezone = "GMT"
-    nodekey = 0
 
-    return CreateAccountHeader(public_key_hex, metadata,
-                               address, timezone, nodekey)
+    return CreateAccountHeader(public_key_hex, metadata, address, timezone)
 
 
 def _testCreateAsset():
@@ -70,7 +68,7 @@ def _testCreateAsset():
     asset_type = "Discrete"
     ref = "Token"
     issuer = testAddr
-    precision = 0
+    precision = None 
 
     return CreateAssetHeader(name, supply, asset_type,
                              ref, issuer, precision)

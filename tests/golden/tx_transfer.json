@@ -1,17 +1,16 @@
 {
-    "timestamp": 1231006505, 
-    "to": null, 
+    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
     "header": {
         "tag": "TxAsset", 
         "contents": {
             "tag": "CreateAsset", 
             "contents": {
-                "balance": 5, 
                 "assetAddr": "43WRxMNcnYgZFcE36iohqrXKQdajUdAxeSn9mzE1ZedB", 
+                "balance": 5, 
                 "toAddr": "7mR5d7s6cKB4qjuX1kiwwNtygfURhFQ9TKvEd9kmq6QL"
             }
         }
     }, 
     "signature": "AE4xMTUxMzY4MDA4MjA0NTY4MzM3Mzc5OTQxMjY3NzEzODYwMTUwMjYyODcwOTUwMzQ2MjU2MjM2NDQxODYyNzgxMDg5MjY2OTA3Nzk1Njc6AE05NDIwNDYxODgxNzY0NzQzNjY3MDUyNTg3NDQ4NTU4NDUxMzY1NzE0MjMzNzAxODY0MjQxNDE4MjA2NDk3MDg5MzU1OTUwNDEyMjg4Mg==", 
-    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve"
+    "timestamp": 1231006505
 }

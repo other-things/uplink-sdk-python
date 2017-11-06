@@ -125,6 +125,12 @@ class UplinkSession(object):
             private_key, from_address, to_address, balance, asset_address)
         return receipt
 
+    def circulate_asset(self, private_key, from_address, amount, asset_address):
+        """Circulate asset"""
+        receipt = self.conn.uplink_circulate_asset(
+            private_key, from_address, amount, asset_address)
+        return receipt
+
     def get_mempool(self):
         """Get list of unconfirmed transactions"""
         pool = self.conn.uplink_get_mempool()
@@ -142,8 +148,19 @@ class UplinkSession(object):
             private_key, from_address, account_addr)
         return rev
 
+    def revoke_asset(self, private_key, from_address, asset_addr):
+        """Revoke Asset"""
+        rev_asset = self.conn.uplink_revoke_asset(
+            private_key, from_address, asset_addr)
+        return rev_asset
+
     def call_contract(self, private_key, from_address, contract_addr, method, args):
         """Call Contract Methods"""
         called = self.conn.uplink_call_contract(
             private_key, from_address, contract_addr, method, args)
         return called
+
+    def reset_db(self, public_key, private_key):
+        """Reset Uplink Database"""
+        reset = self.conn.uplink_reset_db(private_key, public_key)
+        return reset
