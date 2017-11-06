@@ -15,7 +15,6 @@ from uplink.cryptography import (ecdsa_sign, derive_asset_address)
 
 
 class Serializer(object):
-
     @staticmethod
     def serialize(object, **kwargs):
         return json.dumps(object, **kwargs)
@@ -50,7 +49,6 @@ def _to_dict(obj, classkey=None, *args, **kwargs):
 
 
 class Serializable(object):
-
     def to_dict(self, *args, **kwargs):
         return _to_dict(self, *args, **kwargs)
 
@@ -66,7 +64,6 @@ class Serializable(object):
 
 
 class Tagged(object):
-
     def __dict__(self):
         result = super(Tagged, self).__dict__
         result['tag'] = type(self).__name__
@@ -229,55 +226,47 @@ class AssetRef(Serializable):
 
 
 class VInt(Tagged, Serializable, namedtuple("VInt", 'contents')):
-
     def to_binary(self):
         return struct.pack('>bq', enum.VTypeInt, self.contents)
 
 
 class VFloat(Tagged, Serializable, namedtuple('VFloat', 'contents')):
-
     def to_binary(self):
         return struct.pack('>bd', enum.VTypeFloat, self.contents)
 
 
 class VBool(Tagged, Serializable, namedtuple('VBool', 'contents')):
-
     def to_binary(self):
         return struct.pack('>b?', enum.VTypeBool, self.contents)
 
 
 class VAddress(Tagged, Serializable, namedtuple('VAddress', 'contents')):
-
     def to_binary(self):
         return struct.pack('>b32s', enum.VTypeAddress, b58decode(self.contents))
 
 
 class VAccount(Tagged, Serializable, namedtuple('VAccount', 'contents')):
-
     def to_binary(self):
         return struct.pack('>b32s', enum.VTypeAccount, b58decode(self.contents))
 
 
 class VAsset(Tagged, Serializable, namedtuple('VAsset', 'contents')):
-
     def to_binary(self):
         return struct.pack('>b32s', enum.VTypeAsset, b58decode(self.contents))
 
 
 class VContract(Tagged, Serializable, namedtuple('VContract', 'contents')):
-
     def to_binary(self):
         return struct.pack('>b32s', enum.VTypeContract, b58decode(self.contents))
 
 
 class VMsg(Tagged, Serializable, namedtuple('VMsg', 'contents')):
-
     def to_binary(self):
-        return struct.pack('>bH{}s'.format(str(len(self.contents))), enum.VTypeMsg, len(self.contents), self.contents.encode())
+        return struct.pack('>bH{}s'.format(str(len(self.contents))), enum.VTypeMsg, len(self.contents),
+                           self.contents.encode())
 
 
 class VVoid(Tagged, Serializable, namedtuple('VVoid', '')):
-
     def to_binary(self):
         return struct.pack('>b', enum.VTypeVoid)
 
@@ -286,22 +275,25 @@ VVoid = VVoid()
 
 
 class VDateTime(Tagged, Serializable, namedtuple('VDateTime', 'contents')):
+    def _asdict(self):
+        result = super(VDateTime, self)._asdict()
+        result['contents'] = self.contents.strftime("%Y-%m-%dT%H:%M:%S+00:00")
+        return result
 
     def to_binary(self):
-        year = self.contents.year
-        month = self.contents.month
-        day = self.contents.day
-        hour = self.contents.hour
-        minute = self.contents.minute
-        second = self.contents.second
-        tz = self.contents.tzinfo
-        dayofweek = datetime.date(year, month, day).weekday()
-
-        return struct.pack('>bQQQQQQQQ', enum.VTypeDateTime, year, month, day, hour, minute, second, tz, dayofweek)
+        dt = self.contents
+        year = dt.year
+        month = dt.month
+        day = dt.day
+        hour = dt.hour
+        minute = dt.minute
+        second = dt.second
+        dayofweek = datetime.date(year, month,
+                                  day).weekday() + 1  # .weekday() returns  from 0, adjoint-io/datetime returns from 1
+        return struct.pack('>bqqqqqqqq', enum.VTypeDateTime, year, month, day, hour, minute, second, 0, dayofweek)
 
 
 class VTimeDelta(Tagged, Serializable, namedtuple('VTimeDelta', 'contents')):
-
     def to_binary(self):
         year = self.contents.year
         month = self.contents.month
@@ -314,7 +306,6 @@ class VTimeDelta(Tagged, Serializable, namedtuple('VTimeDelta', 'contents')):
 
 
 class VUndefined(Tagged, Serializable, namedtuple('VUndefined', '')):
-
     def to_binary(self):
         return struct.pack('>b', enum.VTypeUndefined)
 
@@ -439,8 +430,8 @@ class CreateAccountHeader(Serializable):
                 metapack = (">H" + pack_key + "H" + pack_value).encode()
 
                 meta_structure = meta_structure + \
-                    struct.pack(metapack, key_len, key.encode(),
-                                value_len, value.encode())
+                                 struct.pack(metapack, key_len, key.encode(),
+                                             value_len, value.encode())
 
             structured = structured + meta_structure
 
@@ -630,6 +621,7 @@ class TransferAssetHeader(Serializable):
             ">H32s32sq", enum.TxTypeTransfer, b58decode(self.assetAddr), b58decode(self.toAddr), self.balance)
         return structured
 
+
 # ------------------------------------------------------------------------
 # Asset Circulate
 # ------------------------------------------------------------------------
@@ -655,6 +647,7 @@ class CirculateAssetHeader(Serializable):
             ">H32sq", enum.TxTypeCirculate, b58decode(self.assetAddr), self.amount)
         return structured
 
+
 # ------------------------------------------------------------------------
 # Revoke Account
 # ------------------------------------------------------------------------
@@ -679,6 +672,7 @@ class RevokeAccountHeader(Serializable):
             ">H32s", enum.TxTypeRevokeAccount, b58decode(self.address))
         return structured
 
+
 # ------------------------------------------------------------------------
 # Revoke Asset
 # ------------------------------------------------------------------------
@@ -702,6 +696,7 @@ class RevokeAssetHeader(Serializable):
         structured = struct.pack(
             ">H32s", enum.TxTypeRevokeAsset, b58decode(self.address))
         return structured
+
 
 # ------------------------------------------------------------------------
 # Call Contract

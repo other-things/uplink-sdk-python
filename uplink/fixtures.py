@@ -188,6 +188,12 @@ fn_contract(contract e) {
     return void;
 }
 
+
+@initial
+fn_datetime(datetime e) {
+    return void;
+}
+
 @initial
 fn_void(void a) {
     return void;

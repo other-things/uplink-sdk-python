@@ -15,6 +15,6 @@ setup(name='Uplink SDK py',
           "ecdsa == 0.13",
           "pytest >= 2.6.4",
           "pysha3 >= 1.0.2",
-          "base58 >= 0.2.4"
+          "base58 >= 0.2.4",
       ]
       )

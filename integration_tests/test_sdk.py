@@ -85,6 +85,7 @@ def test_oracle_contract(rpc, oracle_contract, alice_account, contract_using_ora
     ("fn_account", VAccount(testAddr)),
     ("fn_asset", VAsset(testAddr)),
     ("fn_contract", VContract(testAddr)),
+    ("fn_datetime", VDateTime(datetime.datetime.now())),
     ("fn_void", VVoid)
 ])
 def test_all_args_contract(rpc, all_args_contract, alice_account, method_name, arg):
@@ -140,7 +141,8 @@ def test_get_contract_callable(rpc, all_args_contract):
     assert result == {u'fn_void': [[u'a', u'void']], u'fn_account': [[u'a', u'account']],
                       u'fn_asset': [[u'a', u'asset']], u'fn_contract': [[u'e', u'contract']],
                       u'fn_int': [[u'a', u'int']], u'fn_msg': [[u'c', u'msg']], u'fn_float': [[u'b', u'float']],
-                      u'never_called': [[u'a', u'void']], u'fn_bool': [[u'x', u'bool']]}
+                      u'never_called': [[u'a', u'void']], u'fn_bool': [[u'x', u'bool']],
+                      u'fn_datetime': [[u'e', u'datetime']]}
 
 
 def test_assets(rpc):
