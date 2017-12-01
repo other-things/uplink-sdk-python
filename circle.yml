@@ -30,9 +30,20 @@ jobs:
       - checkout
       - run: sudo pip install tox
       - run: sudo tox -e py3
+
+  typecheck:
+    docker:
+      - image: circleci/python:3
+    steps:
+      - checkout
+      - run: sudo pip install mypy
+      - run: sudo mypy --ignore-missing-imports uplink integration_tests tests
+
+
 workflows:
   version: 2
   test:
     jobs:
       - py2
       - py3
+      - typecheck

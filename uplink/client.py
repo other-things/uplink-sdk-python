@@ -162,7 +162,7 @@ class UplinkJsonRpc(object):
                 print(elems['errorMsg'])
                 return False
         except KeyError:
-            return Asset(address=address, **elems)
+            return Asset(**elems)
 
     def uplink_version(self):
         return self._call('GET', endpoint='version')
@@ -186,6 +186,12 @@ class UplinkJsonRpc(object):
         contract_by_address = 'contracts/{}/callable'.format(address)
         result = self._call('GET', endpoint=contract_by_address)
         elems = self._handle_response(result, many=False)
+        return elems
+
+    def uplink_get_invalid_transactions(self):
+        """Get list of invalid transactions"""
+        result = self._call('GET', endpoint='transactions/invalid')
+        elems = self._handle_response(result, many=True)
         return elems
 
     def uplink_get_mempool(self):
@@ -260,13 +266,13 @@ class UplinkJsonRpc(object):
             raise UplinkJsonRpcError("Malformed CreateAccount", result)
 
     def uplink_create_asset(self, private_key, origin, name,
-                            supply, asset_type, reference, issuer,
-                            precision=0):
+                            supply, asset_type_nm, reference, issuer,
+                            precision=None):
         """Create Asset - returns (result, to_address)"""
         timestamp = get_time()
 
-        hdr = CreateAssetHeader(name, supply, asset_type,
-                                reference, issuer, precision)
+        hdr = CreateAssetHeader(name, supply, asset_type_nm,
+                                reference, issuer, precision, timestamp)
         txb = TxAsset(CreateAsset(hdr))
 
         r, s = hdr.sign(private_key)
@@ -275,14 +281,16 @@ class UplinkJsonRpc(object):
         tx = Transaction(txb, signature, timestamp, origin=origin)
         params = tx.to_dict()
 
+        print(params)
+
         result = self._call('Transaction', params=params, endpoint='')
 
-        asset_type_dict = dict(type=asset_type, precision=precision)
-        assetAddr = derive_asset_address(name, issuer, supply, reference,
-                                         AssetType(asset_type_dict))
+        asset_type = AssetType(asset_type_nm, precision)
+        asset_addr = derive_asset_address(name, issuer, supply, reference,
+                                          asset_type, timestamp)
 
         if self._handle_success(result):
-            return (result, assetAddr)
+            return (result, asset_addr)
         else:
             print(result)
             raise UplinkJsonRpcError("Malformed CreateAsset", result)

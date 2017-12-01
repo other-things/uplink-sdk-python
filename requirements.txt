@@ -5,6 +5,7 @@ pytest>=2.6.4
 pysha3 >= 1.0.2
 base58 >= 0.2.4
 
+typing
 hexdump
 # git+git://github.com/lincolnloop/python-qrcode.git
 # git+git://github.com/ojii/pymaging.git#egg=pymaging

@@ -44,19 +44,22 @@ def derive_contract_address(ts, script):
     return contract_address
 
 
-def derive_asset_address(name, issuer, supply, mref, typ):
-
+def derive_asset_address(name, issuer, supply, mref, typ, timestamp):
+    
     n = name.encode()
-    i = issuer.encode()
+    i = b58decode(issuer)
     s = struct.pack(">Q", supply)
 
     mrefPref = 0 if (mref is None) else 1
     mrefPrefBS = struct.pack(">B", mrefPref)
-    refBS = mrefPrefBS + (mref.to_binary() if (mref is None) else b'')
+    mrefLenBS = b'' if (mref is None) else struct.pack(">H", len(mref))
+    mrefBS = b'' if (mref is None) else mref.encode()
+    refBS = mrefPrefBS + mrefLenBS + mrefBS 
 
     tBS = typ.to_binary()
-
-    final = n + i + s + refBS + tBS
+    ts = struct.pack(">Q", timestamp)
+    
+    final = n + i + s + refBS + tBS + ts
     finalHash = hashlib.sha3_256(final).digest()
 
     addr = b58encode(finalHash)

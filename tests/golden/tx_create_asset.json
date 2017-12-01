@@ -1,22 +1,22 @@
 {
-    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
+    "signature": "AE4xMTUxMzY4MDA4MjA0NTY4MzM3Mzc5OTQxMjY3NzEzODYwMTUwMjYyODcwOTUwMzQ2MjU2MjM2NDQxODYyNzgxMDg5MjY2OTA3Nzk1Njc6AE04NTk1ODUxNzQxMDg3NDgyODUxNTY0NzkzMDA3MzM4MjE1OTQxMjIyNDQ3OTMzMzE0NTk2NTY1Nzk4OTM4ODU3NTQyMDIwNTE4NDc3Mw==", 
     "header": {
-        "tag": "TxAsset", 
         "contents": {
-            "tag": "CreateAsset", 
             "contents": {
+                "supply": 1000, 
                 "assetType": {
-                    "tag": "Discrete", 
-                    "contents": null
+                    "contents": null, 
+                    "tag": "Discrete"
                 }, 
                 "reference": "Token", 
-                "supply": 1000, 
-                "assetAddr": "ERAJYYNYBbgw9nypytrSWUXafE94FfSYPJfxBatQzYhN", 
-                "assetName": "test", 
-                "issuer": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve"
-            }
-        }
+                "assetAddr": "6xdHUTci9doXJuPrtrnf5wUniFowjeRmW7wL3MFXu6ir", 
+                "issuer": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
+                "assetName": "test"
+            }, 
+            "tag": "CreateAsset"
+        }, 
+        "tag": "TxAsset"
     }, 
-    "signature": "AE4xMTUxMzY4MDA4MjA0NTY4MzM3Mzc5OTQxMjY3NzEzODYwMTUwMjYyODcwOTUwMzQ2MjU2MjM2NDQxODYyNzgxMDg5MjY2OTA3Nzk1Njc6AE04OTQ1ODI1MzA3NjA3MjI2MjUyNDY5NTY5Nzc3ODA2NDg2MjEyOTI3ODE4MjkzMTAyNTcyNjg0MzYxMTY0NjM4MTkxMjI0MTkzOTQxMw==", 
-    "timestamp": 1231006505
+    "timestamp": 1231006505, 
+    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve"
 }

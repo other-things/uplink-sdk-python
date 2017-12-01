@@ -16,5 +16,6 @@ setup(name='Uplink SDK py',
           "pytest >= 2.6.4",
           "pysha3 >= 1.0.2",
           "base58 >= 0.2.4",
+          'typing'
       ]
       )

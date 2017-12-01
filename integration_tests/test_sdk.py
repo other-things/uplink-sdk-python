@@ -18,11 +18,11 @@ def test_create_asset(gold_asset, silver_asset):
 
 def test_transfer_assets(rpc, alice_account, bob_account, gold_asset):
     # transfer alice gold asset supply to alice holdings
-    t1 = rpc.uplink_transfer_asset(private_key=alice_account.private_key,
-                                   from_address=alice_account.address,
-                                   to_address=alice_account.address,
-                                   balance=500,
-                                   asset_address=gold_asset.address)
+    t1 = rpc.uplink_circulate_asset(private_key=alice_account.private_key,
+                                    from_address=alice_account.address,
+                                    amount=500,
+                                    asset_address=gold_asset.address)
+
     assert is_rpc_ok(t1)
     # transfer alice holdings to bob holdings
     t2 = rpc.uplink_transfer_asset(private_key=alice_account.private_key,

@@ -94,7 +94,7 @@ class UplinkSession(object):
         """Get Specific Asset"""
         return self.conn.uplink_get_asset(address)
 
-    def create_asset(self, private_key, origin, name, supply, asset_type, reference, issuer, precision=0):
+    def create_asset(self, private_key, origin, name, supply, asset_type, reference, issuer, precision=None):
         """Create New Asset"""
         new_asset = self.conn.uplink_create_asset(
             private_key, origin, name, supply, asset_type, reference, issuer, precision)
@@ -130,6 +130,11 @@ class UplinkSession(object):
         receipt = self.conn.uplink_circulate_asset(
             private_key, from_address, amount, asset_address)
         return receipt
+
+    def get_invalid_transactions(self):
+        """Get list of invalid transactions"""
+        txs = self.conn.uplink_get_invalid_transactions()
+        return txs
 
     def get_mempool(self):
         """Get list of unconfirmed transactions"""

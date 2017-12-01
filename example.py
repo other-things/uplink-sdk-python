@@ -27,10 +27,9 @@ def create_asset(sk, acct_address, asset_name, supply):
         origin=acct_address,
         name=asset_name,
         supply=supply,
-        asset_type="Discrete",
+        asset_type_nm="Discrete",
         reference="Token",
         issuer=acct_address,
-        precision=0
     )
 
     print(asset)

@@ -97,7 +97,7 @@ def test_revoke():
 
 
 @pytest.mark.parametrize(("arg"), reference.test_args)
-def test_call(arg):
+def test_call_tx(arg):
 
     tx = reference.testTx(TxContract, Call, reference.testCall([arg]))
     golden_json("tx_call_{}.json".format(type(arg).__name__), tx)

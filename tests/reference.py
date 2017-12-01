@@ -1,5 +1,5 @@
 from ecdsa.keys import *
-from ecdsa.ecdsa import *
+from ecdsa.ecdsa import Public_key, generator_secp256k1, curve_secp256k1
 from ecdsa.curves import *
 
 from uplink import *
@@ -68,10 +68,11 @@ def _testCreateAsset():
     asset_type = "Discrete"
     ref = "Token"
     issuer = testAddr
-    precision = None 
+    precision = None
+    timestamp = testTimestamp 
 
     return CreateAssetHeader(name, supply, asset_type,
-                             ref, issuer, precision)
+                             ref, issuer, precision, timestamp)
 
 
 def _testCreateContract():

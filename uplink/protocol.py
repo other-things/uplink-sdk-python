@@ -3,8 +3,10 @@ import struct
 import six
 
 from base58 import b58decode
-from collections import namedtuple
+from typing import NamedTuple
+
 import datetime
+from datetime import timedelta
 import uplink.enum as enum
 from uplink.cryptography import (ecdsa_sign, derive_asset_address)
 
@@ -148,7 +150,7 @@ class Asset(Serializable):
     def __init__(self, address, issuedOn, assetType, name, reference, supply, holdings, issuer):
         self.address = address
         self.issuedOn = issuedOn
-        self.assetType = AssetType(assetType)
+        self.assetType = AssetType(assetType["tag"], assetType["contents"])
         self.name = name
         self.reference = reference
         self.supply = supply
@@ -170,7 +172,10 @@ class Assets(Serializable):
         self.supply = asset['supply']
         self.holdings = asset['holdings']
         self.reference = asset['reference']
-        self.assetType = AssetType(asset['assetType'])
+
+        assetTypeNm = asset['assetType']['tag']
+        assetPrec = asset['assetType']['contents']
+        self.assetType = AssetType(assetTypeNm, assetPrec)
 
     def __repr__(self):
         return "<Assets(address=%s)>" % self.address
@@ -179,27 +184,30 @@ class Assets(Serializable):
 class AssetType(Serializable):
     """Asset Type"""
 
-    def __init__(self, asset_type):
+    def __init__(self, asset_type, precision):
         asset_types = ["Fractional", "Discrete", "Binary"]
-        if asset_type['type'] in asset_types:
-            self.type = asset_type['type']
+        if asset_type in asset_types:
+            self.type = asset_type
             if self.type == enum.AssetFractional:
-                if asset_type['precision'] in [x for x in range(1, 7)]:
-                    self.precision = asset_type['precision'] or None
+                if precision in [x for x in range(1, 7)]:
+                    self.precision = precision or None
                 else:
                     self.precision = None
                     valerr = "Invalid precision for Fractional asset type."
                     raise ValueError(valerr)
-            elif asset_type["precision"] is not None:
+            elif precision is not None:
                 self.precision = None
                 valerr = "Cannot specify precision of Non-Fractional asset."
                 raise ValueError(valerr)
             else:
                 self.precision = None
         else:
-            self.type = asset_type['type']
+            self.type = asset_type
             self.precision = None
-            raise ValueError("Invalid asset type: " + asset_type['type'])
+            raise ValueError("Invalid asset type: " + asset_type)
+
+    def _asdict(self):
+        return { "tag": self.type, "contents": self.precision }
 
     def to_binary(self):
         fmt = ">H{}s".format(len(self.type))
@@ -225,56 +233,56 @@ class AssetRef(Serializable):
         return struct.pack(fmt, len(self.ref), byts)
 
 
-class VInt(Tagged, Serializable, namedtuple("VInt", 'contents')):
+class VInt(Tagged, Serializable, NamedTuple("VInt", [('contents', int)])):
     def to_binary(self):
         return struct.pack('>bq', enum.VTypeInt, self.contents)
 
 
-class VFloat(Tagged, Serializable, namedtuple('VFloat', 'contents')):
+class VFloat(Tagged, Serializable, NamedTuple('VFloat',  [('contents', float)])):
     def to_binary(self):
         return struct.pack('>bd', enum.VTypeFloat, self.contents)
 
 
-class VBool(Tagged, Serializable, namedtuple('VBool', 'contents')):
+class VBool(Tagged, Serializable, NamedTuple('VBool',  [('contents', bool)])):
     def to_binary(self):
         return struct.pack('>b?', enum.VTypeBool, self.contents)
 
 
-class VAddress(Tagged, Serializable, namedtuple('VAddress', 'contents')):
+class VAddress(Tagged, Serializable, NamedTuple('VAddress',  [('contents', str)])):
     def to_binary(self):
         return struct.pack('>b32s', enum.VTypeAddress, b58decode(self.contents))
 
 
-class VAccount(Tagged, Serializable, namedtuple('VAccount', 'contents')):
+class VAccount(Tagged, Serializable, NamedTuple('VAccount',  [('contents', str)])):
     def to_binary(self):
         return struct.pack('>b32s', enum.VTypeAccount, b58decode(self.contents))
 
 
-class VAsset(Tagged, Serializable, namedtuple('VAsset', 'contents')):
+class VAsset(Tagged, Serializable, NamedTuple('VAsset',  [('contents', str)])):
     def to_binary(self):
         return struct.pack('>b32s', enum.VTypeAsset, b58decode(self.contents))
 
 
-class VContract(Tagged, Serializable, namedtuple('VContract', 'contents')):
+class VContract(Tagged, Serializable, NamedTuple('VContract',  [('contents', str)])):
     def to_binary(self):
         return struct.pack('>b32s', enum.VTypeContract, b58decode(self.contents))
 
 
-class VMsg(Tagged, Serializable, namedtuple('VMsg', 'contents')):
+class VMsg(Tagged, Serializable, NamedTuple('VMsg',  [('contents', str)])):
     def to_binary(self):
         return struct.pack('>bH{}s'.format(str(len(self.contents))), enum.VTypeMsg, len(self.contents),
                            self.contents.encode())
 
 
-class VVoid(Tagged, Serializable, namedtuple('VVoid', '')):
+class VVoid(Tagged, Serializable, NamedTuple('VVoid', [])):
     def to_binary(self):
         return struct.pack('>b', enum.VTypeVoid)
 
 
-VVoid = VVoid()
+VVoid = VVoid()  # type: ignore
 
 
-class VDateTime(Tagged, Serializable, namedtuple('VDateTime', 'contents')):
+class VDateTime(Tagged, Serializable, NamedTuple('VDateTime',  [('contents', datetime.datetime)])):
     def _asdict(self):
         result = super(VDateTime, self)._asdict()
         result['contents'] = self.contents.strftime("%Y-%m-%dT%H:%M:%S+00:00")
@@ -289,11 +297,11 @@ class VDateTime(Tagged, Serializable, namedtuple('VDateTime', 'contents')):
         minute = dt.minute
         second = dt.second
         dayofweek = datetime.date(year, month,
-                                  day).weekday() + 1  # .weekday() returns  from 0, adjoint-io/datetime returns from 1
-        return struct.pack('>bqqqqqqqq', enum.VTypeDateTime, year, month, day, hour, minute, second, 0, dayofweek)
+                                  day).weekday() + 1  # .weekday() returns from 0, adjoint-io/datetime returns from 1
+        return struct.pack('>bQQQQQQQQ', enum.VTypeDateTime, year, month, day, hour, minute, second, 0, dayofweek)
 
 
-class VTimeDelta(Tagged, Serializable, namedtuple('VTimeDelta', 'contents')):
+class VTimeDelta(Tagged, Serializable, NamedTuple('VTimeDelta',  [('contents', timedelta)])):
     def to_binary(self):
         year = self.contents.year
         month = self.contents.month
@@ -305,12 +313,12 @@ class VTimeDelta(Tagged, Serializable, namedtuple('VTimeDelta', 'contents')):
         return struct.pack('>bQQQQQQQ', enum.VTypeTimeDelta, year, month, day, hour, minute, second, nanosec)
 
 
-class VUndefined(Tagged, Serializable, namedtuple('VUndefined', '')):
+class VUndefined(Tagged, Serializable, NamedTuple('VUndefined', [])):
     def to_binary(self):
         return struct.pack('>b', enum.VTypeUndefined)
 
 
-VUndefined = VUndefined()
+VUndefined = VUndefined()  # type: ignore
 
 
 class Contract(Serializable):
@@ -328,6 +336,31 @@ class Contract(Serializable):
 
     def __repr__(self):
         return "<Contract(address=%s)>" % self.address
+
+# ----------------------------------------------------------------------------
+# Invalid Transactions
+# ----------------------------------------------------------------------------
+
+
+class InvalidTransactions(Serializable):
+    """Invalid Transactions Object"""
+
+    def __init__(self, reason, transaction, timestamp, signature):
+        self.reason = reason
+        self.timestamp = timestamp
+        self.signature = signature
+        self.transactions = transactions
+
+    def __repr__(self):
+        return "<InvalidTransactions(reason=%s)>" % self.reason
+        # txtype = transaction['header']['contents']['tag']
+        # if txtype == 'Transfer':
+        # if txtype == 'Circulate':
+        # if txtype == 'CreateAsset':
+        # if txtype == 'RevokeAsset':
+        # if txtype == 'CreateAccount':
+        # if txtype == 'RevokeAccount'
+        # if txtype == 'CreateContract':
 
 
 # ----------------------------------------------------------------------------
@@ -460,19 +493,21 @@ class CreateAsset(Serializable):
 class CreateAssetHeader(Serializable):
     """Create Asset Header"""
 
-    def __init__(self, name, supply, asset_type, reference, issuer, precision):
-        asset_type_ = AssetType(dict(type=asset_type, precision=precision))
+    # timestamp argument must be the same as the timestamp of the transaction
+    def __init__(self, name, supply, asset_type_nm, reference,
+                 issuer, precision, timestamp):
+        asset_type = AssetType(asset_type_nm, precision)
         self.assetAddr = derive_asset_address(name, issuer, supply, reference,
-                                              asset_type_)
+                                              asset_type, timestamp)
         self.assetName = name
         self.supply = int(supply)
         self.issuer = issuer
         self.reference = str(reference)
-        self.assetType = AssetTypeParams(asset_type, precision)
+        self.assetType = asset_type
 
     def to_binary(self):
-        precision = self.assetType.contents
-        _asset_type = bytes(self.assetType.tag)
+        precision = self.assetType.precision
+        _asset_type = self.assetType.type.encode()
         name_len = str(len(self.assetName)) + "s"
         asset_len = str(len(_asset_type)) + "s"
         reference_len = str(len(self.reference)) + "s"
@@ -508,15 +543,6 @@ class CreateAssetHeader(Serializable):
                 _asset_type)
 
         return structured
-
-
-class AssetTypeParams(Serializable):
-    """Asset Type"""
-
-    def __init__(self, type_, precision):
-        self.tag = type_.encode()
-        self.contents = precision
-
 
 # ------------------------------------------------------------------------
 # Contracts

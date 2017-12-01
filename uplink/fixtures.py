@@ -52,10 +52,9 @@ def asset_gen(rpc):
             origin=issuer_account.address,
             name=asset_name,
             supply=supply,
-            asset_type="Discrete",
+            asset_type_nm="Discrete",
             reference="Token",
-            issuer=issuer_account.address,
-            precision=None
+            issuer=issuer_account.address
         )
         assert is_rpc_ok(status)
         asset = wait_until_doesnt_raise(
