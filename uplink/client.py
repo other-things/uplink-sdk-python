@@ -62,7 +62,8 @@ class UplinkJsonRpc(object):
         except KeyError:
             raise BadResponseError("bad json error", response)
 
-    def _handle_response(self, result, many=True, contracts=False):
+    def _handle_response(self, result, many=True):
+        print(result)
         if result['tag'] == "RPCResp":
             if many:
                 assert type(result['contents']) is list
@@ -70,10 +71,7 @@ class UplinkJsonRpc(object):
                 assert type(result['contents']) is dict
             return result['contents']
         else:
-            if contracts:
-                return result['contents']
-            else:
-                raise UplinkJsonRpcError("Malformed Response", result)
+            raise UplinkJsonRpcError(result["tag"], result["contents"])
 
     def _handle_success(self, result):
         if result['tag'] == "RPCRespOK":
@@ -128,9 +126,7 @@ class UplinkJsonRpc(object):
         transactions_by_id = 'transactions/{}'.format(block_id)
         result = self._call('GET', endpoint=transactions_by_id)
         elems = self._handle_response(result, many=True)
-        print(elems)
-        for arg in elems:
-            return [Transaction(**args) for args in elems]
+        return [Transaction(**args) for args in elems]
 
     def uplink_accounts(self):
         """Get a list of accounts"""
@@ -170,7 +166,7 @@ class UplinkJsonRpc(object):
     def uplink_contracts(self):
         """Get a list of contacts"""
         result = self._call('GET', endpoint='contracts')
-        elems = self._handle_response(result, many=True, contracts=True)
+        elems = self._handle_response(result, many=True)
 
         return [Contract(**args) for args in elems]
 
@@ -178,7 +174,7 @@ class UplinkJsonRpc(object):
         """Get individual contract by address [/contracts/<address>]"""
         contract_by_address = 'contracts/{}'.format(address)
         result = self._call('GET', endpoint=contract_by_address)
-        elems = self._handle_response(result, many=False, contracts=False)
+        elems = self._handle_response(result, many=False)
         return Contract(**elems)
 
     def uplink_get_contract_callable(self, address):
@@ -281,8 +277,6 @@ class UplinkJsonRpc(object):
         tx = Transaction(txb, signature, timestamp, origin=origin)
         params = tx.to_dict()
 
-        print(params)
-
         result = self._call('Transaction', params=params, endpoint='')
 
         asset_type = AssetType(asset_type_nm, precision)
@@ -292,7 +286,6 @@ class UplinkJsonRpc(object):
         if self._handle_success(result):
             return (result, asset_addr)
         else:
-            print(result)
             raise UplinkJsonRpcError("Malformed CreateAsset", result)
 
     def uplink_transfer_asset(self, private_key, from_address, to_address, balance, asset_address):
@@ -327,7 +320,6 @@ class UplinkJsonRpc(object):
         tx = Transaction(txb, signature.decode(), timestamp,
                          origin=from_address)
         params = tx.to_dict()
-        print(params)
         result = self._call('Transaction', params=params, endpoint='')
         if self._handle_success(result):
             return result
@@ -356,7 +348,8 @@ class UplinkJsonRpc(object):
         if self._handle_success(result):
             return result, raw_addr
         else:
-            raise UplinkJsonRpcError("create contract error", result)
+            print(result)
+            raise UplinkJsonRpcError("Malformed CreateContract", result)
 
     def uplink_revoke_asset(self, private_key, from_address, asset_addr):
         """Revoke Asset"""
@@ -463,3 +456,8 @@ class UplinkJsonRpc(object):
             return result
         else:
             raise UplinkJsonRpcError("Malformed SyncLocal", result)
+
+    def uplink_query(self, query):
+        """Query Uplink Database"""
+        result = self._call('Query', params=query, endpoint='')
+        return self._handle_response(result, many=False)

@@ -207,7 +207,7 @@ class AssetType(Serializable):
             raise ValueError("Invalid asset type: " + asset_type)
 
     def _asdict(self):
-        return { "tag": self.type, "contents": self.precision }
+        return {"tag": self.type, "contents": self.precision}
 
     def to_binary(self):
         fmt = ">H{}s".format(len(self.type))
@@ -296,8 +296,8 @@ class VDateTime(Tagged, Serializable, NamedTuple('VDateTime',  [('contents', dat
         hour = dt.hour
         minute = dt.minute
         second = dt.second
-        dayofweek = datetime.date(year, month,
-                                  day).weekday() + 1  # .weekday() returns from 0, adjoint-io/datetime returns from 1
+        # .weekday() has Monday as 0, Sunday as 6. Uplink Sunday is 0 Monday is 1
+        dayofweek = (datetime.date(year, month, day).weekday() + 1) % 7
         return struct.pack('>bQQQQQQQQ', enum.VTypeDateTime, year, month, day, hour, minute, second, 0, dayofweek)
 
 
@@ -463,8 +463,8 @@ class CreateAccountHeader(Serializable):
                 metapack = (">H" + pack_key + "H" + pack_value).encode()
 
                 meta_structure = meta_structure + \
-                                 struct.pack(metapack, key_len, key.encode(),
-                                             value_len, value.encode())
+                    struct.pack(metapack, key_len, key.encode(),
+                                value_len, value.encode())
 
             structured = structured + meta_structure
 
@@ -494,9 +494,9 @@ class CreateAssetHeader(Serializable):
     """Create Asset Header"""
 
     # timestamp argument must be the same as the timestamp of the transaction
-    def __init__(self, name, supply, asset_type_nm, reference,
+    def __init__(self, name, supply, asset_type, reference,
                  issuer, precision, timestamp):
-        asset_type = AssetType(asset_type_nm, precision)
+        asset_type = AssetType(asset_type, precision)
         self.assetAddr = derive_asset_address(name, issuer, supply, reference,
                                               asset_type, timestamp)
         self.assetName = name

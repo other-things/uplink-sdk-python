@@ -169,3 +169,8 @@ class UplinkSession(object):
         """Reset Uplink Database"""
         reset = self.conn.uplink_reset_db(private_key, public_key)
         return reset
+
+    def query(self, query):
+        """Query Uplink Database"""
+        response = self.conn.uplink_query(query)
+        return response

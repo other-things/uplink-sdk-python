@@ -4,6 +4,9 @@ class UplinkJsonRpcError(Exception):
         self.message = message
         self.response = response
 
+    def __repr__(self):
+        return repr(self.message) + ":" + str(self.response)
+
 
 class RpcConnectionFail(UplinkJsonRpcError):
     pass

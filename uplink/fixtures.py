@@ -149,59 +149,70 @@ end() {
 def all_args_contract(contract_gen):
 
     contract = contract_gen(script="""
+
+int a; 
+float b;
+fixed5 c;
+bool d;
+msg e;
+account f;
+asset g;
+contract h;
+datetime i;
+void j;
+
 transition initial -> end;
 transition end -> terminal;
 
 @initial
-fn_int(int a) {
-  return void;
+fn_int(int a_) {
+    a = a_;
 }
 
 @initial
-fn_float(float b) {
-    return void;
+fn_float(float b_) {
+    b = b_;
 }
 
 @initial
-fn_bool(bool x) {
-    return void;
+fn_fixed5(fixed5 c_) {
+    c = c_;
 }
 
 @initial
-fn_msg(msg c) {
-    return void;
+fn_bool(bool d_) {
+    d = d_;
 }
 
 @initial
-fn_account(account a) {
-    return void;
+fn_msg(msg e_) {
+    e = e_;
 }
 
 @initial
-fn_asset(asset a) {
-    return void;
+fn_account(account f_) {
+    f = f_;
 }
 
 @initial
-fn_contract(contract e) {
-    return void;
+fn_asset(asset g_) {
+    g = g_;
+}
+
+@initial
+fn_contract(contract h_) {
+    h = h_;
 }
 
 
 @initial
-fn_datetime(datetime e) {
-    return void;
+fn_datetime(datetime i_) {
+    i = i_;
 }
 
 @initial
-fn_void(void a) {
-    return void;
-}
-
-@initial
-never_called(void a) {
+never_called() {
     transitionTo(:end);
-    return void;
 }
 
 @end
@@ -210,8 +221,7 @@ end() {
     terminate("This is the end");
   };
 }
-"""
-                            )
+""")
 
     return contract
 
@@ -235,6 +245,48 @@ getX () {
   terminate("Now I die.");
   return x;
 }""")
+    return contract
+
+
+@pytest.fixture(scope="session")
+def alice_circulate_transfer_asset(rpc, asset_gen, alice_account):
+    asset = asset_gen("CircTran", alice_account, 10000)
+    return asset
+
+
+@pytest.fixture(scope="session")
+def contract_circulate_transfer(contract_gen):
+    contract = contract_gen(script="""
+transition initial -> circulated1;
+transition circulated1 -> transferred1;
+transition transferred1 -> circulated2;
+transition circulated2 -> terminal;
+
+@initial
+circulate1(asset a, int amount) {
+  circulate(a,amount);
+  transitionTo(:circulated1);
+}
+
+@circulated1
+transfer1(asset a, account from, account to, int amount) {
+  transferHoldings(from,a,amount,to);
+  transitionTo(:transferred1);
+}
+
+@transferred1
+circulate2(asset a, int amount) {
+  circulate(a,amount);
+  transitionTo(:circulated2);
+}
+
+@circulated2
+transfer2(asset a, account from, account to, int amount) {
+  transferHoldings(from,a,amount,to);
+  transitionTo(:terminal);
+}
+""")
+
     return contract
 
 

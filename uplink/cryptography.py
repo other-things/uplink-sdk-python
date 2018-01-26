@@ -38,6 +38,7 @@ def sha256d(data):
 
 def derive_contract_address(ts, script):
     """Contract address derives from storage"""
+    assert isinstance(script, str)
 
     hashed = hashlib.sha3_256((str(ts) + script).encode()).digest()
     contract_address = b58encode(hashed)
@@ -45,6 +46,9 @@ def derive_contract_address(ts, script):
 
 
 def derive_asset_address(name, issuer, supply, mref, typ, timestamp):
+    """Derive asset address"""
+    assert isinstance(name, str)
+    assert isinstance(typ, object)
     
     n = name.encode()
     i = b58decode(issuer)
