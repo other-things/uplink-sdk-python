@@ -1,10 +1,10 @@
 import json
 import struct
 import six
-
+from uplink.utils import to_bytes
 from base58 import b58decode
 from typing import NamedTuple
-
+from decimal import Decimal
 import datetime
 from datetime import timedelta
 import uplink.enum as enum
@@ -207,14 +207,15 @@ class AssetType(Serializable):
             raise ValueError("Invalid asset type: " + asset_type)
 
     def _asdict(self):
-        return {"tag": self.type, "contents": self.precision}
+        return {"tag": self.type, "contents": self.precision - 2 if self.precision is not None else self.precision}
 
     def to_binary(self):
         fmt = ">H{}s".format(len(self.type))
         typ = struct.pack(fmt, len(self.type), self.type.encode())
 
         prec = self.precision
-        mprec = b'' if prec is None else struct.pack(">q", self.precision)
+        mprec = b'' if prec is None else struct.pack(">b", (self.precision - 1))
+
         return (typ + mprec)
 
 
@@ -238,37 +239,55 @@ class VInt(Tagged, Serializable, NamedTuple("VInt", [('contents', int)])):
         return struct.pack('>bq', enum.VTypeInt, self.contents)
 
 
-class VFloat(Tagged, Serializable, NamedTuple('VFloat',  [('contents', float)])):
+class VFloat(Tagged, Serializable, NamedTuple('VFloat', [('contents', float)])):
     def to_binary(self):
         return struct.pack('>bd', enum.VTypeFloat, self.contents)
 
 
-class VBool(Tagged, Serializable, NamedTuple('VBool',  [('contents', bool)])):
+class VFixed(Tagged, Serializable, NamedTuple('VFixed', [('contents', Decimal), ('precision', int)])):
+    def to_binary(self):
+        value = self.contents.as_tuple()
+        digits = int("".join(map(str, value.digits)))
+        if value.sign == 0:
+            sign = 1
+        else:
+            sign = -1
+        length = (digits.bit_length() // 8) + 1
+        return struct.pack('>bbbH{}s'.format(length), enum.VTypeFixed, (self.precision - 1), sign, length,
+                           to_bytes(digits, length, byteorder='little'))
+
+    def _asdict(self):
+        result = super(VFixed, self)._asdict()
+        result['contents'] = {"tag": "Fixed" + str(self.precision), "contents": float(self.contents)}
+        return result
+
+
+class VBool(Tagged, Serializable, NamedTuple('VBool', [('contents', bool)])):
     def to_binary(self):
         return struct.pack('>b?', enum.VTypeBool, self.contents)
 
 
-class VAddress(Tagged, Serializable, NamedTuple('VAddress',  [('contents', str)])):
+class VAddress(Tagged, Serializable, NamedTuple('VAddress', [('contents', str)])):
     def to_binary(self):
         return struct.pack('>b32s', enum.VTypeAddress, b58decode(self.contents))
 
 
-class VAccount(Tagged, Serializable, NamedTuple('VAccount',  [('contents', str)])):
+class VAccount(Tagged, Serializable, NamedTuple('VAccount', [('contents', str)])):
     def to_binary(self):
         return struct.pack('>b32s', enum.VTypeAccount, b58decode(self.contents))
 
 
-class VAsset(Tagged, Serializable, NamedTuple('VAsset',  [('contents', str)])):
+class VAsset(Tagged, Serializable, NamedTuple('VAsset', [('contents', str)])):
     def to_binary(self):
         return struct.pack('>b32s', enum.VTypeAsset, b58decode(self.contents))
 
 
-class VContract(Tagged, Serializable, NamedTuple('VContract',  [('contents', str)])):
+class VContract(Tagged, Serializable, NamedTuple('VContract', [('contents', str)])):
     def to_binary(self):
         return struct.pack('>b32s', enum.VTypeContract, b58decode(self.contents))
 
 
-class VMsg(Tagged, Serializable, NamedTuple('VMsg',  [('contents', str)])):
+class VMsg(Tagged, Serializable, NamedTuple('VMsg', [('contents', str)])):
     def to_binary(self):
         return struct.pack('>bH{}s'.format(str(len(self.contents))), enum.VTypeMsg, len(self.contents),
                            self.contents.encode())
@@ -282,7 +301,7 @@ class VVoid(Tagged, Serializable, NamedTuple('VVoid', [])):
 VVoid = VVoid()  # type: ignore
 
 
-class VDateTime(Tagged, Serializable, NamedTuple('VDateTime',  [('contents', datetime.datetime)])):
+class VDateTime(Tagged, Serializable, NamedTuple('VDateTime', [('contents', datetime.datetime)])):
     def _asdict(self):
         result = super(VDateTime, self)._asdict()
         result['contents'] = self.contents.strftime("%Y-%m-%dT%H:%M:%S+00:00")
@@ -301,7 +320,7 @@ class VDateTime(Tagged, Serializable, NamedTuple('VDateTime',  [('contents', dat
         return struct.pack('>bQQQQQQQQ', enum.VTypeDateTime, year, month, day, hour, minute, second, 0, dayofweek)
 
 
-class VTimeDelta(Tagged, Serializable, NamedTuple('VTimeDelta',  [('contents', timedelta)])):
+class VTimeDelta(Tagged, Serializable, NamedTuple('VTimeDelta', [('contents', timedelta)])):
     def to_binary(self):
         year = self.contents.year
         month = self.contents.month
@@ -337,6 +356,7 @@ class Contract(Serializable):
     def __repr__(self):
         return "<Contract(address=%s)>" % self.address
 
+
 # ----------------------------------------------------------------------------
 # Invalid Transactions
 # ----------------------------------------------------------------------------
@@ -349,7 +369,7 @@ class InvalidTransactions(Serializable):
         self.reason = reason
         self.timestamp = timestamp
         self.signature = signature
-        self.transactions = transactions
+        self.transactions = transaction
 
     def __repr__(self):
         return "<InvalidTransactions(reason=%s)>" % self.reason
@@ -463,8 +483,8 @@ class CreateAccountHeader(Serializable):
                 metapack = (">H" + pack_key + "H" + pack_value).encode()
 
                 meta_structure = meta_structure + \
-                    struct.pack(metapack, key_len, key.encode(),
-                                value_len, value.encode())
+                                 struct.pack(metapack, key_len, key.encode(),
+                                             value_len, value.encode())
 
             structured = structured + meta_structure
 
@@ -509,11 +529,11 @@ class CreateAssetHeader(Serializable):
         precision = self.assetType.precision
         _asset_type = self.assetType.type.encode()
         name_len = str(len(self.assetName)) + "s"
-        asset_len = str(len(_asset_type)) + "s"
+        asset_len = str(len(_asset_type)) + "s "
         reference_len = str(len(self.reference)) + "s"
 
-        if _asset_type == 'Fractional':
-            package = ">H32sH" + name_len + "QHH" + reference_len + "H" + asset_len + "Q"
+        if _asset_type == b'Fractional':
+            package = ">H32sH" + name_len + "QHH" + reference_len + "H" + asset_len + "b"
             structured = struct.pack(
                 package,
                 enum.TxTypeCreateAsset,
@@ -525,8 +545,8 @@ class CreateAssetHeader(Serializable):
                 len(self.reference),
                 self.reference.encode(),
                 len(_asset_type),
-                _asset_type,
-                int(precision))
+                _asset_type, precision - 1)
+
         else:
             package = ">H32sH" + name_len + "QHH" + reference_len + "H" + asset_len
             structured = struct.pack(
@@ -543,6 +563,7 @@ class CreateAssetHeader(Serializable):
                 _asset_type)
 
         return structured
+
 
 # ------------------------------------------------------------------------
 # Contracts

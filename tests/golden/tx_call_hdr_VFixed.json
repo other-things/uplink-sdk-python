@@ -1,0 +1,12 @@
+{
+    "address": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve",
+    "method": "get",
+    "args": {
+        "contents": {
+            "tag": "Fixed3",
+            "contents": 3.223
+        },
+        "precision": 3,
+        "tag": "VFixed"
+    }
+}

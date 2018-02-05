@@ -1,0 +1,25 @@
+{
+    "header": {
+        "tag": "TxContract",
+        "contents": {
+            "tag": "Call",
+            "contents": {
+                "address": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve",
+                "method": "get",
+                "args": [
+                    {
+                        "contents": {
+                            "tag": "Fixed3",
+                            "contents": 3.223
+                        },
+                        "precision": 3,
+                        "tag": "VFixed"
+                    }
+                ]
+            }
+        }
+    },
+    "signature": "AE4xMTUxMzY4MDA4MjA0NTY4MzM3Mzc5OTQxMjY3NzEzODYwMTUwMjYyODcwOTUwMzQ2MjU2MjM2NDQxODYyNzgxMDg5MjY2OTA3Nzk1Njc6AE04NDEzNDAyODMwNzU3ODQ2NzE5MTE1NjQ4MTQyODA5ODEyOTI2NjAwMDQ5NzU4Njk5NzI0NDU1MzM5Nzg5ODEzODc3MDAxNDEyMTg4NA==",
+    "timestamp": 1231006505,
+    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve"
+}

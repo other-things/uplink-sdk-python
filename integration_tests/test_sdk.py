@@ -2,7 +2,7 @@ from ecdsa.keys import *
 from ecdsa.ecdsa import *
 from ecdsa.curves import *
 from uplink import *
-
+import decimal
 from uplink.fixtures import *
 from uplink.fixtures import is_rpc_ok, wait_until
 
@@ -22,6 +22,12 @@ def test_create_asset(gold_asset, silver_asset):
     # assets were created successfully
     pass
 
+def test_create_asset_fractional(platinum_asset):
+    # extra checks belong here
+
+    # if the fixture ran successfully then the
+    # assets were created successfully
+    pass
 
 def test_transfer_asset(rpc, alice_account, bob_account, gold_asset):
     # Shorter alias for querying asset
@@ -175,7 +181,9 @@ def test_circulate_and_transfer(rpc, alice_account, bob_account, alice_circulate
 @pytest.mark.parametrize(("method_name", "var_name", "arg"), [
     ("fn_int", "a", VInt(404)),
     ("fn_float", "b", VFloat(2.123456789)),
-    # ("fn_fixed5", "c", VFixed(6.54321,5)), XXX not implemented yet
+    ("fn_fixed5", "c", VFixed(Decimal("6.54321"),5)),
+    ("fn_fixed5", "c", VFixed(Decimal("-6.54321"), 5)),
+
     ("fn_bool", "d", VBool(False)),
     ("fn_msg", "e", VMsg("Hello World")),
     ("fn_account", "f", VAccount(testAddr)),

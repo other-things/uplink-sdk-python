@@ -46,15 +46,16 @@ def bob_account(rpc):
 
 @pytest.fixture(scope="session")
 def asset_gen(rpc):
-    def _asset(asset_name, issuer_account, supply=10000):
+    def _asset(asset_name, issuer_account, supply=10000, asset_type_nm="Discrete", precision=None):
         status, address = rpc.uplink_create_asset(
             private_key=issuer_account.private_key,
             origin=issuer_account.address,
             name=asset_name,
             supply=supply,
-            asset_type_nm="Discrete",
+            asset_type_nm=asset_type_nm,
             reference="Token",
-            issuer=issuer_account.address
+            issuer=issuer_account.address,
+            precision=precision
         )
         assert is_rpc_ok(status)
         asset = wait_until_doesnt_raise(
@@ -73,6 +74,11 @@ def gold_asset(rpc, asset_gen, alice_account):
 @pytest.fixture(scope="session")
 def silver_asset(rpc, asset_gen, bob_account):
     asset = asset_gen("Silver", bob_account)
+    return asset
+
+@pytest.fixture(scope="session")
+def platinum_asset(rpc, asset_gen, bob_account):
+    asset = asset_gen("Platinum", bob_account, asset_type_nm="Fractional", precision=2)
     return asset
 
 
@@ -150,7 +156,7 @@ def all_args_contract(contract_gen):
 
     contract = contract_gen(script="""
 
-int a; 
+int a;
 float b;
 fixed5 c;
 bool d;
