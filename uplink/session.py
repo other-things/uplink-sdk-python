@@ -36,9 +36,9 @@ class UplinkSession(object):
         block = self.conn.uplink_block(block_id)
         return block
 
-    def blocks(self, count=1):
+    def blocks(self):
         """Get blocks in chain"""
-        blockset = self.conn.uplink_blocks(count)
+        blockset = self.conn.uplink_blocks()
         return blockset
 
     def peers(self):
