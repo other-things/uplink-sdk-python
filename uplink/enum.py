@@ -30,5 +30,6 @@ VTypeSig = 10
 VTypeVoid = 11
 VTypeDateTime = 12
 VTypeTimeDelta = 13
-VTypeState = 14
+# VTypeState = 14 # not used at the moment
+VTypeEnum = 14
 VTypeUndefined = 15

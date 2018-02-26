@@ -147,7 +147,7 @@ class Account(object):
 class Asset(Serializable):
     """Asset Object"""
 
-    def __init__(self, address, issuedOn, assetType, name, reference, supply, holdings, issuer):
+    def __init__(self, address, issuedOn, assetType, name, reference, supply, holdings, issuer, metadata):
         self.address = address
         self.issuedOn = issuedOn
         self.assetType = AssetType(assetType["tag"], assetType["contents"])
@@ -156,29 +156,10 @@ class Asset(Serializable):
         self.supply = supply
         self.holdings = holdings
         self.issuer = issuer
+        self.metadata = metadata
 
     def __repr__(self):
         return "<Asset(name=%s)>" % self.name
-
-
-class Assets(Serializable):
-    """Asset List Object"""
-
-    def __init__(self, asset, address):
-        self.address = address
-        self.name = asset['name']
-        self.issuer = asset['issuer']
-        self.issuedOn = asset['issuedOn']
-        self.supply = asset['supply']
-        self.holdings = asset['holdings']
-        self.reference = asset['reference']
-
-        assetTypeNm = asset['assetType']['tag']
-        assetPrec = asset['assetType']['contents']
-        self.assetType = AssetType(assetTypeNm, assetPrec)
-
-    def __repr__(self):
-        return "<Assets(address=%s)>" % self.address
 
 
 class AssetType(Serializable):
@@ -252,7 +233,10 @@ class VFixed(Tagged, Serializable, NamedTuple('VFixed', [('contents', Decimal), 
             sign = 1
         else:
             sign = -1
-        length = (digits.bit_length() // 8) + 1
+        length_bits = digits.bit_length()
+        length = length_bits // 8
+        if not length_bits % 8 == 0:
+            length = length + 1
         return struct.pack('>bbbH{}s'.format(length), enum.VTypeFixed, (self.precision - 1), sign, length,
                            to_bytes(digits, length, byteorder='little'))
 
@@ -340,22 +324,55 @@ class VUndefined(Tagged, Serializable, NamedTuple('VUndefined', [])):
 VUndefined = VUndefined()  # type: ignore
 
 
+class VEnum(Tagged, Serializable, NamedTuple('VEnum', [('contents', str)])):
+    def to_binary(self):
+        return struct.pack('>bH{}s'.format(str(len(self.contents))), enum.VTypeEnum, len(self.contents),
+                           self.contents.encode())
+
 class Contract(Serializable):
     """Contracts Object"""
 
-    def __init__(self, timestamp, address, storage, methods, script, owner, terminated, state, **kwargs):
+    def __init__(self, timestamp, address, storage, methods, script, owner,
+                 state, localStorageVars, localStorage, **kwargs):
         self.timestamp = timestamp
         self.script = script
         self.storage = storage
+        self.localStorageVars = localStorageVars
+        self.localStorage = localStorage
         self.methods = methods
         self.address = address
         self.owner = owner
-        self.terminated = terminated
         self.state = state
 
     def __repr__(self):
         return "<Contract(address=%s)>" % self.address
 
+class Metadata(Serializable, NamedTuple('Metadata', [('contents', dict)])):
+    def to_binary(self):
+        len_pack = struct.pack(">H", len(self.contents))
+        structured = len_pack
+
+        meta_structure = b""
+
+        for key in sorted(six.iterkeys(self.contents)):
+            value = self.contents[key]
+            pack_key = str(len(key)) + "s"
+            key_len = len(key)
+
+            pack_value = str(len(value)) + "s"
+            value_len = len(value)
+
+            metapack = (">H" + pack_key + "H" + pack_value).encode()
+
+            meta_structure = meta_structure + \
+                             struct.pack(metapack, key_len, key.encode(),
+                                         value_len, value.encode())
+
+
+        return structured + meta_structure
+    def _asdict(self):
+        result = super(Metadata, self)._asdict()
+        return result['contents']
 
 # ----------------------------------------------------------------------------
 # Invalid Transactions
@@ -450,8 +467,8 @@ class CreateAccountHeader(Serializable):
         self.pubKey = new_pubkey
         self.timezone = timezone
         # self.address = address
-        self.metadata = metadata
         assert type(metadata) is dict
+        self.metadata = Metadata(metadata)
 
     def to_binary(self):
         pack_timezone = str(len(self.timezone)) + "s"
@@ -461,38 +478,12 @@ class CreateAccountHeader(Serializable):
         pack_pubkey = str(len(key_str)) + "s"
         pubkey_len = len(key_str)
 
-        if len(self.metadata) > 0:
 
-            package = ">HH" + pack_pubkey + "H" + pack_timezone
-            structured = struct.pack(
-                package, enum.TxTypeCreateAccount, pubkey_len, key_str, timezone_len, self.timezone.encode())
+        package = ">HH" + pack_pubkey + "H" + pack_timezone
+        structured = struct.pack(
+            package, enum.TxTypeCreateAccount, pubkey_len, key_str, timezone_len, self.timezone.encode())
+        structured = structured + self.metadata.to_binary()
 
-            len_pack = struct.pack(">H", len(self.metadata))
-            structured = structured + len_pack
-
-            meta_structure = b""
-
-            for key in sorted(six.iterkeys(self.metadata)):
-                value = self.metadata[key]
-                pack_key = str(len(key)) + "s"
-                key_len = len(key)
-
-                pack_value = str(len(value)) + "s"
-                value_len = len(value)
-
-                metapack = (">H" + pack_key + "H" + pack_value).encode()
-
-                meta_structure = meta_structure + \
-                                 struct.pack(metapack, key_len, key.encode(),
-                                             value_len, value.encode())
-
-            structured = structured + meta_structure
-
-        else:
-            package = ">HH" + pack_pubkey + "H" + pack_timezone + "H"
-            structured = struct.pack(package, enum.TxTypeCreateAccount,
-                                     pubkey_len, self.pubKey, timezone_len,
-                                     self.timezone.encode(), 0)
 
         return structured
 
@@ -515,7 +506,7 @@ class CreateAssetHeader(Serializable):
 
     # timestamp argument must be the same as the timestamp of the transaction
     def __init__(self, name, supply, asset_type, reference,
-                 issuer, precision, timestamp):
+                 issuer, precision, timestamp, metadata):
         asset_type = AssetType(asset_type, precision)
         self.assetAddr = derive_asset_address(name, issuer, supply, reference,
                                               asset_type, timestamp)
@@ -524,6 +515,7 @@ class CreateAssetHeader(Serializable):
         self.issuer = issuer
         self.reference = str(reference)
         self.assetType = asset_type
+        self.metadata = Metadata(metadata)
 
     def to_binary(self):
         precision = self.assetType.precision
@@ -562,6 +554,7 @@ class CreateAssetHeader(Serializable):
                 len(_asset_type),
                 _asset_type)
 
+        structured = structured + self.metadata.to_binary()
         return structured
 
 

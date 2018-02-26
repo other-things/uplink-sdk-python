@@ -6,7 +6,7 @@
 Python SDK
 ==========
 
-[![CircleCI](https://circleci.com/gh/adjoint-io/uplink-sdk-python.svg?style=svg)](https://circleci.com/gh/adjoint-io/uplink-sdk-python)
+[![CircleCI](https://circleci.com/gh/adjoint-io/uplink-sdk-py.svg?style=svg&circle-token=ed3c8fcfd2dd7740a65da6b697a10150dc341191)](https://circleci.com/gh/adjoint-io/uplink-sdk-py)
 
 Installation
 ------------
@@ -19,7 +19,7 @@ Testing
 -------
 
 ```bash
-$ pytest -vv test
+$ pytest -vv tests
 $ pytest -vv integration_tests
 ```
 
@@ -133,7 +133,7 @@ Documentation
 
 
 To learn more about the SDK please visit the
-[documentation](https://www.adjoint.io/docs/sdks.html)
+[documentation](https://www.adjoint.io/uplink/docs/sdks.html)
 
 License
 -------

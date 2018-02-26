@@ -174,3 +174,19 @@ class UplinkSession(object):
         """Query Uplink Database"""
         response = self.conn.uplink_query(query)
         return response
+
+    def create_sim(self, script, world=None):
+        """Create Simulation"""
+        return self.conn.uplink_create_sim(script)
+
+    def update_sim_set_time(self, timestamp):
+        """Update Simulation - Set Timestamp"""
+        return self.conn.uplink_update_sim_set_time(timestamp)
+
+    def update_sim_call_method(self, method, args):
+        """Update Simulation - Call Contact Method"""
+        return self.conn.uplink_update_sim_call_method(method, args)
+
+    def query_sim_methods(self, contract_addr):
+        """Query Simulation Contract Methods"""
+        return self.conn.upink_query_sim_methods(contract_addr)

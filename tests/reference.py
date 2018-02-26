@@ -38,7 +38,8 @@ test_args = [
     VAsset(testAddr), VContract(testAddr),
     VMsg("Hello world"),
     VVoid,
-    VUndefined
+    VUndefined,
+    VEnum("Foo")
 ]
 
 #------------------------------------------------------------------------
@@ -69,10 +70,10 @@ def _testCreateAsset():
     ref = "Token"
     issuer = testAddr
     precision = None
-    timestamp = testTimestamp 
+    timestamp = testTimestamp
 
     return CreateAssetHeader(name, supply, asset_type,
-                             ref, issuer, precision, timestamp)
+                             ref, issuer, precision, timestamp, metadata=dict(company="Adjoint Inc.", policy="special"))
 
 
 def _testCreateContract():
