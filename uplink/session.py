@@ -56,6 +56,11 @@ class UplinkSession(object):
         tx = self.conn.uplink_transactions(block_id)
         return tx
 
+    def get_transaction_status(self, tx_hash):
+        """Get a transaction status"""
+        status = self.conn.uplink_get_transaction_status(tx_hash)
+        return status
+
     def accounts(self):
         """Get All Accounts"""
         accounts = self.conn.uplink_accounts()

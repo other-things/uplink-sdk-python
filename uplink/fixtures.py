@@ -422,7 +422,7 @@ confirmation(fixed2 close_price) {{
       }};
    }};
 }}
-  
+
 @calculate_level
 calculate_level(fixed2 close_price) {{
    between (finalDate, maturityDate) {{
@@ -495,4 +495,4 @@ def wait_until_doesnt_raise(f, exception, **kwargs):
 
 
 def is_rpc_ok(result):
-    return result.get("tag") == "RPCRespOK"
+    return result.get("tag") in ["RPCRespOK","RPCTransactionOK"]

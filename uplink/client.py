@@ -64,7 +64,7 @@ class UplinkJsonRpc(object):
             raise BadResponseError("bad json error", response)
 
     def _handle_response(self, result, many=True):
-        if result['tag'] == "RPCResp":
+        if result['tag'] in ["RPCResp", "RPCTransactionOK"]:
             if many:
                 assert type(result['contents']) is list
             else:
@@ -75,7 +75,7 @@ class UplinkJsonRpc(object):
             raise UplinkJsonRpcError(result["tag"], result["contents"])
 
     def _handle_success(self, result):
-        if result['tag'] == "RPCRespOK":
+        if result['tag'] in ["RPCRespOK", "RPCTransactionOK"]:
             return True
         else:
             return False
@@ -139,6 +139,15 @@ class UplinkJsonRpc(object):
         result = self._call('GET', endpoint='peers/validators')
         elems = self._handle_response(result, many=True)
         return [Peer(**args) for args in elems]
+
+    def uplink_get_transaction_status(self, tx_hash):
+        """
+        Get a transactions status
+        :return:
+        """
+        result = self._call('GET', endpoint='transactions/status/{}'.format(tx_hash))
+        res = self._handle_response(result)
+        return res
 
     def uplink_transactions(self, block_id=0):
         """
@@ -360,10 +369,10 @@ class UplinkJsonRpc(object):
         :return:tuple with asset address
         """
         """Create Asset - returns (result, to_address)"""
-        
+
         if metadata is None:
             metadata = {}
-        
+
         timestamp = get_time()
 
         hdr = CreateAssetHeader(name, supply, asset_type_nm,
@@ -558,7 +567,7 @@ class UplinkJsonRpc(object):
         """
         result = self._call('Query', params=query, endpoint='')
         return self._handle_response(result, many=False)
-    
+
     def uplink_sim_create(self, issuer, script, world=None):
         """Create Simulation"""
         params = {
@@ -574,7 +583,7 @@ class UplinkJsonRpc(object):
 
     def uplink_sim_update(self, simulation_id, method_json):
         """
-        Update Simulation 
+        Update Simulation
         :param simulation_id: The id of the simulated contract to update
         :param method_json: The dictionary representing the simulation update
         :return: RPCRespOK on success
@@ -671,7 +680,7 @@ class UplinkJsonRpc(object):
     def uplink_sim_query_methods(self, simulation_id):
         """
         Query Simulation - Contract Methods
-        :param simulation_id: The id of the simulated contract 
+        :param simulation_id: The id of the simulated contract
         :return: The list of callable contract methods
         """
         return self.uplink_sim_query(simulation_id, "QueryMethods", many=True)
@@ -680,7 +689,7 @@ class UplinkJsonRpc(object):
         """
         Query Simulation Contract
         :param simulation_id: The id of the simulated contract
-        :return: An Uplink Contract 
+        :return: An Uplink Contract
         """
         res = self.uplink_sim_query(simulation_id, "QueryContract")
 
@@ -693,16 +702,16 @@ class UplinkJsonRpc(object):
 
     def uplink_sim_query_assets(self, simulation_id):
         """
-        Query Simulation - Assets  
-        :param simulation_id: The id of the simulated contract 
+        Query Simulation - Assets
+        :param simulation_id: The id of the simulated contract
         :return: A list of assets in the simulated contract's environment
         """
         self.uplink_sim_query(simulation_id, "QueryAssets", many=True)
 
     def uplink_sim_query_asset(self, simulation_id, address):
         """
-        Query Simulation - Asset 
-        :param simulation_id: The if of the simulated contract to query 
+        Query Simulation - Asset
+        :param simulation_id: The if of the simulated contract to query
         :param address: The address of the asset
         :return: An Uplink Asset
         """
