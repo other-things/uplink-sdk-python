@@ -146,8 +146,7 @@ class UplinkJsonRpc(object):
         :return:
         """
         result = self._call('GET', endpoint='transactions/status/{}'.format(tx_hash))
-        res = self._handle_response(result)
-        return res
+        return result
 
     def uplink_transactions(self, block_id=0):
         """
