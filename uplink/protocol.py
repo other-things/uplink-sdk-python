@@ -188,7 +188,7 @@ class AssetType(Serializable):
             raise ValueError("Invalid asset type: " + asset_type)
 
     def _asdict(self):
-        return {"tag": self.type, "contents": self.precision - 2 if self.precision is not None else self.precision}
+        return {"tag": self.type, "contents": self.precision}
 
     def to_binary(self):
         fmt = ">H{}s".format(len(self.type))
@@ -382,9 +382,8 @@ class Metadata(Serializable, NamedTuple('Metadata', [('contents', dict)])):
 class InvalidTransactions(Serializable):
     """Invalid Transactions Object"""
 
-    def __init__(self, reason, transaction, timestamp, signature):
+    def __init__(self, reason, transaction, signature):
         self.reason = reason
-        self.timestamp = timestamp
         self.signature = signature
         self.transactions = transaction
 
@@ -408,10 +407,9 @@ class InvalidTransactions(Serializable):
 class Transaction(Serializable):
     """Transactions Object"""
 
-    def __init__(self, header, signature, timestamp, origin):
+    def __init__(self, header, signature, origin):
         self.header = header
         self.signature = signature
-        self.timestamp = timestamp
         self.origin = origin
 
     def __repr__(self):
@@ -504,12 +502,9 @@ class CreateAsset(Serializable):
 class CreateAssetHeader(Serializable):
     """Create Asset Header"""
 
-    # timestamp argument must be the same as the timestamp of the transaction
     def __init__(self, name, supply, asset_type, reference,
-                 issuer, precision, timestamp, metadata):
+                 issuer, precision, metadata):
         asset_type = AssetType(asset_type, precision)
-        self.assetAddr = derive_asset_address(name, issuer, supply, reference,
-                                              asset_type, timestamp)
         self.assetName = name
         self.supply = int(supply)
         self.issuer = issuer
@@ -521,15 +516,14 @@ class CreateAssetHeader(Serializable):
         precision = self.assetType.precision
         _asset_type = self.assetType.type.encode()
         name_len = str(len(self.assetName)) + "s"
-        asset_len = str(len(_asset_type)) + "s "
         reference_len = str(len(self.reference)) + "s"
+        asset_len = str(len(_asset_type)) + "s "
 
         if _asset_type == b'Fractional':
-            package = ">H32sH" + name_len + "QHH" + reference_len + "H" + asset_len + "b"
+            package = ">HH" + name_len + "QHH" + reference_len + "H" + asset_len + "b"
             structured = struct.pack(
                 package,
                 enum.TxTypeCreateAsset,
-                b58decode(self.assetAddr),
                 len(self.assetName),
                 self.assetName.encode(),
                 self.supply,
@@ -540,11 +534,10 @@ class CreateAssetHeader(Serializable):
                 _asset_type, precision - 1)
 
         else:
-            package = ">H32sH" + name_len + "QHH" + reference_len + "H" + asset_len
+            package = ">HH" + name_len + "QHH" + reference_len + "H" + asset_len
             structured = struct.pack(
                 package,
                 enum.TxTypeCreateAsset,
-                b58decode(self.assetAddr),
                 len(self.assetName),
                 self.assetName.encode(),
                 self.supply,
@@ -574,38 +567,17 @@ class CreateContract(Serializable):
 class CreateContractHeader(Serializable):
     """Contract Creation Header"""
 
-    def __init__(self, script, owner, address, timestamp, storage=None, methods=None):
-        # self.contract = ContractParams(
-        #     script, address, timestamp, storage, methods)
-        self.script = str(script)
-        self.owner = str(owner)
-        self.address = str(address)
-        self.timestamp = timestamp
+    def __init__(self, contract):
+        self.contract = str(contract)
 
     def to_binary(self):
-        pack_script = str(len(self.script)) + "s"
-        pack_len = len(self.script)
-        address = b58decode(self.address)
+        pack_contract = str(len(self.contract)) + "s"
+        pack_len = len(self.contract)
 
         structured = struct.pack(
-            ">H32sH" + pack_script, enum.TxTypeCreateContract, address, pack_len, self.script.encode())
+            ">HH" + pack_contract, enum.TxTypeCreateContract, pack_len, self.contract.encode())
 
         return structured
-
-        # class ContractParams(Serializable):
-        #     """Contract Parameters Body"""
-
-        #     def __init__(self, script, address, timestamp, storage=None, methods=None):
-        #         self.script = script
-        #         self.address = address
-        #         self.timestamp = timestamp
-
-        # self.storage = storage
-        # self.methods = methods
-
-        # assert type(methods) is list
-        # assert type(storage) is dict
-
 
 # ------------------------------------------------------------------------
 # Memory Pool

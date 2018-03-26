@@ -1,6 +1,3 @@
 {
-    "owner": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
-    "timestamp": 1231006505, 
-    "script": "", 
-    "address": "43WRxMNcnYgZFcE36iohqrXKQdajUdAxeSn9mzE1ZedB"
+    "contract": "\nglobal int x = 0 ;\n\ntransition initial -> set;\ntransition set -> terminal;\n\n@set\nend () {\n  terminate(\"Now I die.\");\n}\n\n@initial\nsetX (int y) {\n  x = 42;\n  transitionTo(:set);\n}"
 }

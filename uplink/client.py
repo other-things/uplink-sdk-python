@@ -4,6 +4,8 @@ import json
 import time
 import codecs
 import requests
+import hashlib
+from base58 import b58encode
 from requests.exceptions import ConnectionError as RequestsConnectionError
 from .protocol import (Block, Peer, Account, Asset, Contract, Transaction,
                        MemPool, Transfer, TxAccount, TxAsset, TxContract, CreateAccount,
@@ -325,7 +327,6 @@ class UplinkJsonRpc(object):
         if metadata is None:
             metadata = {}
 
-        timestamp = get_time()
 
         pubkey = public_key.to_string()
         public_key_hex = codecs.encode(pubkey, 'hex')
@@ -340,8 +341,7 @@ class UplinkJsonRpc(object):
         signature = pack_signature(r, s)
 
         origin = acc_address if from_address is None else from_address
-        tx = Transaction(txb, signature, timestamp,
-                         origin=origin)
+        tx = Transaction(txb, signature, origin=origin)
 
         params = tx.to_dict()
 
@@ -372,26 +372,23 @@ class UplinkJsonRpc(object):
         if metadata is None:
             metadata = {}
 
-        timestamp = get_time()
-
         hdr = CreateAssetHeader(name, supply, asset_type_nm,
-                                reference, issuer, precision, timestamp, metadata)
+                                reference, issuer, precision, metadata)
         txb = TxAsset(CreateAsset(hdr))
 
         r, s = hdr.sign(private_key)
         signature = pack_signature(r, s)
 
-        tx = Transaction(txb, signature, timestamp, origin=origin)
+        tx = Transaction(txb, signature, origin=origin)
         params = tx.to_dict()
 
         result = self._call('Transaction', params=params, endpoint='')
+        asset_address = derive_asset_address(result["txHash"])
 
         asset_type = AssetType(asset_type_nm, precision)
-        asset_addr = derive_asset_address(name, issuer, supply, reference,
-                                          asset_type, timestamp)
 
         if self._handle_success(result):
-            return (result, asset_addr)
+            return (result, asset_address)
         else:
             raise UplinkJsonRpcError("Malformed CreateAsset", result)
 
@@ -405,7 +402,6 @@ class UplinkJsonRpc(object):
         :param asset_address: address of asset to be transferred
         :return: RPCRespOK if successful
         """
-        timestamp = get_time()
 
         hdr = TransferAssetHeader(asset_address, to_address, balance)
         txb = TxAsset(Transfer(hdr))
@@ -413,7 +409,7 @@ class UplinkJsonRpc(object):
         r, s = hdr.sign(private_key)
         signature = pack_signature(r, s)
 
-        tx = Transaction(txb, signature.decode(), timestamp,
+        tx = Transaction(txb, signature.decode(), 
                          origin=from_address)
         params = tx.to_dict()
         result = self._call('Transaction', params=params, endpoint='')
@@ -431,16 +427,13 @@ class UplinkJsonRpc(object):
         :param asset_address: address of asset to be circulated
         :return: RPCRespOK if successful
         """
-        timestamp = get_time()
-
         hdr = CirculateAssetHeader(asset_address, amount)
         txb = TxAsset(Circulate(hdr))
 
         r, s = hdr.sign(private_key)
         signature = pack_signature(r, s)
 
-        tx = Transaction(txb, signature.decode(), timestamp,
-                         origin=from_address)
+        tx = Transaction(txb, signature.decode(), origin=from_address)
         params = tx.to_dict()
         result = self._call('Transaction', params=params, endpoint='')
         if self._handle_success(result):
@@ -456,27 +449,22 @@ class UplinkJsonRpc(object):
         :param script: contract code
         :return: contract address
         """
-        timestamp = get_time()
 
-        raw_addr = derive_contract_address(timestamp, script)
-
-        hdr = CreateContractHeader(
-            script, from_address, raw_addr,
-            timestamp, storage=None, methods=None)
+        hdr = CreateContractHeader(script)
         txb = TxContract(CreateContract(hdr))
 
         r, s = hdr.sign(private_key)
         signature = pack_signature(r, s)
 
-        tx = Transaction(txb, signature, timestamp,
-                         origin=from_address)
+        tx = Transaction(txb, signature, origin=from_address)
         params = tx.to_dict()
 
         result = self._call('Transaction', params=params, endpoint='')
+        contract_address = derive_contract_address(result["txHash"])
+
         if self._handle_success(result):
-            return result, raw_addr
+            return (result, contract_address)
         else:
-            print(result)
             raise UplinkJsonRpcError("Malformed CreateContract", result)
 
     def uplink_revoke_asset(self, private_key, from_address, asset_addr):
@@ -487,7 +475,6 @@ class UplinkJsonRpc(object):
         :param asset_addr: address of the asset being revoked
         :return: RPCRespOK if successful
         """
-        timestamp = get_time()
 
         hdr = RevokeAssetHeader(asset_addr)
         txb = TxAsset(RevokeAsset(hdr))
@@ -496,7 +483,7 @@ class UplinkJsonRpc(object):
         signature = pack_signature(r, s)
 
         # to_address=to_address)
-        tx = Transaction(txb, signature, timestamp, origin=from_address)
+        tx = Transaction(txb, signature, origin=from_address)
         params = tx.to_dict()
 
         result = self._call('Transaction', params=params, endpoint='')
@@ -512,7 +499,6 @@ class UplinkJsonRpc(object):
         :param account_addr: address of the account being revoked
         :return: RPCRespOK if successful
         """
-        timestamp = get_time()
 
         hdr = RevokeAccountHeader(account_addr)
         txb = TxAccount(RevokeAccount(hdr))
@@ -521,7 +507,7 @@ class UplinkJsonRpc(object):
         signature = pack_signature(r, s)
 
         # to_address=to_address)
-        tx = Transaction(txb, signature, timestamp, origin=from_address)
+        tx = Transaction(txb, signature, origin=from_address)
         params = tx.to_dict()
 
         result = self._call('Transaction', params=params, endpoint='')
@@ -540,7 +526,6 @@ class UplinkJsonRpc(object):
         :param args: arguments to the method
         :return: RPCRespOK if successful
         """
-        timestamp = get_time()
 
         hdr = CallHeader(contract_addr, method, args)
         txb = TxContract(Call(hdr))
@@ -548,8 +533,7 @@ class UplinkJsonRpc(object):
         r, s = hdr.sign(private_key)
         signature = pack_signature(r, s)
 
-        tx = Transaction(txb, signature, timestamp,
-                         origin=from_address)  # to_address=to_address)
+        tx = Transaction(txb, signature, origin=from_address)  
         params = tx.to_dict()
 
         result = self._call('Transaction', params=params, endpoint='')

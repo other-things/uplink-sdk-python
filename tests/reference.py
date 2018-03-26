@@ -70,17 +70,29 @@ def _testCreateAsset():
     ref = "Token"
     issuer = testAddr
     precision = None
-    timestamp = testTimestamp
 
     return CreateAssetHeader(name, supply, asset_type,
-                             ref, issuer, precision, timestamp, metadata=dict(company="Adjoint Inc.", policy="special"))
+                             ref, issuer, precision, metadata=dict(company="Adjoint Inc.", policy="special"))
 
 
 def _testCreateContract():
-    script = ""
-    address = assetAddr
-    timestamp = testTimestamp
-    return CreateContractHeader(script, testAddr, address, timestamp)
+    script = """
+global int x = 0 ;
+
+transition initial -> set;
+transition set -> terminal;
+
+@set
+end () {
+  terminate("Now I die.");
+}
+
+@initial
+setX (int y) {
+  x = 42;
+  transitionTo(:set);
+}"""
+    return CreateContractHeader(script)
 
 
 def _testRevokeAccount():
@@ -103,13 +115,12 @@ def _testBind():
 
 
 def testTx(tx_type, wrapper, hdr):
-    time = testTimestamp
     r, s = hdr.sign(skey, k=nonce)
     sig = pack_signature(r, s)
     origin = testAddr
 
     tx_hdr = tx_type(wrapper(hdr))
-    return Transaction(tx_hdr, sig, time, origin=origin)
+    return Transaction(tx_hdr, sig, origin=origin)
 
 testTransfer = _testTransfer()
 testCreateAccount = _testCreateAccount()

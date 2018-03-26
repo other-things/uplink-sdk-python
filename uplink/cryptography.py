@@ -7,9 +7,9 @@ import codecs
 from base58 import b58encode, b58decode
 from ecdsa import SigningKey, SECP256k1, util, ellipticcurve, VerifyingKey
 
-#------------------------------------------------------------------------
+# ------------------------------------------------------------------------
 # Time
-#------------------------------------------------------------------------
+# ------------------------------------------------------------------------
 
 
 def get_time():
@@ -17,9 +17,9 @@ def get_time():
     timestamp = int(time.time() * 1000000)
     return timestamp
 
-#------------------------------------------------------------------------
+# ------------------------------------------------------------------------
 # Hashing
-#------------------------------------------------------------------------
+# ------------------------------------------------------------------------
 
 
 def sha256(data):
@@ -31,43 +31,25 @@ def sha256d(data):
     """Hash sha256 twice"""
     return hashlib.sha256(hashlib.sha256(data))
 
-#------------------------------------------------------------------------
+# ------------------------------------------------------------------------
 # Address Derivation
-#------------------------------------------------------------------------
+# ------------------------------------------------------------------------
 
 
-def derive_contract_address(ts, script):
-    """Contract address derives from storage"""
-    assert isinstance(script, str)
-
-    hashed = hashlib.sha3_256((str(ts) + script).encode()).digest()
-    contract_address = b58encode(hashed)
-    return contract_address
+def tx_hash_to_address(tx_hash):
+    """Address derivation for ledger values via transaction hashes"""
+    address = b58encode(hashlib.sha3_256(tx_hash.encode()).digest())
+    return address
 
 
-def derive_asset_address(name, issuer, supply, mref, typ, timestamp):
-    """Derive asset address"""
-    assert isinstance(name, str)
-    assert isinstance(typ, object)
-    
-    n = name.encode()
-    i = b58decode(issuer)
-    s = struct.pack(">Q", supply)
+def derive_contract_address(tx_hash):
+    """Derive contract address from transaction hash"""
+    return tx_hash_to_address(tx_hash)
 
-    mrefPref = 0 if (mref is None) else 1
-    mrefPrefBS = struct.pack(">B", mrefPref)
-    mrefLenBS = b'' if (mref is None) else struct.pack(">H", len(mref))
-    mrefBS = b'' if (mref is None) else mref.encode()
-    refBS = mrefPrefBS + mrefLenBS + mrefBS 
 
-    tBS = typ.to_binary()
-    ts = struct.pack(">Q", timestamp)
-    
-    final = n + i + s + refBS + tBS + ts
-    finalHash = hashlib.sha3_256(final).digest()
-
-    addr = b58encode(finalHash)
-    return addr
+def derive_asset_address(tx_hash):
+    """Derive asset address from transaction hash"""
+    return tx_hash_to_address(tx_hash)
 
 
 def derive_account_address(pubkey):
@@ -88,9 +70,9 @@ def derive_account_address(pubkey):
     return address
 
 
-#------------------------------------------------------------------------
+# ------------------------------------------------------------------------
 # Digital Signatures
-#------------------------------------------------------------------------
+# ------------------------------------------------------------------------
 
 
 # SEPP2561 Curve instead of default NIST
