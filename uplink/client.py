@@ -383,7 +383,10 @@ class UplinkJsonRpc(object):
         params = tx.to_dict()
 
         result = self._call('Transaction', params=params, endpoint='')
-        asset_address = derive_asset_address(result["txHash"])
+        if result.get('txHash'):
+            asset_address = derive_asset_address(result["txHash"])
+        else:
+            asset_address = None
 
         asset_type = AssetType(asset_type_nm, precision)
 
@@ -409,7 +412,7 @@ class UplinkJsonRpc(object):
         r, s = hdr.sign(private_key)
         signature = pack_signature(r, s)
 
-        tx = Transaction(txb, signature.decode(), 
+        tx = Transaction(txb, signature.decode(),
                          origin=from_address)
         params = tx.to_dict()
         result = self._call('Transaction', params=params, endpoint='')
@@ -460,7 +463,10 @@ class UplinkJsonRpc(object):
         params = tx.to_dict()
 
         result = self._call('Transaction', params=params, endpoint='')
-        contract_address = derive_contract_address(result["txHash"])
+        if result.get('txHash'):
+            contract_address = derive_contract_address(result["txHash"])
+        else:
+            contract_address = None
 
         if self._handle_success(result):
             return (result, contract_address)
@@ -533,7 +539,7 @@ class UplinkJsonRpc(object):
         r, s = hdr.sign(private_key)
         signature = pack_signature(r, s)
 
-        tx = Transaction(txb, signature, origin=from_address)  
+        tx = Transaction(txb, signature, origin=from_address)
         params = tx.to_dict()
 
         result = self._call('Transaction', params=params, endpoint='')
