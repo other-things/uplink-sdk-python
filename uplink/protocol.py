@@ -389,15 +389,6 @@ class InvalidTransactions(Serializable):
 
     def __repr__(self):
         return "<InvalidTransactions(reason=%s)>" % self.reason
-        # txtype = transaction['header']['contents']['tag']
-        # if txtype == 'Transfer':
-        # if txtype == 'Circulate':
-        # if txtype == 'CreateAsset':
-        # if txtype == 'RevokeAsset':
-        # if txtype == 'CreateAccount':
-        # if txtype == 'RevokeAccount'
-        # if txtype == 'CreateContract':
-
 
 # ----------------------------------------------------------------------------
 # Transactions and Header Objects
@@ -482,9 +473,10 @@ class CreateAccountHeader(Serializable):
             package, enum.TxTypeCreateAccount, pubkey_len, key_str, timezone_len, self.timezone.encode())
         structured = structured + self.metadata.to_binary()
 
-
         return structured
-
+  
+#    def to_dict(self):
+#        return { "tag" : "CreateAccount", "contents" : self)
 
 # ------------------------------------------------------------------------
 # CreateAsset

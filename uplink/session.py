@@ -2,7 +2,7 @@
 
 from .client import UplinkJsonRpc
 from .exceptions import RpcConnectionFail, UplinkJsonRpcError
-
+from .protocol import Account
 
 class UplinkSession(object):
     """JSON RPC session instance"""
@@ -71,24 +71,23 @@ class UplinkSession(object):
         account = self.conn.uplink_get_account(address)
         return account
 
+    # Warning: Does not verify that the account was created in Uplink.
     def create_account_qr(self, new_pubkey, from_address=None, metadata=None, timezone=None):
         """Create New Account"""
         from .cryptography import make_qrcode
-        newaccount = self.conn.uplink_create_account(
+        (tx_hash, address) = self.conn.uplink_create_account(
             new_pubkey, from_address, metadata, timezone)
-        pubkey = newaccount.public_key
-        addr = newaccount.address
+        pubkey_qr = make_qrcode(new_pubkey, 'pubkey')
+        addr_qr = make_qrcode(address, 'addr')
+        account = Account(timezone, new_pubkey, metadata, address)
+        return account, pubkey_qr, addr_qr
 
-        pubkey_qr = make_qrcode(pubkey, 'pubkey')
-        addr_qr = make_qrcode(addr, 'addr')
-
-        return newaccount, pubkey_qr, addr_qr
-
+    # Warning: Does not verify that the account was created in Uplink.
     def create_account(self, private_key, public_key, from_address=None, metadata=None, timezone=None):
         """Create New Account"""
-        newaccount = self.conn.uplink_create_account(private_key, public_key,
-                                                     from_address, metadata, timezone)
-        return newaccount
+        (tx_hash, address) = self.conn.uplink_create_account(private_key, public_key, from_address, metadata, timezone)
+        account = Account(timezone, public_key, metadata, address)
+        return account
 
     def assets(self):
         """Get All Assets"""

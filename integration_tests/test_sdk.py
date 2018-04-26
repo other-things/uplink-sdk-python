@@ -35,49 +35,56 @@ def test_transfer_asset(rpc, alice_account, bob_account, gold_asset):
         return rpc.uplink_get_asset(gold_asset.address)
 
     # transfer alice gold asset supply to alice holdings
-    t1 = rpc.uplink_circulate_asset(private_key=alice_account.private_key,
-                                    from_address=alice_account.address,
-                                    amount=500,
-                                    asset_address=gold_asset.address)
-    assert is_rpc_ok(t1)
-    wait_until(lambda: get_asset().supply == (gold_asset.supply - 500))
-    wait_until(lambda: get_asset().holdings[alice_account.address] == 500)
+    tx_hash_0 = rpc.uplink_circulate_asset(private_key=alice_account.private_key,
+                                           from_address=alice_account.address,
+                                           amount=500,
+                                           asset_address=gold_asset.address)
+    wait_until_tx_accepted(rpc, tx_hash_0)
+    circulated_asset = get_asset()
+    # Assert the circulation worked
+    assert circulated_asset.supply == gold_asset.supply - 500
+    assert circulated_asset.holdings[alice_account.address] == 500
 
     # transfer alice holdings to bob holdings
-    t2 = rpc.uplink_transfer_asset(private_key=alice_account.private_key,
-                                   from_address=alice_account.address,
-                                   to_address=bob_account.address,
-                                   balance=250,
-                                   asset_address=gold_asset.address)
-    assert is_rpc_ok(t2)
-    wait_until(lambda: get_asset().holdings[alice_account.address] == 250)
-    wait_until(lambda: get_asset().holdings[bob_account.address] == 250)
+    tx_hash_1 = rpc.uplink_transfer_asset(private_key=alice_account.private_key,
+                                          from_address=alice_account.address,
+                                          to_address=bob_account.address,
+                                          balance=250,
+                                          asset_address=gold_asset.address)
+    wait_until_tx_accepted(rpc, tx_hash_1)
+    transferred_asset_1 = get_asset()
+    # Assert the transfer worked
+    assert transferred_asset_1.holdings[alice_account.address] == 250
+    assert transferred_asset_1.holdings[bob_account.address] == 250
 
     # transfer bob holdings back to alice holdings
-    t3 = rpc.uplink_transfer_asset(private_key=bob_account.private_key,
-                                   from_address=bob_account.address,
-                                   to_address=alice_account.address,
-                                   balance=50,
-                                   asset_address=gold_asset.address)
-    assert is_rpc_ok(t3)
-    wait_until(lambda: get_asset().holdings[bob_account.address] == 200)
-    wait_until(lambda: get_asset().holdings[alice_account.address] == 300)
+    tx_hash_2 = rpc.uplink_transfer_asset(private_key=bob_account.private_key,
+                                          from_address=bob_account.address,
+                                          to_address=alice_account.address,
+                                          balance=50,
+                                          asset_address=gold_asset.address)
+
+    wait_until_tx_accepted(rpc, tx_hash_2)
+    transferred_asset_2 = get_asset()
+    # Assert the transfer worked
+    assert transferred_asset_2.holdings[bob_account.address] == 200
+    assert transferred_asset_2.holdings[alice_account.address] == 300
 
 
 def test_revoke_account(rpc, per_test_account):
-    result = rpc.uplink_revoke_account(private_key=per_test_account.private_key,
-                                       from_address=per_test_account.address,
-                                       account_addr=per_test_account.address)
-    assert is_rpc_ok(result)
+    tx_hash = rpc.uplink_revoke_account(private_key=per_test_account.private_key,
+                                        from_address=per_test_account.address,
+                                        account_addr=per_test_account.address)
+    wait_until_tx_accepted(rpc, tx_hash)
 
     def check_revoked_account():
         try:
             rpc.uplink_get_account(per_test_account.address)
             return False
         except UplinkJsonRpcError as e:
-            return e.contents["errorMessage"] == "NotFound"
+            return True
 
-    wait_until(lambda: check_revoked_account)
+    assert check_revoked_account()
 
 
 def test_call_contract(rpc, example_contract, alice_account):
@@ -86,44 +93,47 @@ def test_call_contract(rpc, example_contract, alice_account):
         return rpc.uplink_get_contract(example_contract.address)
 
     # Set 'x' value to 42
-    result = rpc.uplink_call_contract(private_key=alice_account.private_key,
+    txhash = rpc.uplink_call_contract(private_key=alice_account.private_key,
                                       from_address=alice_account.address,
                                       contract_addr=example_contract.address,
                                       method='setX',
                                       args=[VInt(42)])
-
-    assert is_rpc_ok(result)
-
-    # Wait until 'x' = 42
-    wait_until(lambda: get_contract().storage["x"]["contents"] == 42)
+    # Check if 'x' = 42
+    wait_until_tx_accepted(rpc, txhash)
+    assert get_contract().storage["x"]["contents"] == 42
 
     # Terminate the contract
-    result1 = rpc.uplink_call_contract(private_key=alice_account.private_key,
+    txhash1 = rpc.uplink_call_contract(private_key=alice_account.private_key,
                                        from_address=alice_account.address,
                                        contract_addr=example_contract.address,
                                        method='end',
                                        args=[])
-    assert is_rpc_ok(result1)
-    wait_until(lambda: get_contract().state == "terminal")
+    # Check if contract is in terminal state
+    wait_until_tx_accepted(rpc, txhash1)
+    assert get_contract().state == "terminal"
 
 
 def test_oracle_contract(rpc, oracle_contract, alice_account, contract_using_oracle_contract):
-    result = rpc.uplink_call_contract(private_key=alice_account.private_key,
+    def get_contract(address):
+        """ Shorter alias for contract query """
+        return rpc.uplink_get_contract(address)
+
+    txhash = rpc.uplink_call_contract(private_key=alice_account.private_key,
                                       from_address=alice_account.address,
                                       contract_addr=oracle_contract.address,
                                       method='set',
                                       args=[VFloat(2)])
-    assert is_rpc_ok(result)
+    wait_until_tx_accepted(rpc, txhash)
+    assert get_contract(oracle_contract.address).storage["value"]["contents"] == 2.0
 
-    result = rpc.uplink_call_contract(private_key=alice_account.private_key,
+    txhash = rpc.uplink_call_contract(private_key=alice_account.private_key,
                                       from_address=alice_account.address,
                                       contract_addr=contract_using_oracle_contract.address,
                                       method='setX',
                                       args=[VFloat(5.3), VContract(oracle_contract.address)])
 
-    assert is_rpc_ok(result)
-    wait_until(lambda: rpc.uplink_get_contract(
-        contract_using_oracle_contract.address).storage['x']['contents'] == 10.6)
+    wait_until_tx_accepted(rpc, txhash)
+    assert get_contract(contract_using_oracle_contract.address).storage['x']['contents'] == 10.6
 
 @pytest.mark.parametrize(("asset_name", "supply", "asset_type_name", "precision", "transfer_val"), [
     ("circ_tran_discrete", 1000000, "Discrete", None, VInt(500000)),
@@ -140,26 +150,42 @@ def test_circulate_and_transfer(rpc, alice_account, bob_account, asset_gen,
                                 supply, asset_type_name, precision,
                                 transfer_val):
 
-    circ_tran_asset = asset_gen(asset_name, alice_account, supply, 
+    circ_tran_asset = asset_gen(asset_name, alice_account, supply,
                                 asset_type_name, precision)
 
     circ_tran_contract = circulate_transfer_contract_gen(asset_type_name, precision)
+
+    def get_transfer_val_as_int():
+        type_name = type(transfer_val).__name__
+        if type_name == "VInt":
+            return transfer_val[0]
+        elif type_name == "VBool":
+            return int(transfer_val[0])
+        elif type_name == "VFixed":
+            return int(float(transfer_val[0]) * 10.0**precision)
+        else:
+            raise TypeError
+
+    transfer_val_int = get_transfer_val_as_int()
 
     # Shorter alias for querying asset
     def get_asset():
         return rpc.uplink_get_asset(circ_tran_asset.address)
 
     # Circulate half of supply to alice (asset issuer)
-    result1 = rpc.uplink_call_contract(private_key=alice_account.private_key,
+    txhash1 = rpc.uplink_call_contract(private_key=alice_account.private_key,
                                        from_address=alice_account.address,
                                        contract_addr=circ_tran_contract.address,
                                        method='circulate1',
                                        args=[VAsset(circ_tran_asset.address),
                                              transfer_val])
-    assert is_rpc_ok(result1)
+    wait_until_tx_accepted(rpc, txhash1)
+    circulated1_asset = get_asset()
+    assert circulated1_asset.supply == transfer_val_int
+    assert circulated1_asset.holdings[alice_account.address] == transfer_val_int
 
     # Transfer all holdings from alice to bob
-    result2 = rpc.uplink_call_contract(private_key=alice_account.private_key,
+    txhash2 = rpc.uplink_call_contract(private_key=alice_account.private_key,
                                        from_address=alice_account.address,
                                        contract_addr=circ_tran_contract.address,
                                        method='transfer1',
@@ -167,22 +193,27 @@ def test_circulate_and_transfer(rpc, alice_account, bob_account, asset_gen,
                                              VAccount(alice_account.address),
                                              VAccount(bob_account.address),
                                              transfer_val])
-    assert is_rpc_ok(result2)
+    wait_until_tx_accepted(rpc, txhash2)
+    transfer1_asset= get_asset()
+    assert transfer1_asset.holdings[bob_account.address] == transfer_val_int
+    assert (len(transfer1_asset.holdings) == 1)
 
     # Circulate remaining supply to alice (0 supply left)
-    result3 = rpc.uplink_call_contract(private_key=alice_account.private_key,
+    txhash3 = rpc.uplink_call_contract(private_key=alice_account.private_key,
                                        from_address=alice_account.address,
                                        contract_addr=circ_tran_contract.address,
                                        method='circulate2',
                                        args=[VAsset(circ_tran_asset.address),
                                              transfer_val])
-    assert is_rpc_ok(result3)
     
+    wait_until_tx_accepted(rpc, txhash3)
     # entire asset supply should be circulated now
-    wait_until(lambda: get_asset().supply == 0)
+    circulated2_asset = get_asset()
+    assert circulated2_asset.supply == 0
+    assert circulated2_asset.holdings[alice_account.address] == transfer_val_int
 
     # Transfer all from alice to bob (alice should have 0 holdings)
-    result4 = rpc.uplink_call_contract(private_key=alice_account.private_key,
+    txhash4 = rpc.uplink_call_contract(private_key=alice_account.private_key,
                                        from_address=alice_account.address,
                                        contract_addr=circ_tran_contract.address,
                                        method='transfer2',
@@ -190,11 +221,12 @@ def test_circulate_and_transfer(rpc, alice_account, bob_account, asset_gen,
                                              VAccount(alice_account.address),
                                              VAccount(bob_account.address),
                                              transfer_val])
-    assert is_rpc_ok(result4)
-
+    wait_until_tx_accepted(rpc, txhash4)
     # Bob should have all the holdings
-    wait_until(lambda: get_asset().holdings[bob_account.address] == supply)
-    assert (len(get_asset().holdings) == 1)
+    transfer2_asset = get_asset()
+    assert transfer2_asset.holdings[bob_account.address] == supply
+    assert (len(transfer2_asset.holdings) == 1)
+
 
 @pytest.mark.parametrize(("asset_name", "supply", "asset_type_name", "precision", "transfer_val"), [
     ("sim_circ_tran_discrete", 1000000, "Discrete", None, VInt(500000)),
@@ -288,7 +320,6 @@ def test_principal_protected_simulation(rpc, alice_account, bob_account, asset_g
                                     from_address=alice_account.address,
                                     amount=100000000,
                                     asset_address=pp_asset.address)
-    assert is_rpc_ok(t1)
     wait_until(lambda: get_asset().supply == 0)
     wait_until(lambda: get_asset().holdings[alice_account.address] == 100000000)
     t2 = rpc.uplink_transfer_asset(private_key=alice_account.private_key,
@@ -296,7 +327,6 @@ def test_principal_protected_simulation(rpc, alice_account, bob_account, asset_g
                                    to_address=bob_account.address,
                                    balance=100000,
                                    asset_address=pp_asset.address)
-    assert is_rpc_ok(t2)
     wait_until(lambda: get_asset().holdings[alice_account.address] == 99900000)
     wait_until(lambda: get_asset().holdings[bob_account.address] == 100000)
 
@@ -311,46 +341,33 @@ def test_principal_protected_simulation(rpc, alice_account, bob_account, asset_g
     # -----------------------
 
     # 0) set timestamp to before the closing date
-    sim_success = rpc.uplink_sim_update_set_time(simKey, "2018-02-02T00:00:00+00:00")
-    
-    print(rpc.uplink_sim_query_contract(simKey).state)
-
+    rpc.uplink_sim_update_set_time(simKey, "2018-02-02T00:00:00+00:00")
     # 1) initialize the contract with a deposit of 1000
-    sim_success = rpc.uplink_sim_call(simKey, caller=bob_addr, method="init",
-                                      args=[deposit])
-    assert is_rpc_ok(sim_success)
-
+    rpc.uplink_sim_call(simKey, caller=bob_addr, method="init", args=[deposit])
     # 2) set timestamp to after strike date but before final date
-    sim_success = rpc.uplink_sim_update_set_time(simKey, "2018-02-04T00:00:01+00:00")
-
+    rpc.uplink_sim_update_set_time(simKey, "2018-02-04T00:00:01+00:00")
     # 3) data feed account sets the close price
-    sim_success = rpc.uplink_sim_call(simKey, caller=data_feed_addr,
-                                      method="confirmation",
-                                      args=[initial_price])
-    assert is_rpc_ok(sim_success)
-
-    sim_success = rpc.uplink_sim_update_add_timedelta(simKey, "1d")
-    assert is_rpc_ok(sim_success)
+    rpc.uplink_sim_call(simKey, caller=data_feed_addr,
+                        method="confirmation",
+                        args=[initial_price])
+    rpc.uplink_sim_update_add_timedelta(simKey, "1d")
     
     # 4) for every (business) day between the the final date and the maturity 
     #    date, the date feed account repeatedly calls into the contract to set
     #    close_price for that day, accumulating a running average.
     for i in range (0, days_between_final_and_maturity + 1):
         #    4i) data feed repeatedly sets the close  
-        sim_success = rpc.uplink_sim_call(simKey, caller=data_feed_addr,
-                                          method="calculate_level",
-                                          args=[final_price])
-        assert is_rpc_ok(sim_success)
-        sim_success = rpc.uplink_sim_update_add_timedelta(simKey, "1d")
-        assert is_rpc_ok(sim_success)
+        rpc.uplink_sim_call(simKey, caller=data_feed_addr,
+                            method="calculate_level",
+                            args=[final_price])
+        rpc.uplink_sim_update_add_timedelta(simKey, "1d")
 
     # 5) the investor or issuer calls the last method, AFTER the finalDate, to
     #    to settle the contract in which the investor either gets back the
     #    deposit or the payout.
-    sim_success = rpc.uplink_sim_call(simKey, caller=alice_addr,
-                                      method="determine_final_level", 
-                                      args=[])
-    assert is_rpc_ok(sim_success)
+    rpc.uplink_sim_call(simKey, caller=alice_addr,
+                        method="determine_final_level", 
+                        args=[])
 
     # check if investor has $1950.00 holdings (deposit + (deposit * threshold_calc))
     underlying = rpc.uplink_sim_query_asset(simKey, pp_asset.address)
@@ -380,22 +397,20 @@ def test_principal_protected_simulation(rpc, alice_account, bob_account, asset_g
     ("fn_enum", "k", VEnum("Foo"))
 ])
 def test_all_args_contract(rpc, all_args_contract, alice_account, method_name, var_name, arg):
-    result = rpc.uplink_call_contract(private_key=alice_account.private_key, from_address=alice_account.address,
+    txhash = rpc.uplink_call_contract(private_key=alice_account.private_key, from_address=alice_account.address,
                                       contract_addr=all_args_contract.address,
                                       method=method_name,
                                       args=[arg])
-    assert is_rpc_ok(result)
+    wait_until_tx_accepted(rpc, txhash)
 
     def get_contract_storage():
         storage = rpc.uplink_get_contract(all_args_contract.address).storage
-        print(storage)
         return storage
 
     # Intially, all top level values in the all_args_contract are undefined. We
     # set them by making a function call, and resultingly they should not be
     # undefined.
-    wait_until(lambda: get_contract_storage()[
-               var_name]["contents"] is not None)
+    assert get_contract_storage()[var_name]["contents"] is not None
 
 def test_create_contract(rpc, example_contract):
     # extra checks belong here

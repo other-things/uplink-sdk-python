@@ -2,7 +2,7 @@
 from distutils.core import setup
 
 setup(name='Uplink SDK py',
-      version='0.5.1',
+      version='0.5',
       description='Python bindings for Adjoint project uplink',
       url='http://github.com/adjoint-io/uplink-sdk-py',
       author='Adjoint Inc.',
@@ -15,7 +15,7 @@ setup(name='Uplink SDK py',
           "ecdsa == 0.13",
           "pytest >= 2.6.4",
           "pysha3 >= 1.0.2",
-          "base58 >= 0.2.4",
+          "base58 == 0.2.5",
           'typing'
       ]
       )

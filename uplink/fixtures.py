@@ -3,6 +3,7 @@ import time
 import os
 import pytest
 
+from uplink.exceptions import TransactionRejected
 from uplink.client import UplinkJsonRpcError, UplinkJsonRpc, Account
 from uplink.cryptography import ecdsa_new
 
@@ -18,18 +19,18 @@ def rpc():
 @pytest.fixture
 def per_test_account(rpc):
     pk, sk = ecdsa_new()
-    account = rpc.uplink_create_account(
+    tx_hash, address = rpc.uplink_create_account(
         private_key=sk,
         public_key=pk,
         from_address=None,
         metadata={},
         timezone="GMT"
     )
-    account = wait_until_doesnt_raise(
-        lambda: rpc.uplink_get_account(account.address), UplinkJsonRpcError)
-
+    wait_until_tx_accepted(rpc, tx_hash)
+    account = rpc.uplink_get_account(address)
     assert isinstance(account, Account)
-    setattr(account, 'public_key', pk)
+    # Attach the new account's private key so that these account objects can
+    # sign off on transactions issued in the integration tests.
     setattr(account, 'private_key', sk)
     return account
 
@@ -49,7 +50,7 @@ def asset_gen(rpc):
     def _asset(asset_name, issuer_account, supply, asset_type_nm, precision=None, metadata=None):
         if metadata is None:
             metadata = {}
-        status, address = rpc.uplink_create_asset(
+        tx_hash, address = rpc.uplink_create_asset(
             private_key=issuer_account.private_key,
             origin=issuer_account.address,
             name=asset_name,
@@ -60,9 +61,8 @@ def asset_gen(rpc):
             precision=precision,
             metadata=metadata
         )
-        assert is_rpc_ok(status)
-        asset = wait_until_doesnt_raise(
-            lambda: rpc.uplink_get_asset(address), UplinkJsonRpcError)
+        wait_until_tx_accepted(rpc, tx_hash)
+        asset = rpc.uplink_get_asset(address)
         return asset
 
     return _asset
@@ -79,6 +79,7 @@ def silver_asset(rpc, asset_gen, bob_account):
     asset = asset_gen("Silver", bob_account, 10000, "Discrete", metadata={"colour": "red"})
     return asset
 
+
 @pytest.fixture(scope="session")
 def platinum_asset(rpc, asset_gen, bob_account):
     asset = asset_gen("Platinum", bob_account, 10000, asset_type_nm="Fractional", precision=2)
@@ -88,14 +89,14 @@ def platinum_asset(rpc, asset_gen, bob_account):
 @pytest.fixture(scope="session")
 def contract_gen(rpc, alice_account):
     def _contract(script):
-        status, address = rpc.uplink_create_contract(
+        tx_hash, address = rpc.uplink_create_contract(
             private_key=alice_account.private_key,
             from_address=alice_account.address,
             script=script)
-        assert is_rpc_ok(status)
 
-        return wait_until_doesnt_raise(
-            lambda: rpc.uplink_get_contract(address), UplinkJsonRpcError)
+        wait_until_tx_accepted(rpc, tx_hash)
+        contract = rpc.uplink_get_contract(address)
+        return contract
 
     return _contract
 
@@ -455,6 +456,22 @@ determine_final_level() {{
 """.format(issuer, datafeed, asset)
     return script
 
+
+def wait_until_tx_accepted(rpc, tx_hash):
+    status = wait_until_tx_processed(rpc, tx_hash)
+    if status == "Accepted":
+        return
+    else:
+        raise TransactionRejected(tx_hash, status)
+
+
+def wait_until_tx_processed(rpc, tx_hash):
+    """
+    Wait until a transaction has been either Accepted or Rejected
+    """
+    query_tx_status = rpc.uplink_get_transaction_status
+    wait_until(lambda: query_tx_status(tx_hash) in ["NonExistent", "Accepted", "Rejected"])
+    return query_tx_status(tx_hash) 
 
 def wait_until(pred, tries=20, delay=1):
     """

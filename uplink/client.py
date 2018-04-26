@@ -13,7 +13,8 @@ from .protocol import (Block, Peer, Account, Asset, Contract, Transaction,
                        CreateAccountHeader, CreateAssetHeader, TransferAssetHeader, Circulate, CirculateAssetHeader, AssetType,
                        CreateContractHeader, RevokeAccountHeader, RevokeAsset, RevokeAssetHeader, CallHeader, BindHeader, SyncHeader)
 from .exceptions import (RpcConnectionFail, BadStatusCodeError, BadJsonError,
-                         BadResponseError, UplinkJsonRpcError)
+                         BadResponseError, UplinkJsonRpcError,
+                         TransactionNonExistent)
 from .cryptography import (pack_signature,
                            get_time,
                            derive_contract_address,
@@ -49,7 +50,6 @@ class UplinkJsonRpc(object):
             url = '{}://{}:{}/{}'.format(scheme, self.host,
                                          self.port, self.endpoint)
 
-        print(json.dumps(data))
         try:
             req = requests.post(url, data=json.dumps(data))
         except RequestsConnectionError:
@@ -60,10 +60,18 @@ class UplinkJsonRpc(object):
             response = req.json()
         except ValueError:
             raise BadJsonError("bad json error", req.error)
-        try:
-            return response
-        except KeyError:
-            raise BadResponseError("bad json error", response)
+
+        return response
+
+    # Issues a transaction to the uplink RPC interface, returning the
+    # tranasction hash on success, and throwing an exception on failure.
+    def _issue_transaction(self, tx):
+        response = self._call("Transaction", tx.to_dict())
+        if response["tag"] == "RPCTransactionOK":
+            return response["txHash"]
+        else:
+            print(response)
+            raise UplinkJsonRpcError("Malformed Transaction: " + str(tx), response)
 
     def _handle_response(self, result, many=True):
         if result['tag'] in ["RPCResp", "RPCTransactionOK"]:
@@ -147,8 +155,11 @@ class UplinkJsonRpc(object):
         Get a transactions status
         :return:
         """
-        result = self._call('GET', endpoint='transactions/status/{}'.format(tx_hash))
-        return result
+        response = self._call('GET', endpoint='transactions/status/{}'.format(tx_hash))
+        if response["contents"] == "NonExistent":
+            raise TransactionNonExistent(tx_hash)
+        else:
+            return response["contents"]
 
     def uplink_transactions(self, block_id=0):
         """
@@ -328,11 +339,9 @@ class UplinkJsonRpc(object):
             metadata = {}
 
 
-        pubkey = public_key.to_string()
-        public_key_hex = codecs.encode(pubkey, 'hex')
+        public_key_hex = codecs.encode(public_key.to_string(), 'hex')
 
         acc_address = derive_account_address(public_key)
-
         hdr = CreateAccountHeader(
             public_key_hex, metadata, acc_address, timezone)
         txb = TxAccount(CreateAccount(hdr))
@@ -342,21 +351,15 @@ class UplinkJsonRpc(object):
 
         origin = acc_address if from_address is None else from_address
         tx = Transaction(txb, signature, origin=origin)
-
-        params = tx.to_dict()
-
-        result = self._call('Transaction', params=params, endpoint='')
-
-        if self._handle_success(result):
-            return Account(timezone, public_key, metadata, acc_address)
-        else:
-            raise UplinkJsonRpcError("Malformed CreateAccount", result)
+        
+        tx_hash = self._issue_transaction(tx)
+        return (tx_hash, acc_address)
 
     def uplink_create_asset(self, private_key, origin, name,
                             supply, asset_type_nm, reference, issuer,
                             precision=None, metadata=None):
         """
-        Create Asset - returns (result, to_address)
+        Create Asset 
         :param private_key: private key of account creating asset
         :param origin: address of account creating asset
         :param name: name of asset
@@ -365,7 +368,7 @@ class UplinkJsonRpc(object):
         :param reference: Token, Security, GBP, EUR, CHF, USD
         :param issuer: same as origin
         :param precision: decimal precision for Fractional assets only
-        :return:tuple with asset address
+        :return: tuple of transaction hash and asset address
         """
         """Create Asset - returns (result, to_address)"""
 
@@ -380,55 +383,41 @@ class UplinkJsonRpc(object):
         signature = pack_signature(r, s)
 
         tx = Transaction(txb, signature, origin=origin)
-        params = tx.to_dict()
 
-        result = self._call('Transaction', params=params, endpoint='')
-        if result.get('txHash'):
-            asset_address = derive_asset_address(result["txHash"])
-        else:
-            asset_address = None
-
-        asset_type = AssetType(asset_type_nm, precision)
-
-        if self._handle_success(result):
-            return (result, asset_address)
-        else:
-            raise UplinkJsonRpcError("Malformed CreateAsset", result)
+        tx_hash = self._issue_transaction(tx)
+        asset_address = derive_asset_address(tx_hash)
+        return (tx_hash, asset_address)
 
     def uplink_transfer_asset(self, private_key, from_address, to_address, balance, asset_address):
         """
-        Transfer assets
+        Transfer Asset holdings
         :param private_key: private key of account transferring holdings
         :param from_address: address of account transferring holdings
         :param to_address: address holdings are being transferred to
         :param balance: amount of holdings to be transferred
         :param asset_address: address of asset to be transferred
-        :return: RPCRespOK if successful
+        :return: transaction hash if successful
         """
 
         hdr = TransferAssetHeader(asset_address, to_address, balance)
-        txb = TxAsset(Transfer(hdr))
 
+        txb = TxAsset(Transfer(hdr))
         r, s = hdr.sign(private_key)
         signature = pack_signature(r, s)
 
-        tx = Transaction(txb, signature.decode(),
-                         origin=from_address)
-        params = tx.to_dict()
-        result = self._call('Transaction', params=params, endpoint='')
-        if self._handle_success(result):
-            return result
-        else:
-            raise UplinkJsonRpcError("Malformed TransferAsset", result)
+        tx = Transaction(txb, signature, origin=from_address)
+        
+        tx_hash = self._issue_transaction(tx)
+        return tx_hash
 
     def uplink_circulate_asset(self, private_key, from_address, amount, asset_address):
         """
-        Circulate assets
+        Circulate asset supply
         :param private_key: private key of account circulating asset
         :param from_address: address of account circulating asset
         :param amount: amount of asset holdings to be circulated
         :param asset_address: address of asset to be circulated
-        :return: RPCRespOK if successful
+        :return: transaction hash if successful
         """
         hdr = CirculateAssetHeader(asset_address, amount)
         txb = TxAsset(Circulate(hdr))
@@ -436,13 +425,10 @@ class UplinkJsonRpc(object):
         r, s = hdr.sign(private_key)
         signature = pack_signature(r, s)
 
-        tx = Transaction(txb, signature.decode(), origin=from_address)
-        params = tx.to_dict()
-        result = self._call('Transaction', params=params, endpoint='')
-        if self._handle_success(result):
-            return result
-        else:
-            raise UplinkJsonRpcError("Malformed CirculateAsset", result)
+        tx = Transaction(txb, signature, origin=from_address)
+        
+        tx_hash = self._issue_transaction(tx)
+        return tx_hash
 
     def uplink_create_contract(self, private_key, from_address, script):
         """
@@ -450,7 +436,7 @@ class UplinkJsonRpc(object):
         :param private_key: private key of account creating contract
         :param from_address: address of account creating contract
         :param script: contract code
-        :return: contract address
+        :return: tuple of transaction hash and contract address
         """
 
         hdr = CreateContractHeader(script)
@@ -460,18 +446,10 @@ class UplinkJsonRpc(object):
         signature = pack_signature(r, s)
 
         tx = Transaction(txb, signature, origin=from_address)
-        params = tx.to_dict()
 
-        result = self._call('Transaction', params=params, endpoint='')
-        if result.get('txHash'):
-            contract_address = derive_contract_address(result["txHash"])
-        else:
-            contract_address = None
-
-        if self._handle_success(result):
-            return (result, contract_address)
-        else:
-            raise UplinkJsonRpcError("Malformed CreateContract", result)
+        tx_hash = self._issue_transaction(tx)
+        contract_address = derive_contract_address(tx_hash)
+        return (tx_hash, contract_address)
 
     def uplink_revoke_asset(self, private_key, from_address, asset_addr):
         """
@@ -479,7 +457,7 @@ class UplinkJsonRpc(object):
         :param private_key: private key of account revoking asset - must be the same account as the initial issuer of the asset
         :param from_address: address of the account revoking asset
         :param asset_addr: address of the asset being revoked
-        :return: RPCRespOK if successful
+        :return: transaction hash if successful
         """
 
         hdr = RevokeAssetHeader(asset_addr)
@@ -488,22 +466,17 @@ class UplinkJsonRpc(object):
         r, s = hdr.sign(private_key)
         signature = pack_signature(r, s)
 
-        # to_address=to_address)
         tx = Transaction(txb, signature, origin=from_address)
-        params = tx.to_dict()
-
-        result = self._call('Transaction', params=params, endpoint='')
-        if self._handle_success(result):
-            return result
-        else:
-            raise UplinkJsonRpcError("Malformed RevokeAsset", result)
+        
+        tx_hash = self._issue_transaction(tx)
+        return tx_hash
 
     def uplink_revoke_account(self, private_key, from_address, account_addr):
         """Revoke account access
         :param private_key: private key of account revoking access - must be the same account as the account being revoked
         :param from_address: address of account revoking access
         :param account_addr: address of the account being revoked
-        :return: RPCRespOK if successful
+        :return: transaction hash if successful
         """
 
         hdr = RevokeAccountHeader(account_addr)
@@ -512,16 +485,10 @@ class UplinkJsonRpc(object):
         r, s = hdr.sign(private_key)
         signature = pack_signature(r, s)
 
-        # to_address=to_address)
         tx = Transaction(txb, signature, origin=from_address)
-        params = tx.to_dict()
-
-        result = self._call('Transaction', params=params, endpoint='')
-
-        if self._handle_success(result):
-            return result
-        else:
-            raise UplinkJsonRpcError("Malformed RevokeAccount", result)
+        
+        tx_hash = self._issue_transaction(tx)
+        return tx_hash
 
     def uplink_call_contract(self, private_key, from_address, contract_addr, method, args):
         """Call contract method
@@ -530,7 +497,7 @@ class UplinkJsonRpc(object):
         :param contract_addr: address of contract being called
         :param method: method name off contract being called
         :param args: arguments to the method
-        :return: RPCRespOK if successful
+        :return: transaction hash if successful
         """
 
         hdr = CallHeader(contract_addr, method, args)
@@ -540,14 +507,9 @@ class UplinkJsonRpc(object):
         signature = pack_signature(r, s)
 
         tx = Transaction(txb, signature, origin=from_address)
-        params = tx.to_dict()
-
-        result = self._call('Transaction', params=params, endpoint='')
-
-        if self._handle_success(result):
-            return result
-        else:
-            raise UplinkJsonRpcError("Malformed CallContract", result)
+        
+        tx_hash = self._issue_transaction(tx)
+        return tx_hash
 
     def uplink_query(self, query):
         """Query Uplink Database - will only work if Uplink is created with postgres

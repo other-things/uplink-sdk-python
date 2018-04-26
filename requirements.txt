@@ -3,7 +3,7 @@ ecdsa == 0.13
 cryptography >= 1.7.1
 pytest>=2.6.4
 pysha3 >= 1.0.2
-base58 >= 0.2.4
+base58 == 0.2.5
 
 typing
 hexdump
