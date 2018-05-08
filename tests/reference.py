@@ -118,7 +118,6 @@ def testTx(tx_type, wrapper, hdr):
     r, s = hdr.sign(skey, k=nonce)
     sig = pack_signature(r, s)
     origin = testAddr
-
     tx_hdr = tx_type(wrapper(hdr))
     return Transaction(tx_hdr, sig, origin=origin)
 

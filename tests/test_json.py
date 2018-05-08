@@ -1,7 +1,7 @@
 import os
 import os.path
 
-from uplink import *
+from uplink.protocol import *
 
 import codecs
 from . import reference

@@ -7,3 +7,4 @@ from .enum import *
 from .cryptography import *
 from .client import UplinkJsonRpc
 from .utils import *
+from .version import *

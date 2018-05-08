@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from distutils.core import setup
 
+exec(open('uplink/version.py').read())
 setup(name='Uplink SDK py',
-      version='0.5',
-      description='Python bindings for Adjoint project uplink',
+      version=__version__, description='Python bindings for Adjoint project uplink',
       url='http://github.com/adjoint-io/uplink-sdk-py',
       author='Adjoint Inc.',
       author_email='info@adjoint.io',

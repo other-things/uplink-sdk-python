@@ -2,9 +2,11 @@ from ecdsa.keys import *
 from ecdsa.ecdsa import *
 from ecdsa.curves import *
 from uplink import *
-import decimal
+
 from uplink.fixtures import *
 from uplink.fixtures import is_rpc_ok, wait_until
+
+from uplink.version import __version__
 
 
 def test_create_account(alice_account, bob_account):
@@ -493,6 +495,7 @@ def test_version(rpc):
     assert 'dirty' in version_info
     assert 'version' in version_info
     assert 'branch' in version_info
+    assert (version_info["version"] == __version__)
 
 
 def test_query(rpc, alice_account):
