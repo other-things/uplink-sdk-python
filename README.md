@@ -12,7 +12,7 @@ Installation
 ------------
 
 ```bash
-$ pip install uplink-sdk-py
+$ pip install git+https://github.com/adjoint-io/uplink-sdk-python
 ```
 
 Testing
@@ -82,19 +82,20 @@ newly created public key.
   # create a new public and private key 
   pubkey, skey = ecdsa_new()
 
+  # set the active private key used to sign transaction headers
+  rpc.uplink_set_key(skey)
+
   # create metadata to associate to account
   metadata = dict(stuff="key", bax="foo", fax="bar")
 
   # Create initial account
   new_acct = rpc.uplink_create_account(
-      private_key=skey, public_key=pubkey, 
-      from_address=None, metadata=metadata, timezone="GMT" )
+      from_address=None, new_pubkey=pubkey, metadata=metadata, timezone="GMT" )
 
   # Or Create child account 
   from_addr = 'parent_account_address'
   new_acct = rpc.uplink_create_account(
-      private_key=skey, public_key=pubkey, 
-      from_address=from_addr, metadata=metadata, timezone="GMT")
+      from_address=from_addr new_pubkey=pubkey, metadata=metadata, timezone="GMT")
 
   print(new_acct)
 ```
@@ -130,8 +131,9 @@ print new_asset
 Documentation
 ------------
 
+
 To learn more about the SDK please visit the
-[documentation](https://www.adjoint.io/docs/sdks.html)
+[documentation](https://www.adjoint.io/uplink/docs/sdks.html)
 
 License
 -------
