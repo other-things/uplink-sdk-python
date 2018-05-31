@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="http://www.adjoint.io"><img src="https://www.adjoint.io/images/logo-small.png" width="250"/></a>
+  <a href="http://www.adjoint.io"><img src="https://www.adjoint.io/assets/logos/logo-small.png" width="250"/></a>
 </p>
 <h3 align="center">Community Edition</h3>
 
