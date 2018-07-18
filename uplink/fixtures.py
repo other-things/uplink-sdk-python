@@ -372,11 +372,11 @@ transfer2({0} a, account from, account to, {1} amount) {{
 
 def mk_principal_protected_script(issuer, datafeed, asset):
     script = """
-global account issuer = '{0}';
-global account datafeed = '{1}';
+global account issuer = u'{0}';
+global account datafeed = u'{1}';
 global account investor;
 
-global assetFrac2 asset_ = '{2}';
+global assetFrac2 asset_ = a'{2}';
 global fixed2 minimum_deposit = 1000.00f;
 global fixed2 return_calc = 0.20f;
 global fixed2 threshold_calc = 0.95f;

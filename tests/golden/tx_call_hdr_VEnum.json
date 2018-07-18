@@ -1,8 +1,8 @@
 {
+    "address": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
     "args": {
-        "tag": "VEnum", 
-        "contents": "Foo"
+        "contents": "Foo", 
+        "tag": "VEnum"
     }, 
-    "method": "get", 
-    "address": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve"
+    "method": "get"
 }

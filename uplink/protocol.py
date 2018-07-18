@@ -19,7 +19,7 @@ from uplink.cryptography import (ecdsa_sign, derive_asset_address)
 class Serializer(object):
     @staticmethod
     def serialize(object, **kwargs):
-        return json.dumps(object, **kwargs)
+        return json.dumps(object, sort_keys=True, **kwargs)
 
 
 def _to_dict(obj, classkey=None, *args, **kwargs):
@@ -249,12 +249,6 @@ class VFixed(Tagged, Serializable, NamedTuple('VFixed', [('contents', Decimal), 
 class VBool(Tagged, Serializable, NamedTuple('VBool', [('contents', bool)])):
     def to_binary(self):
         return struct.pack('>b?', enum.VTypeBool, self.contents)
-
-
-class VAddress(Tagged, Serializable, NamedTuple('VAddress', [('contents', str)])):
-    def to_binary(self):
-        return struct.pack('>b32s', enum.VTypeAddress, b58decode(self.contents))
-
 
 class VAccount(Tagged, Serializable, NamedTuple('VAccount', [('contents', str)])):
     def to_binary(self):

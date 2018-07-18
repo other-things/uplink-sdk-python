@@ -1,24 +1,24 @@
 {
-    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
     "header": {
-        "tag": "TxAsset", 
         "contents": {
-            "tag": "CreateAsset", 
             "contents": {
-                "assetType": {
-                    "tag": "Discrete", 
-                    "contents": null
-                }, 
-                "reference": "Token", 
-                "supply": 1000, 
                 "assetName": "test", 
+                "assetType": {
+                    "contents": null, 
+                    "tag": "Discrete"
+                }, 
                 "issuer": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
                 "metadata": {
-                    "policy": "special", 
-                    "company": "Adjoint Inc."
-                }
-            }
-        }
+                    "company": "Adjoint Inc.", 
+                    "policy": "special"
+                }, 
+                "reference": "Token", 
+                "supply": 1000
+            }, 
+            "tag": "CreateAsset"
+        }, 
+        "tag": "TxAsset"
     }, 
+    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
     "signature": "AE4xMTUxMzY4MDA4MjA0NTY4MzM3Mzc5OTQxMjY3NzEzODYwMTUwMjYyODcwOTUwMzQ2MjU2MjM2NDQxODYyNzgxMDg5MjY2OTA3Nzk1Njc6AE4xMDc1NTA2NDUxODg2NjA2MTY2MjUxNjM3NTg0MzU4NTM2OTgyOTY0MTk3NTU1NTk5MDg4NTk4MTQ1ODIwMzczNzczMjcxOTE1ODIyMjI="
 }

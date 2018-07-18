@@ -1,8 +1,8 @@
 {
-    "address": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve",
-    "method": "get",
+    "address": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
     "args": {
-        "contents": "Hello world",
+        "contents": "Hello world", 
         "tag": "VMsg"
-    }
+    }, 
+    "method": "get"
 }

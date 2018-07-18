@@ -1,15 +1,15 @@
 {
-    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
     "header": {
-        "tag": "TxAsset", 
         "contents": {
-            "tag": "CreateAsset", 
             "contents": {
                 "assetAddr": "43WRxMNcnYgZFcE36iohqrXKQdajUdAxeSn9mzE1ZedB", 
                 "balance": 5, 
                 "toAddr": "7mR5d7s6cKB4qjuX1kiwwNtygfURhFQ9TKvEd9kmq6QL"
-            }
-        }
+            }, 
+            "tag": "CreateAsset"
+        }, 
+        "tag": "TxAsset"
     }, 
+    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
     "signature": "AE4xMTUxMzY4MDA4MjA0NTY4MzM3Mzc5OTQxMjY3NzEzODYwMTUwMjYyODcwOTUwMzQ2MjU2MjM2NDQxODYyNzgxMDg5MjY2OTA3Nzk1Njc6AE0xODIwNjM3OTMyMDE1NjM3MTE5NjQyOTgzNjk2MDMwOTg4MDgyNTI3MzAzMDc2NzMxMDgxNzg0MDEwMzMwMTE2NzczMzc2MzcxMDc0Nw=="
 }

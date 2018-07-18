@@ -1,13 +1,13 @@
 {
-    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
     "header": {
-        "tag": "TxContract", 
         "contents": {
-            "tag": "CreateContract", 
             "contents": {
                 "contract": "\nglobal int x = 0 ;\n\ntransition initial -> set;\ntransition set -> terminal;\n\n@set\nend () {\n  terminate(\"Now I die.\");\n}\n\n@initial\nsetX (int y) {\n  x = 42;\n  transitionTo(:set);\n}"
-            }
-        }
+            }, 
+            "tag": "CreateContract"
+        }, 
+        "tag": "TxContract"
     }, 
+    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
     "signature": "AE4xMTUxMzY4MDA4MjA0NTY4MzM3Mzc5OTQxMjY3NzEzODYwMTUwMjYyODcwOTUwMzQ2MjU2MjM2NDQxODYyNzgxMDg5MjY2OTA3Nzk1Njc6AE02NTMzNDA5MDE0NTYyNjgwODQ5NzcyNjY1OTEwMDE1MzQxNjQzMjgzNDkyNjY5NzM3MjQ4NjAyNTEyMzUyNjExODE2MjE5NDMwMjM4Ng=="
 }

@@ -1,20 +1,20 @@
 {
-    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
     "header": {
-        "tag": "TxContract", 
         "contents": {
-            "tag": "Call", 
             "contents": {
+                "address": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
                 "args": [
                     {
-                        "tag": "VEnum", 
-                        "contents": "Foo"
+                        "contents": "Foo", 
+                        "tag": "VEnum"
                     }
                 ], 
-                "method": "get", 
-                "address": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve"
-            }
-        }
+                "method": "get"
+            }, 
+            "tag": "Call"
+        }, 
+        "tag": "TxContract"
     }, 
-    "signature": "AE4xMTUxMzY4MDA4MjA0NTY4MzM3Mzc5OTQxMjY3NzEzODYwMTUwMjYyODcwOTUwMzQ2MjU2MjM2NDQxODYyNzgxMDg5MjY2OTA3Nzk1Njc6AE00OTcwMTA2NTczNjU1MTc4OTk1ODMyNzUwMzU5NzE0MTM0ODc3NDE2Mzg0MTI2NzA1NjI5NTYyOTcyNzY4NzEzMjA3NDkzMjc4ODg3Nw=="
+    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
+    "signature": "AE4xMTUxMzY4MDA4MjA0NTY4MzM3Mzc5OTQxMjY3NzEzODYwMTUwMjYyODcwOTUwMzQ2MjU2MjM2NDQxODYyNzgxMDg5MjY2OTA3Nzk1Njc6AE0yODk0MjAyNjQwODEyMjQyODk2Njc5MDAzMjYyNzEzOTU5NzYxMTE4NTE5OTcxMjEwMjUxNDY2NjU2MDk4ODk4MjAxMTYzMzY1NjUzMg=="
 }

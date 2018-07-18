@@ -509,7 +509,27 @@ def test_query(rpc, alice_account):
     a3 = rpc.uplink_query(q3)
     a4 = rpc.uplink_query(q4)
 
-    assert (len(a1) >= 0)
-    assert (len(a2) >= 0)
-    assert (len(a3) >= 0)
-    assert (len(a4) >= 0)
+    assert len(a1) >= 0
+    assert len(a2) >= 0
+    assert len(a3) >= 0
+    assert len(a4) >= 0
+
+
+def test_get_invalid_tx_missing_fail(rpc):
+    result = rpc.uplink_get_invalid_transaction("nothing")
+    assert result.get('errorMsg')
+
+
+def test_get_invalid_tx_missing(rpc, alice_account, bob_account, gold_asset):
+    tx_hash = rpc.uplink_transfer_asset(
+        private_key=bob_account.private_key,
+        from_address=bob_account.address,
+        to_address=alice_account.address,
+        balance=50000000,
+        asset_address=gold_asset.address,
+    )
+
+    wait_until_tx_processed(rpc, tx_hash)
+
+    result = rpc.uplink_get_invalid_transaction(tx_hash)
+    assert result.get("reason")

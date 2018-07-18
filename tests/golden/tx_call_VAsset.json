@@ -1,20 +1,20 @@
 {
-    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
     "header": {
-        "tag": "TxContract", 
         "contents": {
-            "tag": "Call", 
             "contents": {
+                "address": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
                 "args": [
                     {
-                        "tag": "VAsset", 
-                        "contents": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve"
+                        "contents": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
+                        "tag": "VAsset"
                     }
                 ], 
-                "method": "get", 
-                "address": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve"
-            }
-        }
+                "method": "get"
+            }, 
+            "tag": "Call"
+        }, 
+        "tag": "TxContract"
     }, 
-    "signature": "AE4xMTUxMzY4MDA4MjA0NTY4MzM3Mzc5OTQxMjY3NzEzODYwMTUwMjYyODcwOTUwMzQ2MjU2MjM2NDQxODYyNzgxMDg5MjY2OTA3Nzk1Njc6AE0zODczMDMwNTY5ODA0Mjc5NTQzNjg4NDA1NzU3Njg3Njk4NDA4Mjg4OTk2NjIyNzc5NDY3MjkwMjM4OTUxNzA0NDYzNzU0MTM0MzI5NA=="
+    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
+    "signature": "AE4xMTUxMzY4MDA4MjA0NTY4MzM3Mzc5OTQxMjY3NzEzODYwMTUwMjYyODcwOTUwMzQ2MjU2MjM2NDQxODYyNzgxMDg5MjY2OTA3Nzk1Njc6AE0zNjY3Mzk1MzUyNjE2NzA5NDAwMzQ4ODIwOTI5MDM4NzA0Mzg3NTIzNjc0MDQwMTIxNzk1MDEzMzM5OTM0ODU4ODQwMTUyODY4NzYwMg=="
 }

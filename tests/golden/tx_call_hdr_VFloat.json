@@ -1,8 +1,8 @@
 {
-    "address": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve",
-    "method": "get",
+    "address": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
     "args": {
-        "contents": 3.5,
+        "contents": 3.5, 
         "tag": "VFloat"
-    }
+    }, 
+    "method": "get"
 }

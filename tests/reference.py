@@ -34,8 +34,7 @@ nonce = 42
 
 test_args = [
     VInt(1), VFloat(3.5), VBool(True),VFixed(Decimal("3.223"), 3),
-    VAddress(testAddr), VAccount(testAddr),
-    VAsset(testAddr), VContract(testAddr),
+    VAccount(testAddr), VAsset(testAddr), VContract(testAddr),
     VMsg("Hello world"),
     VVoid,
     VUndefined,

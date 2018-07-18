@@ -256,6 +256,17 @@ class UplinkJsonRpc(object):
         elems = self._handle_response(result, many=False)
         return elems
 
+    def uplink_get_invalid_transaction(self, tx_hash):
+        """
+        Get a transactions status
+        :return:
+        """
+        response = self._call('GET', endpoint='transactions/invalid/{}'.format(tx_hash))
+        if response["contents"] == "NonExistent":
+            raise TransactionNonExistent(tx_hash)
+        else:
+            return response["contents"]
+
     def uplink_get_invalid_transactions(self):
         """
         Get list of invalid transactions

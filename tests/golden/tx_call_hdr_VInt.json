@@ -1,8 +1,8 @@
 {
-    "address": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve",
-    "method": "get",
+    "address": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
     "args": {
-        "contents": 1,
+        "contents": 1, 
         "tag": "VInt"
-    }
+    }, 
+    "method": "get"
 }

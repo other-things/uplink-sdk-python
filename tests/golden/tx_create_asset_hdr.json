@@ -1,14 +1,14 @@
 {
-    "assetType": {
-        "tag": "Discrete", 
-        "contents": null
-    }, 
-    "reference": "Token", 
-    "supply": 1000, 
     "assetName": "test", 
+    "assetType": {
+        "contents": null, 
+        "tag": "Discrete"
+    }, 
     "issuer": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
     "metadata": {
-        "policy": "special", 
-        "company": "Adjoint Inc."
-    }
+        "company": "Adjoint Inc.", 
+        "policy": "special"
+    }, 
+    "reference": "Token", 
+    "supply": 1000
 }
