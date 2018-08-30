@@ -3,3 +3,4 @@ pytest-xdist
 hexdump
 ipdb
 tox
+Sphinx

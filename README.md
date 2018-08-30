@@ -133,6 +133,13 @@ print new_asset
 Documentation
 ------------
 
+To autogenerate the Python module documentation run:
+
+```bash
+$ pip install -r dev-requirements.txt
+$ cd docs
+$ make html
+```
 
 To learn more about the SDK please visit the
 [documentation](https://www.adjoint.io/docs/sdks.html#python)
