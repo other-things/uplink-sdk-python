@@ -44,6 +44,13 @@ def alice_account(rpc):
 def bob_account(rpc):
     return per_test_account(rpc)
 
+@pytest.fixture(scope='session')
+def charlie_account(rpc):
+    return per_test_account(rpc)
+
+@pytest.fixture(scope='session')
+def dave_account(rpc):
+    return per_test_account(rpc)
 
 @pytest.fixture(scope="session")
 def asset_gen(rpc):
@@ -154,11 +161,11 @@ end() {
 
 
 @pytest.fixture(scope="session")
-def all_args_contract(contract_gen):
+def all_args_contract(contract_gen, alice_account, bob_account, charlie_account, dave_account):
 
     contract = contract_gen(script="""
 
-enum testEnum { Foo, Bar };
+enum testEnum {{ Foo, Bar }};
 
 int a;
 float b;
@@ -180,113 +187,118 @@ void j;
 enum testEnum k;
 fixed2 l;
 
+global account alice = u'{0}';
+global account bob = u'{1}';
+global account charlie = u'{2}';
+global account dave = u'{3}';
+
 transition initial -> end;
 transition end -> terminal;
 
-@initial
-fn_int(int a_) {
+@initial {{ alice }}
+fn_int(int a_) {{
     a = a_;
-}
+}}
 
-@initial
-fn_float(float b_) {
+@initial {{ bob }}
+fn_float(float b_) {{
     b = b_;
-}
+}}
 
-@initial
-fn_fixed5(fixed5 c_) {
+@initial {{ charlie }}
+fn_fixed5(fixed5 c_) {{
     c = c_;
-}
+}}
 
-@initial
-fn_fixed2(fixed2 l_) {
+@initial {{ dave }}
+fn_fixed2(fixed2 l_) {{
     l = l_;
-}
+}}
 
 
-@initial
-fn_bool(bool d_) {
+@initial {{ alice, bob }}
+fn_bool(bool d_) {{
     d = d_;
-}
+}}
 
-@initial
-fn_msg(msg e_) {
+@initial {{ alice , charlie }}
+fn_msg(msg e_) {{
     e = e_;
-}
+}}
 
-@initial
-fn_account(account f_) {
+@initial {{ alice, dave }}
+fn_account(account f_) {{
     f = f_;
-}
+}}
 
-@initial
-fn_assetDisc(assetDisc g_) {
+@initial {{ bob, charlie }}
+fn_assetDisc(assetDisc g_) {{
     g = g_;
-}
+}}
 
-@initial
-fn_assetBin(assetBin g0_) {
+@initial {{ bob, dave }}
+fn_assetBin(assetBin g0_) {{
     g0 = g0_;
-}
+}}
 
-@initial
-fn_assetFrac1(assetFrac1 g1_) {
+@initial {{ charlie, dave }}
+fn_assetFrac1(assetFrac1 g1_) {{
     g1 = g1_;
-}
+}}
 
-@initial
-fn_assetFrac2(assetFrac2 g2_) {
+@initial {{ alice, bob, charlie }}
+fn_assetFrac2(assetFrac2 g2_) {{
     g2 = g2_;
-}
+}}
 
-@initial
-fn_assetFrac3(assetFrac3 g3_) {
+@initial {{ alice, bob, dave }}
+fn_assetFrac3(assetFrac3 g3_) {{
     g3 = g3_;
-}
+}}
 
-@initial
-fn_assetFrac4(assetFrac4 g4_) {
+@initial {{ alice, charlie, dave }}
+fn_assetFrac4(assetFrac4 g4_) {{
     g4 = g4_;
-}
+}}
 
-@initial
-fn_assetFrac5(assetFrac5 g5_) {
+@initial {{ bob, charlie, dave }}
+fn_assetFrac5(assetFrac5 g5_) {{
     g5 = g5_;
-}
+}}
 
-@initial
-fn_assetFrac6(assetFrac6 g6_) {
+@initial {{ alice, bob, charlie, dave }}
+fn_assetFrac6(assetFrac6 g6_) {{
     g6 = g6_;
-}
+}}
 
 @initial
-fn_contract(contract h_) {
+fn_contract(contract h_) {{
     h = h_;
-}
+}}
 
 
 @initial
-fn_datetime(datetime i_) {
+fn_datetime(datetime i_) {{
     i = i_;
-}
+}}
 
 @initial
-fn_enum(enum testEnum k_) {
+fn_enum(enum testEnum k_) {{
     k = k_;
-}
+}}
 
 @initial
-never_called() {
+never_called() {{
     transitionTo(:end);
-}
+}}
 
 @end
-end() {
-  if (sender() == deployer()) {
+end() {{
+  if (sender() == deployer()) {{
     terminate("This is the end");
-  };
-}
-""")
+  }};
+}}
+""".format(alice_account.address, bob_account.address, charlie_account.address, dave_account.address))
 
     return contract
 

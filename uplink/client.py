@@ -252,7 +252,7 @@ class UplinkJsonRpc(object):
         """
         Get individual contract by address
 
-        :param address:
+        :param address: contract address
         :return: specific contract and associated details
         """
         contract_by_address = 'contracts/{}'.format(address)
@@ -296,7 +296,7 @@ class UplinkJsonRpc(object):
         """
         Get list of unconfirmed transactions
 
-        :return all unconfirmed transactions on current node
+        :return: all unconfirmed transactions on current node
         """
         result = self._call('GET', endpoint='transactions/pool')
         mem_pool_dict = self._handle_response(result, many=False)
@@ -617,10 +617,8 @@ class UplinkJsonRpc(object):
         """
         Update Simulation - Add time delta
 
-        :param simulation_id: The id of the simulated contract to increment the
-        timestamp of
-        :param delta_str: The string representing the timedelta to add to the
-        contract's timestamp
+        :param simulation_id: The id of the simulated contract to increment the timestamp of
+        :param delta_str: The string representing the timedelta to add to the contract's timestamp
         :return: RPCRespOK on success
         """
         params = {
@@ -637,7 +635,6 @@ class UplinkJsonRpc(object):
         Update Simulation - Call Contact Method
 
         :param simulation_id: The id of the simulated contract to call a method
-        of
         :param method: The name of the contract method to call
         :param args: A list of arguments to pass to the method call
         """

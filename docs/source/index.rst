@@ -8,6 +8,8 @@ Welcome to uplink-sdk-python's documentation!
 
 .. toctree::
   api
+  cryptography
+  example
 
 
 Indices and tables

@@ -376,30 +376,41 @@ def test_principal_protected_simulation(rpc, alice_account, bob_account, asset_g
     assert (underlying.holdings[bob_addr] == payout)
 
 
-@pytest.mark.parametrize(("method_name", "var_name", "arg"), [
-    ("fn_int", "a", VInt(404)),
-    ("fn_float", "b", VFloat(2.123456789)),
-    ("fn_fixed5", "c", VFixed(Decimal("6.54321"),5)),
-    ("fn_fixed5", "c", VFixed(Decimal("-6.54321"), 5)),
-    ("fn_fixed2", "c", VFixed(Decimal("6.54"), 2)),
-    ("fn_fixed2", "c", VFixed(Decimal("2.00"), 2)),
-    ("fn_bool", "d", VBool(False)),
-    ("fn_msg", "e", VMsg("Hello World")),
-    ("fn_account", "f", VAccount(testAddr)),
-    ("fn_assetDisc", "g", VAsset(testAddr)),
-    ("fn_assetBin", "g0", VAsset(testAddr)),
-    ("fn_assetFrac1", "g1", VAsset(testAddr)),
-    ("fn_assetFrac2", "g2", VAsset(testAddr)),
-    ("fn_assetFrac3", "g3", VAsset(testAddr)),
-    ("fn_assetFrac4", "g4", VAsset(testAddr)),
-    ("fn_assetFrac5", "g5", VAsset(testAddr)),
-    ("fn_assetFrac6", "g6", VAsset(testAddr)),
-    ("fn_contract", "h", VContract(testAddr)),
-    ("fn_datetime", "i", VDateTime(datetime.datetime.now())),
-    ("fn_enum", "k", VEnum("Foo"))
+@pytest.mark.parametrize(("account", "method_name", "var_name", "arg"), [
+    ("alice_account", "fn_int", "a", VInt(404)),
+    ("bob_account", "fn_float", "b", VFloat(2.123456789)),
+    ("charlie_account", "fn_fixed5", "c", VFixed(Decimal("6.54321"),5)),
+    ("charlie_account", "fn_fixed5", "c", VFixed(Decimal("-6.54321"), 5)),
+    ("dave_account", "fn_fixed2", "c", VFixed(Decimal("6.54"), 2)),
+    ("dave_account", "fn_fixed2", "c", VFixed(Decimal("2.00"), 2)),
+    ("alice_account", "fn_bool", "d", VBool(False)),
+    ("alice_account", "fn_msg", "e", VMsg("Hello World")),
+    ("alice_account", "fn_account", "f", VAccount(testAddr)),
+    ("bob_account", "fn_assetDisc", "g", VAsset(testAddr)),
+    ("bob_account", "fn_assetBin", "g0", VAsset(testAddr)),
+    ("charlie_account", "fn_assetFrac1", "g1", VAsset(testAddr)),
+    ("alice_account", "fn_assetFrac2", "g2", VAsset(testAddr)),
+    ("alice_account", "fn_assetFrac3", "g3", VAsset(testAddr)),
+    ("alice_account", "fn_assetFrac4", "g4", VAsset(testAddr)),
+    ("bob_account", "fn_assetFrac5", "g5", VAsset(testAddr)),
+    ("alice_account", "fn_assetFrac6", "g6", VAsset(testAddr)),
+    ("alice_account", "fn_contract", "h", VContract(testAddr)),
+    ("alice_account", "fn_datetime", "i", VDateTime(datetime.datetime.now())),
+    ("alice_account", "fn_enum", "k", VEnum("Foo"))
 ])
-def test_all_args_contract(rpc, all_args_contract, alice_account, method_name, var_name, arg):
-    txhash = rpc.uplink_call_contract(private_key=alice_account.private_key, from_address=alice_account.address,
+def test_all_args_contract(rpc, all_args_contract, alice_account, bob_account,
+        charlie_account, dave_account, account, method_name, var_name, arg):
+   
+    accounts = { "alice_account" : alice_account
+               , "bob_account" : bob_account
+               , "charlie_account" : charlie_account
+               , "dave_account" : dave_account
+               }
+   
+    address = accounts[account].address
+    priv_key = accounts[account].private_key
+
+    txhash = rpc.uplink_call_contract(private_key=priv_key, from_address=address,
                                       contract_addr=all_args_contract.address,
                                       method=method_name,
                                       args=[arg])
@@ -454,28 +465,42 @@ def test_get_contract(rpc, example_contract):
     assert result
 
 
-def test_get_contract_callable(rpc, all_args_contract):
+def test_get_contract_callable(rpc, all_args_contract, alice_account,
+        bob_account, charlie_account, dave_account):
+    
+    alice_addr = alice_account.address
+    bob_addr = bob_account.address
+    charlie_addr = charlie_account.address
+    dave_addr = dave_account.address
+    
     result = rpc.uplink_get_contract_callable(all_args_contract.address)
-    assert result == {u'fn_int': [[u'a_', u'int']],
-                      u'fn_float': [[u'b_', u'float']],
-                      # XXX not implemented yet
-                      u'fn_fixed5': [[u'c_', u'fixed5']],
-                      u'fn_fixed2': [[u'l_', u'fixed2']],
-                      u'fn_bool': [[u'd_', u'bool']],
-                      u'fn_msg': [[u'e_', u'msg']],
-                      u'fn_account': [[u'f_', u'account']],
-                      u'fn_assetDisc': [[u'g_', u'assetDisc']],
-                      u'fn_assetBin': [[u'g0_', u'assetBin']],
-                      u'fn_assetFrac1': [[u'g1_', u'assetFrac1']],
-                      u'fn_assetFrac2': [[u'g2_', u'assetFrac2']],
-                      u'fn_assetFrac3': [[u'g3_', u'assetFrac3']],
-                      u'fn_assetFrac4': [[u'g4_', u'assetFrac4']],
-                      u'fn_assetFrac5': [[u'g5_', u'assetFrac5']],
-                      u'fn_assetFrac6': [[u'g6_', u'assetFrac6']],
-                      u'fn_contract': [[u'h_', u'contract']],
-                      u'fn_datetime': [[u'i_', u'datetime']],
-                      u'fn_enum': [[u'k_', u'enum testEnum']],
-                      u'never_called': []
+    assert result == {u'fn_int': [[alice_addr],[[u'a_', u'int']]],
+                      u'fn_float': [[bob_addr],[[u'b_', u'float']]],
+                      u'fn_fixed5': [[charlie_addr],[[u'c_', u'fixed5']]],
+                      u'fn_fixed2': [[dave_addr],[[u'l_', u'fixed2']]],
+                      u'fn_bool': [[alice_addr,bob_addr],[[u'd_', u'bool']]],
+                      u'fn_msg': [[alice_addr,charlie_addr],[[u'e_', u'msg']]],
+                      u'fn_account': [[alice_addr,dave_addr],[[u'f_', u'account']]],
+                      u'fn_assetDisc': [[bob_addr,charlie_addr],[[u'g_',
+                          u'assetDisc']]],
+                      u'fn_assetBin':
+                          [[bob_addr,dave_addr],[[u'g0_', u'assetBin']]],
+                      u'fn_assetFrac1':
+                          [[charlie_addr,dave_addr],[[u'g1_', u'assetFrac1']]],
+                      u'fn_assetFrac2':
+                          [[alice_addr,bob_addr,charlie_addr],[[u'g2_', u'assetFrac2']]],
+                      u'fn_assetFrac3':
+                          [[alice_addr,bob_addr,dave_addr],[[u'g3_', u'assetFrac3']]],
+                      u'fn_assetFrac4':
+                          [[alice_addr,charlie_addr,dave_addr],[[u'g4_',u'assetFrac4']]],
+                      u'fn_assetFrac5':
+                          [[bob_addr,charlie_addr,dave_addr],[[u'g5_', u'assetFrac5']]],
+                      u'fn_assetFrac6': 
+                          [[alice_addr,bob_addr,charlie_addr,dave_addr],[[u'g6_', u'assetFrac6']]],
+                      u'fn_contract': [[],[[u'h_', u'contract']]],
+                      u'fn_datetime': [[],[[u'i_', u'datetime']]],
+                      u'fn_enum': [[],[[u'k_', u'enum testEnum']]],
+                      u'never_called': [[],[]]
                       }
 
 
