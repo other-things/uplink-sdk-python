@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="http://www.adjoint.io"><img src="https://www.adjoint.io/assets/logos/logo-small.png" width="250"/></a>
+  <a href="http://www.adjoint.io"><img src="https://www.adjoint.io/assets/img/adjoint-logo@2x.png" width="250"/></a>
 </p>
 <h3 align="center">Community Edition</h3>
 
@@ -140,6 +140,6 @@ To learn more about the SDK please visit the
 License
 -------
 
-Copyright 2017 Adjoint Inc
+Copyright 2017-2018 Adjoint Inc
 
 Released under Apache 2.0.
