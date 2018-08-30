@@ -94,6 +94,7 @@ class UplinkJsonRpc(object):
         """
         Resets and clears Uplink database.
         This request will return an error if the node is not in test mode
+
         :param private_key: private key of primary account
         :param public_key: public key of primary account
         """
@@ -115,6 +116,7 @@ class UplinkJsonRpc(object):
     def uplink_block(self, block_id):
         """
         Get a block by index
+
         :param block_id:
         :return: specific block
         """
@@ -126,6 +128,7 @@ class UplinkJsonRpc(object):
     def uplink_blocks(self):
         """
         Get a list of all blocks
+
         :return: all blocks
         """
         result = self._call('GET', endpoint='blocks')
@@ -135,6 +138,7 @@ class UplinkJsonRpc(object):
     def uplink_peers(self):
         """
         Get a list of peers and return number of peers
+
         :return: all peers
         """
         result = self._call('GET', endpoint='peers')
@@ -144,6 +148,7 @@ class UplinkJsonRpc(object):
     def uplink_validators(self):
         """
         Get a list of peers and return number of validating peers
+
         :return: all validating peers
         """
         result = self._call('GET', endpoint='peers/validators')
@@ -153,6 +158,7 @@ class UplinkJsonRpc(object):
     def uplink_get_transaction_status(self, tx_hash):
         """
         Get a transactions status
+
         :return:
         """
         response = self._call('GET', endpoint='transactions/status/{}'.format(tx_hash))
@@ -164,6 +170,7 @@ class UplinkJsonRpc(object):
     def uplink_transactions(self, block_id=0):
         """
         Get a list of transactions by block index
+
         :param block_id:
         :return: all transactions specified by block id
         """
@@ -175,6 +182,7 @@ class UplinkJsonRpc(object):
     def uplink_accounts(self):
         """
         Get a list of accounts
+
         :return: all accounts
         """
         result = self._call('GET', endpoint='accounts')
@@ -184,6 +192,7 @@ class UplinkJsonRpc(object):
     def uplink_get_account(self, address):
         """
         Get individual account by address [/accounts/<address>]
+
         :param address: account address
         :return: specific account and associated details
         """
@@ -195,6 +204,7 @@ class UplinkJsonRpc(object):
     def uplink_assets(self):
         """
         Get a list of all assets
+
         :return: all assets
         """
         result = self._call('GET', endpoint='assets')
@@ -205,6 +215,7 @@ class UplinkJsonRpc(object):
     def uplink_get_asset(self, address):
         """
         Get individual asset by address [/assets/<address>]
+
         :param address: asset address
         :return: specific asset and associated details
         """
@@ -221,6 +232,7 @@ class UplinkJsonRpc(object):
     def uplink_version(self):
         """
         Get current Uplink version
+
         :return: version
         """
         return self._call('GET', endpoint='version')
@@ -228,6 +240,7 @@ class UplinkJsonRpc(object):
     def uplink_contracts(self):
         """
         Get a list of all contacts
+
         :return: all contracts
         """
         result = self._call('GET', endpoint='contracts')
@@ -238,6 +251,7 @@ class UplinkJsonRpc(object):
     def uplink_get_contract(self, address):
         """
         Get individual contract by address
+
         :param address:
         :return: specific contract and associated details
         """
@@ -259,6 +273,7 @@ class UplinkJsonRpc(object):
     def uplink_get_invalid_transaction(self, tx_hash):
         """
         Get a transactions status
+
         :return:
         """
         response = self._call('GET', endpoint='transactions/invalid/{}'.format(tx_hash))
@@ -270,6 +285,7 @@ class UplinkJsonRpc(object):
     def uplink_get_invalid_transactions(self):
         """
         Get list of invalid transactions
+
         :return: all invalid transactions
         """
         result = self._call('GET', endpoint='transactions/invalid')
@@ -279,6 +295,7 @@ class UplinkJsonRpc(object):
     def uplink_get_mempool(self):
         """
         Get list of unconfirmed transactions
+
         :return all unconfirmed transactions on current node
         """
         result = self._call('GET', endpoint='transactions/pool')
@@ -296,6 +313,7 @@ class UplinkJsonRpc(object):
     def uplink_get_mempools(self):
         """
         Get unconfirmed transactions of all nodes in the network.
+
         :return: amount of unconfirmed
         """
         return self._call('GET', endpoint='transactions/pool/all')
@@ -303,6 +321,7 @@ class UplinkJsonRpc(object):
     def uplink_get_mempools_sizes(self):
         """
         Get size of mempool for all nodes in the network.
+
         :return: amount of unconfirmed transactions on all network nodes
         """
         return self._call('GET', endpoint='transactions/pool/all/sizes')
@@ -311,6 +330,7 @@ class UplinkJsonRpc(object):
         """
         Send cmd to p2p network to spawn n txs over m seconds.
         This request will return an error if the node is not in test mode
+
         :param n_txs: number of transactions to send
         :param n_secs: number of seconds to send those transactions in
         """
@@ -325,6 +345,7 @@ class UplinkJsonRpc(object):
         """
         Send cmd to p2p network to reset all mempools of all nodes.
         This request will return an error if the node is not in test mode
+
         :return: clears list of unconfirmed transactions on network
         """
         params = {
@@ -337,6 +358,7 @@ class UplinkJsonRpc(object):
                               from_address=None, metadata=None, timezone=None):
         """
         Create new account
+
         :param private_key: Private key of account to be created
         :param public_key: Public key of account to be created
         :param from_address: Address of account to be created
@@ -371,6 +393,7 @@ class UplinkJsonRpc(object):
                             precision=None, metadata=None):
         """
         Create Asset 
+
         :param private_key: private key of account creating asset
         :param origin: address of account creating asset
         :param name: name of asset
@@ -402,6 +425,7 @@ class UplinkJsonRpc(object):
     def uplink_transfer_asset(self, private_key, from_address, to_address, balance, asset_address):
         """
         Transfer Asset holdings
+
         :param private_key: private key of account transferring holdings
         :param from_address: address of account transferring holdings
         :param to_address: address holdings are being transferred to
@@ -424,6 +448,7 @@ class UplinkJsonRpc(object):
     def uplink_circulate_asset(self, private_key, from_address, amount, asset_address):
         """
         Circulate asset supply
+
         :param private_key: private key of account circulating asset
         :param from_address: address of account circulating asset
         :param amount: amount of asset holdings to be circulated
@@ -444,6 +469,7 @@ class UplinkJsonRpc(object):
     def uplink_create_contract(self, private_key, from_address, script):
         """
         Create a new Contract
+
         :param private_key: private key of account creating contract
         :param from_address: address of account creating contract
         :param script: contract code
@@ -465,6 +491,7 @@ class UplinkJsonRpc(object):
     def uplink_revoke_asset(self, private_key, from_address, asset_addr):
         """
         Revoke Asset
+
         :param private_key: private key of account revoking asset - must be the same account as the initial issuer of the asset
         :param from_address: address of the account revoking asset
         :param asset_addr: address of the asset being revoked
@@ -484,6 +511,7 @@ class UplinkJsonRpc(object):
 
     def uplink_revoke_account(self, private_key, from_address, account_addr):
         """Revoke account access
+
         :param private_key: private key of account revoking access - must be the same account as the account being revoked
         :param from_address: address of account revoking access
         :param account_addr: address of the account being revoked
@@ -503,6 +531,7 @@ class UplinkJsonRpc(object):
 
     def uplink_call_contract(self, private_key, from_address, contract_addr, method, args):
         """Call contract method
+
         :param private_key: private key of account calling contract method
         :param from_address: address of account calling contract method
         :param contract_addr: address of contract being called
@@ -524,6 +553,7 @@ class UplinkJsonRpc(object):
 
     def uplink_query(self, query):
         """Query Uplink Database - will only work if Uplink is created with postgres
+
         :param query: query string to send to database
         :return: response to query will be list of assets, accounts, or contracts.
         """
@@ -546,6 +576,7 @@ class UplinkJsonRpc(object):
     def uplink_sim_update(self, simulation_id, method_json):
         """
         Update Simulation
+
         :param simulation_id: The id of the simulated contract to update
         :param method_json: The dictionary representing the simulation update
         :return: RPCRespOK on success
@@ -568,6 +599,7 @@ class UplinkJsonRpc(object):
     def uplink_sim_update_set_time(self, simulation_id, timestamp):
         """
         Update Simulation - Set Timestamp
+
         :param simulation_id: The id of the simulated contract to set the timestamp of
         :param timestamp: The timestamp to set the contract's timestamp to
         :return: RPCRespOK on success
@@ -584,6 +616,7 @@ class UplinkJsonRpc(object):
     def uplink_sim_update_add_timedelta(self, simulation_id, delta_str):
         """
         Update Simulation - Add time delta
+
         :param simulation_id: The id of the simulated contract to increment the
         timestamp of
         :param delta_str: The string representing the timedelta to add to the
@@ -602,6 +635,7 @@ class UplinkJsonRpc(object):
     def uplink_sim_call(self, simulation_id, caller, method, args):
         """
         Update Simulation - Call Contact Method
+
         :param simulation_id: The id of the simulated contract to call a method
         of
         :param method: The name of the contract method to call
@@ -620,6 +654,7 @@ class UplinkJsonRpc(object):
     def uplink_sim_query(self, simulation_id, query, addr=None, many=False):
         """
         Query Simulation
+
         :param simulation_id: The id of the simulated contract to query
         :param query: The name of the query to make
         :param addr: Address of specific value to query
@@ -642,6 +677,7 @@ class UplinkJsonRpc(object):
     def uplink_sim_query_methods(self, simulation_id):
         """
         Query Simulation - Contract Methods
+
         :param simulation_id: The id of the simulated contract
         :return: The list of callable contract methods
         """
@@ -650,6 +686,7 @@ class UplinkJsonRpc(object):
     def uplink_sim_query_contract(self, simulation_id):
         """
         Query Simulation Contract
+
         :param simulation_id: The id of the simulated contract
         :return: An Uplink Contract
         """
@@ -665,6 +702,7 @@ class UplinkJsonRpc(object):
     def uplink_sim_query_assets(self, simulation_id):
         """
         Query Simulation - Assets
+
         :param simulation_id: The id of the simulated contract
         :return: A list of assets in the simulated contract's environment
         """
@@ -673,6 +711,7 @@ class UplinkJsonRpc(object):
     def uplink_sim_query_asset(self, simulation_id, address):
         """
         Query Simulation - Asset
+
         :param simulation_id: The if of the simulated contract to query
         :param address: The address of the asset
         :return: An Uplink Asset
