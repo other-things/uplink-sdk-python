@@ -32,7 +32,7 @@ Most of the following examples will show and explain the simple usage of the
 ``uplink-sdk-py``. Usage of the SDK can be divided into two types of actions,
 querying the Uplink Ledger for data or acting on it - called *transactions*.
 Such interactions fit in the latter category with the creation of accounts,
-assets, or contracts. 
+assets, or contracts.
 
 Create an instance of ``UplinkJsonRpc`` client and connect directly to the
 Uplink ledger to query data such as getting available blocks, peers, accounts,
@@ -79,20 +79,22 @@ first account. It can be set as ``None`` and an address will be derived from the
 newly created public key.
 
 ```python
-  # create a new public and private key 
+  # create a new public and private key
   pubkey, skey = ecdsa_new()
-
-  # set the active private key used to sign transaction headers
-  rpc.uplink_set_key(skey)
 
   # create metadata to associate to account
   metadata = dict(stuff="key", bax="foo", fax="bar")
 
   # Create initial account
   new_acct = rpc.uplink_create_account(
-      from_address=None, new_pubkey=pubkey, metadata=metadata, timezone="GMT" )
+          private_key=skey,
+          public_key=pubkey,
+          from_address=None,
+          metadata=metadata,
+          timezone="GMT"
+  )
 
-  # Or Create child account 
+  # Or Create child account
   from_addr = 'parent_account_address'
   new_acct = rpc.uplink_create_account(
       from_address=from_addr new_pubkey=pubkey, metadata=metadata, timezone="GMT")
@@ -133,7 +135,7 @@ Documentation
 
 
 To learn more about the SDK please visit the
-[documentation](https://www.adjoint.io/uplink/docs/sdks.html)
+[documentation](https://www.adjoint.io/docs/sdks.html#python)
 
 License
 -------
