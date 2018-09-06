@@ -5,7 +5,6 @@ TxAccount_name = "TxAccount"
 
 # TxContract constructors
 CreateContract_name = "TxContract"
-SyncLocal_name = "SyncLocal "
 Call_name = "Call"
 
 # TxAsset constructors
@@ -21,7 +20,7 @@ RevokeAccount_name = "RevokeAccount"
 
 # Transaction Header should reflect TransactionHeader type in uplink
 txHeader = [
-    (TxContract_name, [CreateContract_name, SyncLocal_name, Call_name]),
+    (TxContract_name, [CreateContract_name, Call_name]),
     (TxAsset_name, [CreateAsset_name, Transfer_name, Circulate_name, Bind_name, RevokeAsset_name]),
     (TxAccount_name, [CreateAccount_name, RevokeAccount_name])
 ]
@@ -32,7 +31,6 @@ def getFlags(fstConstr, sndConstr):
     return (fstFlag, sndFlag)
 
 TxTypeCreateContract = getFlags(TxContract_name, CreateContract_name)
-TxTypeSyncLocal = getFlags(TxContract_name, SyncLocal_name)
 TxTypeCall = getFlags(TxContract_name, Call_name)
 TxTypeCreateAsset = getFlags(TxAsset_name, CreateAsset_name)
 TxTypeTransfer = getFlags(TxAsset_name, Transfer_name)
