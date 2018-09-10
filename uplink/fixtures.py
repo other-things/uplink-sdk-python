@@ -195,78 +195,78 @@ global account dave = u'{3}';
 transition initial -> end;
 transition end -> terminal;
 
-@initial {{ alice }}
+@initial [ role : {{ alice }} ]
 fn_int(int a_) {{
     a = a_;
 }}
 
-@initial {{ bob }}
+@initial [ role : {{ bob }} ]
 fn_float(float b_) {{
     b = b_;
 }}
 
-@initial {{ charlie }}
+@initial [ role : {{ charlie }} ]
 fn_fixed5(fixed5 c_) {{
     c = c_;
 }}
 
-@initial {{ dave }}
+@initial [ role : {{ dave }} }
 fn_fixed2(fixed2 l_) {{
     l = l_;
 }}
 
 
-@initial {{ alice, bob }}
+@initial [ role : {{ alice, bob }} ]
 fn_bool(bool d_) {{
     d = d_;
 }}
 
-@initial {{ alice , charlie }}
+@initial [ role : {{ alice , charlie }} ]
 fn_msg(msg e_) {{
     e = e_;
 }}
 
-@initial {{ alice, dave }}
+@initial [ role : {{ alice, dave }} }
 fn_account(account f_) {{
     f = f_;
 }}
 
-@initial {{ bob, charlie }}
+@initial [ role : {{ bob, charlie }} }
 fn_assetDisc(assetDisc g_) {{
     g = g_;
 }}
 
-@initial {{ bob, dave }}
+@initial [ role : {{ bob, dave }} ]
 fn_assetBin(assetBin g0_) {{
     g0 = g0_;
 }}
 
-@initial {{ charlie, dave }}
+@initial [ role : {{ charlie, dave }} ]
 fn_assetFrac1(assetFrac1 g1_) {{
     g1 = g1_;
 }}
 
-@initial {{ alice, bob, charlie }}
+@initial [ role : {{ alice, bob, charlie }} ]
 fn_assetFrac2(assetFrac2 g2_) {{
     g2 = g2_;
 }}
 
-@initial {{ alice, bob, dave }}
+@initial [ role : {{ alice, bob, dave }} ]
 fn_assetFrac3(assetFrac3 g3_) {{
     g3 = g3_;
 }}
 
-@initial {{ alice, charlie, dave }}
+@initial [ role : {{ alice, charlie, dave }} ]
 fn_assetFrac4(assetFrac4 g4_) {{
     g4 = g4_;
 }}
 
-@initial {{ bob, charlie, dave }}
+@initial [ role : {{ bob, charlie, dave }} ]
 fn_assetFrac5(assetFrac5 g5_) {{
     g5 = g5_;
 }}
 
-@initial {{ alice, bob, charlie, dave }}
+@initial [ role : {{ alice, bob, charlie, dave }} ]
 fn_assetFrac6(assetFrac6 g6_) {{
     g6 = g6_;
 }}
