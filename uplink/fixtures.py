@@ -210,7 +210,7 @@ fn_fixed5(fixed5 c_) {{
     c = c_;
 }}
 
-@initial [ role : {{ dave }} }
+@initial [ role : {{ dave }} ]
 fn_fixed2(fixed2 l_) {{
     l = l_;
 }}
@@ -226,12 +226,12 @@ fn_msg(msg e_) {{
     e = e_;
 }}
 
-@initial [ role : {{ alice, dave }} }
+@initial [ role : {{ alice, dave }} ]
 fn_account(account f_) {{
     f = f_;
 }}
 
-@initial [ role : {{ bob, charlie }} }
+@initial [ role : {{ bob, charlie }} ]
 fn_assetDisc(assetDisc g_) {{
     g = g_;
 }}
