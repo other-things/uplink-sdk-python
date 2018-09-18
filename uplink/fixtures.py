@@ -499,8 +499,7 @@ def wait_until(pred, tries=20, delay=1):
         if pred():
             return
 
-    pytest.fail("Timed out")
-
+    raise TimeoutError("Timed out in wait_until")
 
 def wait_until_doesnt_raise(f, exception, **kwargs):
     """
