@@ -195,78 +195,78 @@ global account dave = u'{3}';
 transition initial -> end;
 transition end -> terminal;
 
-@initial [ role : {{ alice }} ]
+@initial [ roles : {{ alice }} ]
 fn_int(int a_) {{
     a = a_;
 }}
 
-@initial [ role : {{ bob }} ]
+@initial [ roles : {{ bob }} ]
 fn_float(float b_) {{
     b = b_;
 }}
 
-@initial [ role : {{ charlie }} ]
+@initial [ roles : {{ charlie }} ]
 fn_fixed5(fixed5 c_) {{
     c = c_;
 }}
 
-@initial [ role : {{ dave }} ]
+@initial [ roles : {{ dave }} ]
 fn_fixed2(fixed2 l_) {{
     l = l_;
 }}
 
 
-@initial [ role : {{ alice, bob }} ]
+@initial [ roles : {{ alice, bob }} ]
 fn_bool(bool d_) {{
     d = d_;
 }}
 
-@initial [ role : {{ alice , charlie }} ]
+@initial [ roles : {{ alice , charlie }} ]
 fn_msg(msg e_) {{
     e = e_;
 }}
 
-@initial [ role : {{ alice, dave }} ]
+@initial [ roles : {{ alice, dave }} ]
 fn_account(account f_) {{
     f = f_;
 }}
 
-@initial [ role : {{ bob, charlie }} ]
+@initial [ roles : {{ bob, charlie }} ]
 fn_assetDisc(assetDisc g_) {{
     g = g_;
 }}
 
-@initial [ role : {{ bob, dave }} ]
+@initial [ roles : {{ bob, dave }} ]
 fn_assetBin(assetBin g0_) {{
     g0 = g0_;
 }}
 
-@initial [ role : {{ charlie, dave }} ]
+@initial [ roles : {{ charlie, dave }} ]
 fn_assetFrac1(assetFrac1 g1_) {{
     g1 = g1_;
 }}
 
-@initial [ role : {{ alice, bob, charlie }} ]
+@initial [ roles : {{ alice, bob, charlie }} ]
 fn_assetFrac2(assetFrac2 g2_) {{
     g2 = g2_;
 }}
 
-@initial [ role : {{ alice, bob, dave }} ]
+@initial [ roles : {{ alice, bob, dave }} ]
 fn_assetFrac3(assetFrac3 g3_) {{
     g3 = g3_;
 }}
 
-@initial [ role : {{ alice, charlie, dave }} ]
+@initial [ roles : {{ alice, charlie, dave }} ]
 fn_assetFrac4(assetFrac4 g4_) {{
     g4 = g4_;
 }}
 
-@initial [ role : {{ bob, charlie, dave }} ]
+@initial [ roles : {{ bob, charlie, dave }} ]
 fn_assetFrac5(assetFrac5 g5_) {{
     g5 = g5_;
 }}
 
-@initial [ role : {{ alice, bob, charlie, dave }} ]
+@initial [ roles : {{ alice, bob, charlie, dave }} ]
 fn_assetFrac6(assetFrac6 g6_) {{
     g6 = g6_;
 }}
