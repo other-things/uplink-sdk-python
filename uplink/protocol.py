@@ -228,11 +228,16 @@ class VFloat(Tagged, Serializable, NamedTuple('VFloat', [('contents', float)])):
 class VFixed(Tagged, Serializable, NamedTuple('VFixed', [('contents', Decimal), ('precision', int)])):
     def to_binary(self):
         value = self.contents.as_tuple()
+
         digits = int("".join(map(str, value.digits)))
-        if value.sign == 0:
+
+        if digits == 0:
+            sign = 0
+        elif value.sign == 0:
             sign = 1
         else:
             sign = -1
+
         length_bits = digits.bit_length()
         length = length_bits // 8
         if not length_bits % 8 == 0:
