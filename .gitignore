@@ -7,3 +7,6 @@ Uplink_Python_SDK.egg-info
 build
 .tox
 MANIFEST
+.pytest_cache/
+Pipfile
+Pipfile.lock
