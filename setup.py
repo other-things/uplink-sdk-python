@@ -11,7 +11,7 @@ setup(name='Uplink SDK py',
       license='All Rights Reserved',
       packages=["uplink"],
       install_requires=[
-          "requests == 2.11.1",
+          "requests == 2.20.0",
           "cryptography >= 1.7.1",
           "ecdsa == 0.13",
           "pytest >= 2.6.4",
