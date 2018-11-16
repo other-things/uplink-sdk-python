@@ -474,33 +474,25 @@ def test_get_contract_callable(rpc, all_args_contract, alice_account,
     dave_addr = dave_account.address
     
     result = rpc.uplink_get_contract_callable(all_args_contract.address)
-    assert result == {u'fn_int': [[alice_addr],[[u'a_', u'int']]],
-                      u'fn_float': [[bob_addr],[[u'b_', u'float']]],
-                      u'fn_fixed5': [[charlie_addr],[[u'c_', u'fixed5']]],
-                      u'fn_fixed2': [[dave_addr],[[u'l_', u'fixed2']]],
-                      u'fn_bool': [[alice_addr,bob_addr],[[u'd_', u'bool']]],
-                      u'fn_msg': [[alice_addr,charlie_addr],[[u'e_', u'msg']]],
-                      u'fn_account': [[alice_addr,dave_addr],[[u'f_', u'account']]],
-                      u'fn_assetDisc': [[bob_addr,charlie_addr],[[u'g_',
-                          u'assetDisc']]],
-                      u'fn_assetBin':
-                          [[bob_addr,dave_addr],[[u'g0_', u'assetBin']]],
-                      u'fn_assetFrac1':
-                          [[charlie_addr,dave_addr],[[u'g1_', u'assetFrac1']]],
-                      u'fn_assetFrac2':
-                          [[alice_addr,bob_addr,charlie_addr],[[u'g2_', u'assetFrac2']]],
-                      u'fn_assetFrac3':
-                          [[alice_addr,bob_addr,dave_addr],[[u'g3_', u'assetFrac3']]],
-                      u'fn_assetFrac4':
-                          [[alice_addr,charlie_addr,dave_addr],[[u'g4_',u'assetFrac4']]],
-                      u'fn_assetFrac5':
-                          [[bob_addr,charlie_addr,dave_addr],[[u'g5_', u'assetFrac5']]],
-                      u'fn_assetFrac6': 
-                          [[alice_addr,bob_addr,charlie_addr,dave_addr],[[u'g6_', u'assetFrac6']]],
-                      u'fn_contract': [[],[[u'h_', u'contract']]],
-                      u'fn_datetime': [[],[[u'i_', u'datetime']]],
-                      u'fn_enum': [[],[[u'k_', u'enum testEnum']]],
-                      u'never_called': [[],[]]
+    assert result == {u'fn_int': [[u'a_', u'int']],
+                      u'fn_float': [[u'b_', u'float']],
+                      u'fn_fixed5': [[u'c_', u'fixed5']],
+                      u'fn_fixed2': [[u'l_', u'fixed2']],
+                      u'fn_bool': [[u'd_', u'bool']],
+                      u'fn_msg': [[u'e_', u'msg']],
+                      u'fn_account': [[u'f_', u'account']],
+                      u'fn_assetDisc': [[u'g_',u'assetDisc']],
+                      u'fn_assetBin': [[u'g0_', u'assetBin']],
+                      u'fn_assetFrac1': [[u'g1_', u'assetFrac1']],
+                      u'fn_assetFrac2': [[u'g2_', u'assetFrac2']],
+                      u'fn_assetFrac3': [[u'g3_', u'assetFrac3']],
+                      u'fn_assetFrac4': [[u'g4_',u'assetFrac4']],
+                      u'fn_assetFrac5': [[u'g5_', u'assetFrac5']],
+                      u'fn_assetFrac6': [[u'g6_', u'assetFrac6']],
+                      u'fn_contract': [[u'h_', u'contract']],
+                      u'fn_datetime': [[u'i_', u'datetime']],
+                      u'fn_enum': [[u'k_', u'enum testEnum']],
+                      u'never_called': []
                       }
 
 
