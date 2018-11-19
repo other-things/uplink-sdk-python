@@ -14,7 +14,7 @@ setup(name='Uplink SDK py',
           "requests == 2.11.1",
           "cryptography >= 1.7.1",
           "ecdsa == 0.13",
-          "pytest >= 2.6.4",
+          "pytest == 3.10.1",
           "pysha3 >= 1.0.2",
           "base58 == 0.2.5",
           'typing'
