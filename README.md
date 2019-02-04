@@ -48,7 +48,7 @@ print rpc.uplink_blocks()
 print rpc.uplink_peers()
 print rpc.uplink_accounts()
 print rpc.uplink_assets()
-print rpc.uplink_accounts()
+print rpc.uplink_contracts()
 
 ```
 
