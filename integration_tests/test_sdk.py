@@ -575,6 +575,26 @@ def test_validate_valid_contract(rpc):
           x = 42 + y;
           transitionTo(@set);
         }"""
-
     result = rpc.uplink_validate_contract(contract)
     assert result
+
+
+def test_validate_invalid_contract(rpc):
+    contract = """
+        transition initial -> set;
+        transition set -> terminal;
+        
+        @set
+        end () {
+          terminate("Now I die.");
+        }
+        
+        @initial
+        setX (int z) {
+          x = 42 + y;
+          transitionTo(@set);
+        }"""
+    try:
+        rpc.uplink_validate_contract(contract)
+    except UplinkJsonRpcError as e:
+        assert (e.response['tag'] == 'TypecheckErr')

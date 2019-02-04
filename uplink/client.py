@@ -292,7 +292,8 @@ class UplinkJsonRpc(object):
         except ValueError:
             raise BadJsonError("bad json error", req.error)
 
-        return response
+        contents = self._handle_response(response, many=False)
+        return contents
 
 
     def uplink_get_invalid_transaction(self, tx_hash):
