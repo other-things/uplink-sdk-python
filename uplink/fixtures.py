@@ -138,6 +138,7 @@ def oracle_contract(contract_gen):
 global float value;
 
 transition initial -> end;
+transition end -> end;
 transition end -> terminal;
 
 @initial
@@ -153,6 +154,8 @@ set(float v) {
 end() {
   if (sender() == deployer()) {
     terminate("This is the end");
+  } else {
+    stay();
   };
 }"""
                             )
@@ -192,99 +195,119 @@ global account bob = u'{1}';
 global account charlie = u'{2}';
 global account dave = u'{3}';
 
+transition initial -> initial;
 transition initial -> end;
+transition end -> end;
 transition end -> terminal;
 
 @initial [ roles : {{ alice }} ]
 fn_int(int a_) {{
     a = a_;
+    stay();
 }}
 
 @initial [ roles : {{ bob }} ]
 fn_float(float b_) {{
     b = b_;
+    stay();
 }}
 
 @initial [ roles : {{ charlie }} ]
 fn_fixed5(fixed5 c_) {{
     c = c_;
+    stay();
 }}
 
 @initial [ roles : {{ dave }} ]
 fn_fixed2(fixed2 l_) {{
     l = l_;
+    stay();
 }}
 
 
 @initial [ roles : {{ alice, bob }} ]
 fn_bool(bool d_) {{
     d = d_;
+    stay();
 }}
 
 @initial [ roles : {{ alice , charlie }} ]
 fn_msg(msg e_) {{
     e = e_;
+    stay();
 }}
 
 @initial [ roles : {{ alice, dave }} ]
 fn_account(account f_) {{
     f = f_;
+    stay();
 }}
 
 @initial [ roles : {{ bob, charlie }} ]
 fn_assetDisc(assetDisc g_) {{
     g = g_;
+    stay();
 }}
 
 @initial [ roles : {{ bob, dave }} ]
 fn_assetBin(assetBin g0_) {{
     g0 = g0_;
+    stay();
 }}
 
 @initial [ roles : {{ charlie, dave }} ]
 fn_assetFrac1(assetFrac1 g1_) {{
     g1 = g1_;
+    stay();
 }}
 
 @initial [ roles : {{ alice, bob, charlie }} ]
 fn_assetFrac2(assetFrac2 g2_) {{
     g2 = g2_;
+    stay();
 }}
 
 @initial [ roles : {{ alice, bob, dave }} ]
 fn_assetFrac3(assetFrac3 g3_) {{
     g3 = g3_;
+    stay();
 }}
 
 @initial [ roles : {{ alice, charlie, dave }} ]
 fn_assetFrac4(assetFrac4 g4_) {{
     g4 = g4_;
+    stay();
 }}
 
 @initial [ roles : {{ bob, charlie, dave }} ]
 fn_assetFrac5(assetFrac5 g5_) {{
     g5 = g5_;
+    stay();
 }}
 
 @initial [ roles : {{ alice, bob, charlie, dave }} ]
 fn_assetFrac6(assetFrac6 g6_) {{
     g6 = g6_;
+    stay();
 }}
 
 @initial
 fn_contract(contract h_) {{
     h = h_;
+    stay();
 }}
 
 
 @initial
 fn_datetime(datetime i_) {{
     i = i_;
+    stay();
 }}
 
 @initial
 fn_enum(enum testEnum k_) {{
     k = k_;
+    stay();
 }}
 
 @initial
@@ -296,6 +319,8 @@ never_called() {{
 end() {{
   if (sender() == deployer()) {{
     terminate("This is the end");
+  }} else {{
+    stay();
   }};
 }}
 """.format(alice_account.address, bob_account.address, charlie_account.address, dave_account.address))
@@ -410,59 +435,65 @@ transition initial -> terminal;
 transition confirmation -> calculate_level;
 transition calculate_level -> determine_final_level;
 transition determine_final_level -> terminal;
+transition initial -> initial;
+transition confirmation -> confirmation;
+transition calculate_level -> calculate_level;
+transition determine_final_level -> determine_final_level;
 
 @initial
 init(fixed2 new_deposit) {{
-   before (closingDate) {{
+   if (now() < closingDate) {{
       if((sender() != issuer) && (new_deposit >= minimum_deposit)) {{
          investor = sender();
          deposit = new_deposit;
          transferHoldings(investor, asset_, deposit, issuer);
          transitionTo(:confirmation);
+      }} else {{
+         stay();
       }};
-   }};
-   after (closingDate) {{
+   }} else {{
       transitionTo(:terminal);
    }};
 }}
 
 @confirmation
 confirmation(fixed2 close_price) {{
-   after (strikeDate) {{
-      if((sender() == datafeed)) {{
-         initial_price = close_price;
-         transitionTo(:calculate_level);
-      }};
+   if ((now() > strikeDate) && (sender() == datafeed)) {{
+    initial_price = close_price;
+    transitionTo(:calculate_level);
+   }} else {{
+    stay();
    }};
 }}
 
 @calculate_level
 calculate_level(fixed2 close_price) {{
-   between (finalDate, maturityDate) {{
-      if((sender() == datafeed)) {{
-         if((isBusinessDayUK(now()))) {{
-            closing_level_sum = closing_level_sum + close_price;
-            counter = counter + 1.00f;
-         }};
-      }};
+   if ((now() > finalDate) && (now() < maturityDate) && (sender() == datafeed) && isBusinessDayUK(now())) {{
+     closing_level_sum = closing_level_sum + close_price;
+     counter = counter + 1.00f;
    }};
-   after (maturityDate) {{ transitionTo(:determine_final_level); }};
+
+   if (now() > maturityDate) {{
+     transitionTo(:determine_final_level);
+   }} else {{
+     stay();
+   }};
 }}
 
 @determine_final_level
 determine_final_level() {{
-   after(maturityDate) {{
-      if(((sender() == investor) || (sender() == issuer))) {{
-         final_price = closing_level_sum / counter;
-         if((final_price > (initial_price * threshold_calc))) {{
-            payout = (deposit + (deposit * return_calc));
-            transferHoldings(issuer, asset_, payout, investor);
-            terminate("returning deposit and profit");
-         }} else {{
-            transferHoldings(issuer, asset_, deposit, investor);
-            terminate("returning deposit");
-         }};
-      }};
+   if ((now() > maturityDate) && (sender() == investor) || (sender() == issuer)) {{
+     final_price = closing_level_sum / counter;
+     if((final_price > (initial_price * threshold_calc))) {{
+       payout = (deposit + (deposit * return_calc));
+       transferHoldings(issuer, asset_, payout, investor);
+       terminate("returning deposit and profit");
+     }} else {{
+       transferHoldings(issuer, asset_, deposit, investor);
+       terminate("returning deposit");
+     }};
+   }} else {{
+     stay();
    }};
 }}
 """.format(issuer, datafeed, asset)
