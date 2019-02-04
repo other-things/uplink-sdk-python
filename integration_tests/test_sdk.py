@@ -558,3 +558,23 @@ def test_get_invalid_tx_missing(rpc, alice_account, bob_account, gold_asset):
 
     result = rpc.uplink_get_invalid_transaction(tx_hash)
     assert result.get("reason")
+
+def test_validate_valid_contract(rpc):
+    contract = """global int x = 0 ;
+
+        transition initial -> set;
+        transition set -> terminal;
+        
+        @set
+        end () {
+          terminate("Now I die.");
+        }
+        
+        @initial
+        setX (int y) {
+          x = 42 + y;
+          transitionTo(@set);
+        }"""
+
+    result = rpc.uplink_validate_contract(contract)
+    assert result

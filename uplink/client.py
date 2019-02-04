@@ -4,8 +4,6 @@ import json
 import time
 import codecs
 import requests
-import hashlib
-from base58 import b58encode
 from requests.exceptions import ConnectionError as RequestsConnectionError
 from .protocol import (Block, Peer, Account, Asset, Contract, Transaction,
                        MemPool, Transfer, TxAccount, TxAsset, TxContract, CreateAccount,
@@ -269,6 +267,33 @@ class UplinkJsonRpc(object):
         result = self._call('GET', endpoint=contract_by_address)
         elems = self._handle_response(result, many=False)
         return elems
+
+    def uplink_validate_contract(self, content):
+        """
+        Validate a contract
+        :return: errors or a compiled contract
+        """
+        endpoint = "contracts/validate"
+
+        scheme = 'http'
+        if self.tls:
+            scheme += 's'
+        else:
+            url = '{}://{}:{}/{}'.format(scheme, self.host,
+                                     self.port, endpoint)
+        try:
+            req = requests.post(url, data=content)
+        except RequestsConnectionError:
+            raise RpcConnectionFail('connection error:', None)
+        if req.status_code / 100 != 2:
+            raise BadStatusCodeError("status code: ", req.status_code)
+        try:
+            response = req.json()
+        except ValueError:
+            raise BadJsonError("bad json error", req.error)
+
+        return response
+
 
     def uplink_get_invalid_transaction(self, tx_hash):
         """
