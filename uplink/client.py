@@ -268,12 +268,12 @@ class UplinkJsonRpc(object):
         elems = self._handle_response(result, many=False)
         return elems
 
-    def uplink_validate_contract(self, content):
+    def uplink_validate_script(self, content):
         """
         Validate a contract
         :return: errors or a compiled contract
         """
-        endpoint = "contracts/validate"
+        endpoint = "scripts/validate"
 
         scheme = 'http'
         if self.tls:
@@ -410,7 +410,7 @@ class UplinkJsonRpc(object):
 
         origin = acc_address if from_address is None else from_address
         tx = Transaction(txb, signature, origin=origin)
-        
+
         tx_hash = self._issue_transaction(tx)
         return (tx_hash, acc_address)
 
@@ -418,7 +418,7 @@ class UplinkJsonRpc(object):
                             supply, asset_type_nm, reference, issuer,
                             precision=None, metadata=None):
         """
-        Create Asset 
+        Create Asset
 
         :param private_key: private key of account creating asset
         :param origin: address of account creating asset
@@ -467,7 +467,7 @@ class UplinkJsonRpc(object):
         signature = pack_signature(r, s)
 
         tx = Transaction(txb, signature, origin=from_address)
-        
+
         tx_hash = self._issue_transaction(tx)
         return tx_hash
 
@@ -488,7 +488,7 @@ class UplinkJsonRpc(object):
         signature = pack_signature(r, s)
 
         tx = Transaction(txb, signature, origin=from_address)
-        
+
         tx_hash = self._issue_transaction(tx)
         return tx_hash
 
@@ -531,7 +531,7 @@ class UplinkJsonRpc(object):
         signature = pack_signature(r, s)
 
         tx = Transaction(txb, signature, origin=from_address)
-        
+
         tx_hash = self._issue_transaction(tx)
         return tx_hash
 
@@ -551,7 +551,7 @@ class UplinkJsonRpc(object):
         signature = pack_signature(r, s)
 
         tx = Transaction(txb, signature, origin=from_address)
-        
+
         tx_hash = self._issue_transaction(tx)
         return tx_hash
 
@@ -573,7 +573,7 @@ class UplinkJsonRpc(object):
         signature = pack_signature(r, s)
 
         tx = Transaction(txb, signature, origin=from_address)
-        
+
         tx_hash = self._issue_transaction(tx)
         return tx_hash
 

@@ -123,10 +123,10 @@ class UplinkSession(object):
             private_key, from_address, script)
         return new_contract
 
-    def validate_contract(self, content):
-        """Validate contract"""
-        validated_contract = self.conn.uplink_validate_contract(content)
-        return validated_contract
+    def validate_script(self, content):
+        """Validate script"""
+        validated_script = self.conn.uplink_validate_script(content)
+        return validated_script
 
     def transfer_asset(self, private_key, from_address, to_address, balance, asset_address):
         """Transfer asset"""

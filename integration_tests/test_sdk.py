@@ -207,7 +207,7 @@ def test_circulate_and_transfer(rpc, alice_account, bob_account, asset_gen,
                                        method='circulate2',
                                        args=[VAsset(circ_tran_asset.address),
                                              transfer_val])
-    
+
     wait_until_tx_accepted(rpc, txhash3)
     # entire asset supply should be circulated now
     circulated2_asset = get_asset()
@@ -245,9 +245,9 @@ def test_circulate_and_transfer_simulation(rpc, alice_account, bob_account, asse
                                            supply, asset_type_name, precision,
                                            transfer_val):
 
-    circ_tran_asset = asset_gen(asset_name, alice_account, supply, 
+    circ_tran_asset = asset_gen(asset_name, alice_account, supply,
                                 asset_type_name, precision)
-    
+
     # Create the simulation with certain asset types
     sim_script = mk_circulate_transfer_script(asset_type_name, precision)
     simKey = rpc.uplink_sim_create(alice_account.address, sim_script)["simKey"]
@@ -255,8 +255,8 @@ def test_circulate_and_transfer_simulation(rpc, alice_account, bob_account, asse
     alice_addr = alice_account.address
 
     # Circulate half of supply to alice (asset issuer)
-    result1 = rpc.uplink_sim_call(simKey, caller=alice_addr, method="circulate1", 
-                                  args=[VAsset(circ_tran_asset.address), 
+    result1 = rpc.uplink_sim_call(simKey, caller=alice_addr, method="circulate1",
+                                  args=[VAsset(circ_tran_asset.address),
                                         transfer_val])
     assert is_rpc_ok(result1)
 
@@ -267,13 +267,13 @@ def test_circulate_and_transfer_simulation(rpc, alice_account, bob_account, asse
                                         VAccount(bob_account.address),
                                         transfer_val])
     assert is_rpc_ok(result2)
-            
+
     # Circulate remaining supply to alice (0 supply left)
     result3 = rpc.uplink_sim_call(simKey, caller=alice_addr, method='circulate2',
                                   args=[VAsset(circ_tran_asset.address),
                                         transfer_val])
     assert is_rpc_ok(result3)
-    
+
     # entire asset supply should be circulated now
     assert(rpc.uplink_sim_query_asset(simKey, circ_tran_asset.address).supply == 0)
 
@@ -301,7 +301,7 @@ def mkFixed2(n):
 def test_principal_protected_simulation(rpc, alice_account, bob_account, asset_gen,
                                         deposit, initial_price, final_price, payout):
 
-    days_between_final_and_maturity = 19 
+    days_between_final_and_maturity = 19
 
     # account representing 3rd party data feed account on ledger
     data_feed_acc = per_test_account(rpc)
@@ -353,12 +353,12 @@ def test_principal_protected_simulation(rpc, alice_account, bob_account, asset_g
                         method="confirmation",
                         args=[initial_price])
     rpc.uplink_sim_update_add_timedelta(simKey, "1d")
-    
-    # 4) for every (business) day between the the final date and the maturity 
+
+    # 4) for every (business) day between the the final date and the maturity
     #    date, the date feed account repeatedly calls into the contract to set
     #    close_price for that day, accumulating a running average.
     for i in range (0, days_between_final_and_maturity + 1):
-        #    4i) data feed repeatedly sets the close  
+        #    4i) data feed repeatedly sets the close
         rpc.uplink_sim_call(simKey, caller=data_feed_addr,
                             method="calculate_level",
                             args=[final_price])
@@ -368,7 +368,7 @@ def test_principal_protected_simulation(rpc, alice_account, bob_account, asset_g
     #    to settle the contract in which the investor either gets back the
     #    deposit or the payout.
     rpc.uplink_sim_call(simKey, caller=alice_addr,
-                        method="determine_final_level", 
+                        method="determine_final_level",
                         args=[])
 
     # check if investor has $1950.00 holdings (deposit + (deposit * threshold_calc))
@@ -400,13 +400,13 @@ def test_principal_protected_simulation(rpc, alice_account, bob_account, asset_g
 ])
 def test_all_args_contract(rpc, all_args_contract, alice_account, bob_account,
         charlie_account, dave_account, account, method_name, var_name, arg):
-   
+
     accounts = { "alice_account" : alice_account
                , "bob_account" : bob_account
                , "charlie_account" : charlie_account
                , "dave_account" : dave_account
                }
-   
+
     address = accounts[account].address
     priv_key = accounts[account].private_key
 
@@ -467,12 +467,12 @@ def test_get_contract(rpc, example_contract):
 
 def test_get_contract_callable(rpc, all_args_contract, alice_account,
         bob_account, charlie_account, dave_account):
-    
+
     alice_addr = alice_account.address
     bob_addr = bob_account.address
     charlie_addr = charlie_account.address
     dave_addr = dave_account.address
-    
+
     result = rpc.uplink_get_contract_callable(all_args_contract.address)
     assert result == {u'fn_int': [[alice_addr],[[u'a_', u'int']]],
                       u'fn_float': [[bob_addr],[[u'b_', u'float']]],
@@ -495,7 +495,7 @@ def test_get_contract_callable(rpc, all_args_contract, alice_account,
                           [sorted([alice_addr,charlie_addr,dave_addr]),[[u'g4_',u'assetFrac4']]],
                       u'fn_assetFrac5':
                           [sorted([bob_addr,charlie_addr,dave_addr]),[[u'g5_', u'assetFrac5']]],
-                      u'fn_assetFrac6': 
+                      u'fn_assetFrac6':
                           [sorted([alice_addr,bob_addr,charlie_addr,dave_addr]),[[u'g6_', u'assetFrac6']]],
                       u'fn_contract': [[],[[u'h_', u'contract']]],
                       u'fn_datetime': [[],[[u'i_', u'datetime']]],
@@ -559,42 +559,42 @@ def test_get_invalid_tx_missing(rpc, alice_account, bob_account, gold_asset):
     result = rpc.uplink_get_invalid_transaction(tx_hash)
     assert result.get("reason")
 
-def test_validate_valid_contract(rpc):
-    contract = """global int x = 0 ;
+def test_validate_valid_script(rpc):
+    script = """global int x = 0 ;
 
         transition initial -> set;
         transition set -> terminal;
-        
+
         @set
         end () {
           terminate("Now I die.");
         }
-        
+
         @initial
         setX (int y) {
           x = 42 + y;
           transitionTo(@set);
         }"""
-    result = rpc.uplink_validate_contract(contract)
+    result = rpc.uplink_validate_script(script)
     assert result
 
 
-def test_validate_invalid_contract(rpc):
-    contract = """
+def test_validate_invalid_script(rpc):
+    script = """
         transition initial -> set;
         transition set -> terminal;
-        
+
         @set
         end () {
           terminate("Now I die.");
         }
-        
+
         @initial
         setX (int z) {
           x = 42 + y;
           transitionTo(@set);
         }"""
     try:
-        rpc.uplink_validate_contract(contract)
+        rpc.uplink_validate_script(script)
     except UplinkJsonRpcError as e:
         assert (e.response['tag'] == 'TypecheckErr')
