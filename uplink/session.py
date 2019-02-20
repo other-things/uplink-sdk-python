@@ -128,6 +128,10 @@ class UplinkSession(object):
         validated_script = self.conn.uplink_validate_script(content)
         return validated_script
 
+    def command(self, content):
+        """Adjoint command"""
+        return self.conn.uplink_command(content)
+
     def transfer_asset(self, private_key, from_address, to_address, balance, asset_address):
         """Transfer asset"""
         receipt = self.conn.uplink_transfer_asset(

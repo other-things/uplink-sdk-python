@@ -598,3 +598,19 @@ def test_validate_invalid_script(rpc):
         rpc.uplink_validate_script(script)
     except UplinkJsonRpcError as e:
         assert (e.response['tag'] == 'TypecheckErr')
+
+def test_command(rpc):
+    command = {	"reqScriptDefs": [{ "reqGDefName": "myGlobalVar",
+                                    "reqGDefType": "int",
+                                    "reqGDefValue": "3" }],
+                "reqScriptEnums": [],
+                "reqScriptMethods": [{
+                        "reqMethodInputPlaces": "initial",
+                        "reqMethodPreconditions": { "unPreconditions": [] },
+                        "reqMethodName": "myMethodName",
+                        "reqMethodBodyText": "{ y = 1; terminate(\"\");}",
+                        "reqMethodArgs": [{"reqMArgName": "hs", "reqMArgType": "msg" }]
+                }]
+              }
+    resp = rpc.uplink_command(command)
+    assert resp.get('respScript')
