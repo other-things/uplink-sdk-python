@@ -1,6 +1,7 @@
 from ecdsa.keys import *
 from ecdsa.ecdsa import *
 from ecdsa.curves import *
+import json
 from uplink import *
 
 from uplink.fixtures import *
@@ -560,57 +561,19 @@ def test_get_invalid_tx_missing(rpc, alice_account, bob_account, gold_asset):
     assert result.get("reason")
 
 def test_validate_valid_script(rpc):
-    script = """global int x = 0 ;
-
-        transition initial -> set;
-        transition set -> terminal;
-
-        @set
-        end () {
-          terminate("Now I die.");
-        }
-
-        @initial
-        setX (int y) {
-          x = 42 + y;
-          transitionTo(@set);
-        }"""
+    script = open('tests/FCL/example.s').read()
     result = rpc.uplink_validate_script(script)
     assert result
 
 
 def test_validate_invalid_script(rpc):
-    script = """
-        transition initial -> set;
-        transition set -> terminal;
-
-        @set
-        end () {
-          terminate("Now I die.");
-        }
-
-        @initial
-        setX (int z) {
-          x = 42 + y;
-          transitionTo(@set);
-        }"""
     try:
+        script = open('tests/FCL/bad_example.s').read()
         rpc.uplink_validate_script(script)
     except UplinkJsonRpcError as e:
         assert (e.response['tag'] == 'TypecheckErr')
 
-def test_command(rpc):
-    command = {	"reqScriptDefs": [{ "reqGDefName": "myGlobalVar",
-                                    "reqGDefType": "int",
-                                    "reqGDefValue": "3" }],
-                "reqScriptEnums": [],
-                "reqScriptMethods": [{
-                        "reqMethodInputPlaces": "initial",
-                        "reqMethodPreconditions": { "unPreconditions": [] },
-                        "reqMethodName": "myMethodName",
-                        "reqMethodBodyText": "{ y = 1; terminate(\"\");}",
-                        "reqMethodArgs": [{"reqMArgName": "hs", "reqMArgType": "msg" }]
-                }]
-              }
-    resp = rpc.uplink_command(command)
-    assert resp.get('respScript')
+def test_command_infer_terminal(rpc):
+    command = open('tests/FCL/command/simple-infer-transitions.json').read()
+    resp = rpc.uplink_command(json.loads(command))
+    assert resp.get('respScript').get('scriptTransitions') == [['initial', 'terminal']]

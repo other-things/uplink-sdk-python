@@ -277,7 +277,7 @@ class UplinkJsonRpc(object):
         :return: errors or a compiled contract
         """
         endpoint = "scripts/validate"
-        response = self._call(content, endpoint=contract_by_address)
+        response = self._call(content, endpoint=endpoint)
         return self._handle_response(response, many=False)
 
     def uplink_command(self, payload):
