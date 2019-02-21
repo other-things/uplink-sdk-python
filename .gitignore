@@ -10,3 +10,4 @@ MANIFEST
 .pytest_cache/
 Pipfile
 Pipfile.lock
+.idea
