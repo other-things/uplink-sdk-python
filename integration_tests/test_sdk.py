@@ -33,9 +33,6 @@ def test_create_asset_fractional(platinum_asset):
     pass
 
 def test_transfer_asset(rpc, alice_account, bob_account, gold_asset):
-    # Shorter alias for querying asset
-    def get_asset():
-        return rpc.uplink_get_asset(gold_asset.address)
 
     # transfer alice gold asset supply to alice holdings
     tx_hash_0 = rpc.uplink_circulate_asset(private_key=alice_account.private_key,
@@ -43,7 +40,7 @@ def test_transfer_asset(rpc, alice_account, bob_account, gold_asset):
                                            amount=500,
                                            asset_address=gold_asset.address)
     wait_until_tx_accepted(rpc, tx_hash_0)
-    circulated_asset = get_asset()
+    circulated_asset = rpc.uplink_get_asset(gold_asset.address)
     # Assert the circulation worked
     assert circulated_asset.supply == gold_asset.supply - 500
     assert circulated_asset.holdings[alice_account.address] == 500
@@ -55,7 +52,7 @@ def test_transfer_asset(rpc, alice_account, bob_account, gold_asset):
                                           balance=250,
                                           asset_address=gold_asset.address)
     wait_until_tx_accepted(rpc, tx_hash_1)
-    transferred_asset_1 = get_asset()
+    transferred_asset_1 = rpc.uplink_get_asset(gold_asset.address)
     # Assert the transfer worked
     assert transferred_asset_1.holdings[alice_account.address] == 250
     assert transferred_asset_1.holdings[bob_account.address] == 250
@@ -68,7 +65,7 @@ def test_transfer_asset(rpc, alice_account, bob_account, gold_asset):
                                           asset_address=gold_asset.address)
 
     wait_until_tx_accepted(rpc, tx_hash_2)
-    transferred_asset_2 = get_asset()
+    transferred_asset_2 = rpc.uplink_get_asset(gold_asset.address)
     # Assert the transfer worked
     assert transferred_asset_2.holdings[bob_account.address] == 200
     assert transferred_asset_2.holdings[alice_account.address] == 300
@@ -171,10 +168,6 @@ def test_circulate_and_transfer(rpc, alice_account, bob_account, asset_gen,
 
     transfer_val_int = get_transfer_val_as_int()
 
-    # Shorter alias for querying asset
-    def get_asset():
-        return rpc.uplink_get_asset(circ_tran_asset.address)
-
     # Circulate half of supply to alice (asset issuer)
     txhash1 = rpc.uplink_call_contract(private_key=alice_account.private_key,
                                        from_address=alice_account.address,
@@ -183,7 +176,7 @@ def test_circulate_and_transfer(rpc, alice_account, bob_account, asset_gen,
                                        args=[VAsset(circ_tran_asset.address),
                                              transfer_val])
     wait_until_tx_accepted(rpc, txhash1)
-    circulated1_asset = get_asset()
+    circulated1_asset = rpc.uplink_get_asset(circ_tran_asset.address)
     assert circulated1_asset.supply == transfer_val_int
     assert circulated1_asset.holdings[alice_account.address] == transfer_val_int
 
@@ -197,7 +190,7 @@ def test_circulate_and_transfer(rpc, alice_account, bob_account, asset_gen,
                                              VAccount(bob_account.address),
                                              transfer_val])
     wait_until_tx_accepted(rpc, txhash2)
-    transfer1_asset= get_asset()
+    transfer1_asset= rpc.uplink_get_asset(circ_tran_asset.address)
     assert transfer1_asset.holdings[bob_account.address] == transfer_val_int
     assert (len(transfer1_asset.holdings) == 1)
 
@@ -211,7 +204,7 @@ def test_circulate_and_transfer(rpc, alice_account, bob_account, asset_gen,
 
     wait_until_tx_accepted(rpc, txhash3)
     # entire asset supply should be circulated now
-    circulated2_asset = get_asset()
+    circulated2_asset = rpc.uplink_get_asset(circ_tran_asset.address)
     assert circulated2_asset.supply == 0
     assert circulated2_asset.holdings[alice_account.address] == transfer_val_int
 
@@ -226,7 +219,7 @@ def test_circulate_and_transfer(rpc, alice_account, bob_account, asset_gen,
                                              transfer_val])
     wait_until_tx_accepted(rpc, txhash4)
     # Bob should have all the holdings
-    transfer2_asset = get_asset()
+    transfer2_asset = rpc.uplink_get_asset(circ_tran_asset.address)
     assert transfer2_asset.holdings[bob_account.address] == supply
     assert (len(transfer2_asset.holdings) == 1)
 
@@ -314,8 +307,6 @@ def test_principal_protected_simulation(rpc, alice_account, bob_account, asset_g
     alice_addr = alice_account.address
     bob_addr = bob_account.address
     data_feed_addr = data_feed_acc.address
-    def get_asset():
-        return rpc.uplink_get_asset(pp_asset.address)
     # -------------------------------
 
     # circulate and transfer proper amount from issuer to investor
@@ -323,15 +314,15 @@ def test_principal_protected_simulation(rpc, alice_account, bob_account, asset_g
                                     from_address=alice_account.address,
                                     amount=100000000,
                                     asset_address=pp_asset.address)
-    wait_until(lambda: get_asset().supply == 0)
-    wait_until(lambda: get_asset().holdings[alice_account.address] == 100000000)
+    wait_until(lambda: rpc.uplink_get_asset(pp_asset.address).supply == 0)
+    wait_until(lambda: rpc.uplink_get_asset(pp_asset.address).holdings[alice_account.address] == 100000000)
     t2 = rpc.uplink_transfer_asset(private_key=alice_account.private_key,
                                    from_address=alice_account.address,
                                    to_address=bob_account.address,
                                    balance=100000,
                                    asset_address=pp_asset.address)
-    wait_until(lambda: get_asset().holdings[alice_account.address] == 99900000)
-    wait_until(lambda: get_asset().holdings[bob_account.address] == 100000)
+    wait_until(lambda: rpc.uplink_get_asset(pp_asset.address).holdings[alice_account.address] == 99900000)
+    wait_until(lambda: rpc.uplink_get_asset(pp_asset.address).holdings[bob_account.address] == 100000)
 
     # create simulation of principal protected contract
     pp_script = mk_principal_protected_script(alice_addr,

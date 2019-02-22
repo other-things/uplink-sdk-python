@@ -34,9 +34,6 @@ class UplinkJsonRpc(object):
 
     def _make_url(self, endpoint):
         scheme = 'https' if self.tls else 'http'
-        #  if endpoint is None:
-            #  return '{}://{}:{}'.format(scheme, self.host, self.port)
-        #  else:
         return '{}://{}:{}/{}'.format(scheme, self.host,
                                          self.port, endpoint)
 
@@ -50,6 +47,7 @@ class UplinkJsonRpc(object):
 
     def _call(self, data='', method='post', params={}, endpoint=''):
         url = self._make_url(endpoint)
+        print(url)
 
         try:
             req = getattr(requests, method)(url, data=data)
