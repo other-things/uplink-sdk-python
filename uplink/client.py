@@ -44,23 +44,21 @@ class UplinkJsonRpc(object):
         }
         return json.dumps(data)
 
-
-    def _call(self, data='', method='post', params={}, endpoint=''):
+    def _call(self, data='', method='post', endpoint=''):
         url = self._make_url(endpoint)
         print(url)
 
         try:
-            req = getattr(requests, method)(url, data=data)
+            response = getattr(requests, method)(url, data=data)
         except RequestsConnectionError:
             raise RpcConnectionFail('connection error:', None)
-        if req.status_code / 100 != 2:
-            raise BadStatusCodeError("status code: ", req.status_code)
+        if response.status_code / 100 != 2:
+            raise BadStatusCodeError("status code: " + str(response.status_code), response)
         try:
-            response = req.json()
-        except ValueError:
-            raise BadJsonError("bad json error", req.error)
+            return response.json()
+        except ValueError as e:
+            raise BadJsonError("bad json error", e)
 
-        return response
 
     # Issues a transaction to the uplink RPC interface, returning the
     # tranasction hash on success, and throwing an exception on failure.
@@ -81,7 +79,6 @@ class UplinkJsonRpc(object):
                 assert type(result['contents']) is dict
             return result['contents']
         else:
-            print(result)
             raise UplinkJsonRpcError(result["tag"], result["contents"])
 
     def _handle_success(self, result):
