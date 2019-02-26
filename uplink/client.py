@@ -268,10 +268,37 @@ class UplinkJsonRpc(object):
 
     def uplink_validate_script(self, content):
         """
-        Validate a contract
-        :return: errors or a compiled contract
+        Validate a script
+        :return: errors or a compiled script
         """
         endpoint = "scripts/validate"
+        response = self._call(content, endpoint=endpoint)
+        return self._handle_response(response, many=False)
+
+    def uplink_parse_script(self, content):
+        """
+        Parse a script
+        :return: errors or a compiled contract
+        """
+        endpoint = "scripts/parse"
+        response = self._call(content, endpoint=endpoint)
+        return self._handle_response(response, many=False)
+
+    def uplink_parse_method(self, content):
+        """
+        Parse a method
+        :return: errors or a compiled contract
+        """
+        endpoint = "scripts/parse/method"
+        response = self._call(content, endpoint=endpoint)
+        return self._handle_response(response, many=False)
+
+    def uplink_parse_def(self, content):
+        """
+        Parse a definition
+        :return: errors or a compiled contract
+        """
+        endpoint = "scripts/parse/def"
         response = self._call(content, endpoint=endpoint)
         return self._handle_response(response, many=False)
 

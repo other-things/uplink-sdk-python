@@ -128,6 +128,21 @@ class UplinkSession(object):
         validated_script = self.conn.uplink_validate_script(content)
         return validated_script
 
+    def parse_script(self, content):
+        """Parse script"""
+        parsed_script = self.conn.uplink_parse_script(content)
+        return parsed_script
+
+    def parse_method(self, content):
+        """Parse method"""
+        parsed_method = self.conn.uplink_parse_method(content)
+        return parsed_method
+
+    def parse_def(self, content):
+        """Parse def"""
+        parsed_def = self.conn.uplink_parse_def(content)
+        return parsed_def
+
     def command(self, content):
         """Adjoint command"""
         return self.conn.uplink_command(content)
