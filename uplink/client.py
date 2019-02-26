@@ -280,8 +280,8 @@ class UplinkJsonRpc(object):
         Parse a script
         :return: errors or a compiled contract
         """
-        endpoint = "scripts/parse"
-        response = self._call(content, endpoint=endpoint)
+        endpoint = "scripts/command/parse"
+        response = self._call(json.dumps(content), endpoint=endpoint)
         return self._handle_response(response, many=False)
 
     def uplink_parse_method(self, content):
