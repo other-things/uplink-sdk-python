@@ -4,8 +4,6 @@ import json
 import time
 import codecs
 import requests
-import hashlib
-from base58 import b58encode
 from requests.exceptions import ConnectionError as RequestsConnectionError
 from .protocol import (Block, Peer, Account, Asset, Contract, Transaction,
                        MemPool, Transfer, TxAccount, TxAsset, TxContract, CreateAccount,
@@ -34,39 +32,39 @@ class UplinkJsonRpc(object):
         self.endpoint = endpoint
         self.tls = tls
 
-    def _call(self, method, params=None, endpoint=None):
-        self.endpoint = endpoint
-        params = params or {}
+    def _make_url(self, endpoint):
+        scheme = 'https' if self.tls else 'http'
+        return '{}://{}:{}/{}'.format(scheme, self.host,
+                                         self.port, endpoint)
+
+    def _make_cmd_data(self, method, params={}):
         data = {
             'method': method,
             'params': params,
         }
-        scheme = 'http'
-        if self.tls:
-            scheme += 's'
-        if self.endpoint is None:
-            url = '{}://{}:{}'.format(scheme, self.host, self.port)
-        else:
-            url = '{}://{}:{}/{}'.format(scheme, self.host,
-                                         self.port, self.endpoint)
+        return json.dumps(data)
+
+    def _call(self, data='', method='post', endpoint=''):
+        url = self._make_url(endpoint)
+        print(url)
 
         try:
-            req = requests.post(url, data=json.dumps(data))
+            response = getattr(requests, method)(url, data=data)
         except RequestsConnectionError:
             raise RpcConnectionFail('connection error:', None)
-        if req.status_code / 100 != 2:
-            raise BadStatusCodeError("status code: ", req.status_code)
+        if response.status_code / 100 != 2:
+            raise BadStatusCodeError("status code: " + str(response.status_code), response)
         try:
-            response = req.json()
-        except ValueError:
-            raise BadJsonError("bad json error", req.error)
+            return response.json()
+        except ValueError as e:
+            raise BadJsonError("bad json error", e)
 
-        return response
 
     # Issues a transaction to the uplink RPC interface, returning the
     # tranasction hash on success, and throwing an exception on failure.
     def _issue_transaction(self, tx):
-        response = self._call("Transaction", tx.to_dict())
+        data = self._make_cmd_data("Transaction", tx.to_dict())
+        response = self._call(data)
         if response["tag"] == "RPCTransactionOK":
             return response["txHash"]
         else:
@@ -81,7 +79,6 @@ class UplinkJsonRpc(object):
                 assert type(result['contents']) is dict
             return result['contents']
         else:
-            print(result)
             raise UplinkJsonRpcError(result["tag"], result["contents"])
 
     def _handle_success(self, result):
@@ -110,8 +107,7 @@ class UplinkJsonRpc(object):
             }
         }
 
-        result = self._call("Test", params=params)
-        return result
+        return self._call(self._make_cmd_data("Test", params))
 
     def uplink_block(self, block_id):
         """
@@ -121,7 +117,7 @@ class UplinkJsonRpc(object):
         :return: specific block
         """
         block_by_id = 'blocks/{}'.format(block_id)
-        result = self._call('GET', endpoint=block_by_id)
+        result = self._call(endpoint=block_by_id)
         elems = self._handle_response(result, many=False)
         return Block(**elems)
 
@@ -131,7 +127,7 @@ class UplinkJsonRpc(object):
 
         :return: all blocks
         """
-        result = self._call('GET', endpoint='blocks')
+        result = self._call(endpoint='blocks')
         elems = self._handle_response(result, many=True)
         return [Block(**args) for args in elems]
 
@@ -141,7 +137,7 @@ class UplinkJsonRpc(object):
 
         :return: all peers
         """
-        result = self._call('GET', endpoint='peers')
+        result = self._call(endpoint='peers')
         elems = self._handle_response(result, many=True)
         return [Peer(**args) for args in elems]
 
@@ -151,7 +147,7 @@ class UplinkJsonRpc(object):
 
         :return: all validating peers
         """
-        result = self._call('GET', endpoint='peers/validators')
+        result = self._call(endpoint='peers/validators')
         elems = self._handle_response(result, many=True)
         return [Peer(**args) for args in elems]
 
@@ -161,7 +157,7 @@ class UplinkJsonRpc(object):
 
         :return:
         """
-        response = self._call('GET', endpoint='transactions/status/{}'.format(tx_hash))
+        response = self._call(endpoint='transactions/status/{}'.format(tx_hash))
         if response["contents"] == "NonExistent":
             raise TransactionNonExistent(tx_hash)
         else:
@@ -175,7 +171,7 @@ class UplinkJsonRpc(object):
         :return: all transactions specified by block id
         """
         transactions_by_id = 'transactions/{}'.format(block_id)
-        result = self._call('GET', endpoint=transactions_by_id)
+        result = self._call(endpoint=transactions_by_id)
         elems = self._handle_response(result, many=True)
         return [Transaction(**args) for args in elems]
 
@@ -185,7 +181,7 @@ class UplinkJsonRpc(object):
 
         :return: all accounts
         """
-        result = self._call('GET', endpoint='accounts')
+        result = self._call(endpoint='accounts')
         elems = self._handle_response(result, many=True)
         return [Account(**args) for args in elems]
 
@@ -197,7 +193,7 @@ class UplinkJsonRpc(object):
         :return: specific account and associated details
         """
         account_by_address = 'accounts/{}'.format(address)
-        result = self._call('GET', endpoint=account_by_address)
+        result = self._call(endpoint=account_by_address)
         elems = self._handle_response(result, many=False)
         return Account(**elems)
 
@@ -207,7 +203,7 @@ class UplinkJsonRpc(object):
 
         :return: all assets
         """
-        result = self._call('GET', endpoint='assets')
+        result = self._call(endpoint='assets')
         elems = self._handle_response(result, many=True)
 
         return [Asset(**args) for args in elems]
@@ -220,7 +216,7 @@ class UplinkJsonRpc(object):
         :return: specific asset and associated details
         """
         asset_by_address = 'assets/{}'.format(address)
-        result = self._call('GET', endpoint=asset_by_address)
+        result = self._call(endpoint=asset_by_address)
         elems = self._handle_response(result, many=False)
         try:
             if elems['errorMsg']:
@@ -235,7 +231,7 @@ class UplinkJsonRpc(object):
 
         :return: version
         """
-        return self._call('GET', endpoint='version')
+        return self._call(endpoint='version')
 
     def uplink_contracts(self):
         """
@@ -243,7 +239,7 @@ class UplinkJsonRpc(object):
 
         :return: all contracts
         """
-        result = self._call('GET', endpoint='contracts')
+        result = self._call(endpoint='contracts')
         elems = self._handle_response(result, many=True)
 
         return [Contract(**args) for args in elems]
@@ -256,7 +252,7 @@ class UplinkJsonRpc(object):
         :return: specific contract and associated details
         """
         contract_by_address = 'contracts/{}'.format(address)
-        result = self._call('GET', endpoint=contract_by_address)
+        result = self._call(endpoint=contract_by_address)
         elems = self._handle_response(result, many=False)
         return Contract(**elems)
 
@@ -266,9 +262,53 @@ class UplinkJsonRpc(object):
         return specific contract methods
         """
         contract_by_address = 'contracts/{}/callable'.format(address)
-        result = self._call('GET', endpoint=contract_by_address)
+        result = self._call(endpoint=contract_by_address)
         elems = self._handle_response(result, many=False)
         return elems
+
+    def uplink_validate_script(self, content):
+        """
+        Validate a script
+        :return: errors or a compiled script
+        """
+        endpoint = "scripts/validate"
+        response = self._call(content, endpoint=endpoint)
+        return self._handle_response(response, many=False)
+
+    def uplink_parse_script(self, content):
+        """
+        Parse a script
+        :return: errors or a compiled contract
+        """
+        endpoint = "scripts/command/parse"
+        response = self._call(json.dumps(content), endpoint=endpoint)
+        return self._handle_response(response, many=False)
+
+    def uplink_parse_method(self, content):
+        """
+        Parse a method
+        :return: errors or a compiled contract
+        """
+        endpoint = "scripts/parse/method"
+        response = self._call(content, endpoint=endpoint)
+        return self._handle_response(response, many=False)
+
+    def uplink_parse_def(self, content):
+        """
+        Parse a definition
+        :return: errors or a compiled contract
+        """
+        endpoint = "scripts/parse/def"
+        response = self._call(content, endpoint=endpoint)
+        return self._handle_response(response, many=False)
+
+    def uplink_command(self, payload):
+        """
+
+        """
+        endpoint = "scripts/command"
+        response = self._call(json.dumps(payload), endpoint=endpoint)
+        return self._handle_response(response, many=False)
 
     def uplink_get_invalid_transaction(self, tx_hash):
         """
@@ -276,7 +316,7 @@ class UplinkJsonRpc(object):
 
         :return:
         """
-        response = self._call('GET', endpoint='transactions/invalid/{}'.format(tx_hash))
+        response = self._call(endpoint='transactions/invalid/{}'.format(tx_hash))
         if response["contents"] == "NonExistent":
             raise TransactionNonExistent(tx_hash)
         else:
@@ -288,7 +328,7 @@ class UplinkJsonRpc(object):
 
         :return: all invalid transactions
         """
-        result = self._call('GET', endpoint='transactions/invalid')
+        result = self._call(endpoint='transactions/invalid')
         elems = self._handle_response(result, many=True)
         return elems
 
@@ -298,7 +338,7 @@ class UplinkJsonRpc(object):
 
         :return: all unconfirmed transactions on current node
         """
-        result = self._call('GET', endpoint='transactions/pool')
+        result = self._call(endpoint='transactions/pool')
         mem_pool_dict = self._handle_response(result, many=False)
         return MemPool(mem_pool_dict)
 
@@ -307,7 +347,7 @@ class UplinkJsonRpc(object):
         Get size of node mempool
         :return: amount of unconfirmed transactions on current node
         """
-        result = self._call('GET', endpoint='transactions/pool/size')
+        result = self._call(endpoint='transactions/pool/size')
         return self._handle_response(result, many=False)
 
     def uplink_get_mempools(self):
@@ -316,7 +356,7 @@ class UplinkJsonRpc(object):
 
         :return: amount of unconfirmed
         """
-        return self._call('GET', endpoint='transactions/pool/all')
+        return self._call(endpoint='transactions/pool/all')
 
     def uplink_get_mempools_sizes(self):
         """
@@ -324,7 +364,7 @@ class UplinkJsonRpc(object):
 
         :return: amount of unconfirmed transactions on all network nodes
         """
-        return self._call('GET', endpoint='transactions/pool/all/sizes')
+        return self._call(endpoint='transactions/pool/all/sizes')
 
     def uplink_test_saturate_network(self, n_txs, n_secs):
         """
@@ -339,7 +379,7 @@ class UplinkJsonRpc(object):
             "params": {"nTxs": n_txs,
                        "nSecs": n_secs}
         }
-        return self._call("Test", params)
+        return self._call(self._make_cmd_data("Test", params))
 
     def uplink_test_reset_mempools(self):
         """
@@ -352,7 +392,7 @@ class UplinkJsonRpc(object):
             "method": "ResetMemPools",
             "params": {}
         }
-        return self._call("Test", params)
+        return self._call(self._make_cmd_data("Test", params))
 
     def uplink_create_account(self, private_key, public_key,
                               from_address=None, metadata=None, timezone=None):
@@ -384,7 +424,7 @@ class UplinkJsonRpc(object):
 
         origin = acc_address if from_address is None else from_address
         tx = Transaction(txb, signature, origin=origin)
-        
+
         tx_hash = self._issue_transaction(tx)
         return (tx_hash, acc_address)
 
@@ -392,7 +432,7 @@ class UplinkJsonRpc(object):
                             supply, asset_type_nm, reference, issuer,
                             precision=None, metadata=None):
         """
-        Create Asset 
+        Create Asset
 
         :param private_key: private key of account creating asset
         :param origin: address of account creating asset
@@ -441,7 +481,7 @@ class UplinkJsonRpc(object):
         signature = pack_signature(r, s)
 
         tx = Transaction(txb, signature, origin=from_address)
-        
+
         tx_hash = self._issue_transaction(tx)
         return tx_hash
 
@@ -462,7 +502,7 @@ class UplinkJsonRpc(object):
         signature = pack_signature(r, s)
 
         tx = Transaction(txb, signature, origin=from_address)
-        
+
         tx_hash = self._issue_transaction(tx)
         return tx_hash
 
@@ -505,7 +545,7 @@ class UplinkJsonRpc(object):
         signature = pack_signature(r, s)
 
         tx = Transaction(txb, signature, origin=from_address)
-        
+
         tx_hash = self._issue_transaction(tx)
         return tx_hash
 
@@ -525,7 +565,7 @@ class UplinkJsonRpc(object):
         signature = pack_signature(r, s)
 
         tx = Transaction(txb, signature, origin=from_address)
-        
+
         tx_hash = self._issue_transaction(tx)
         return tx_hash
 
@@ -547,7 +587,7 @@ class UplinkJsonRpc(object):
         signature = pack_signature(r, s)
 
         tx = Transaction(txb, signature, origin=from_address)
-        
+
         tx_hash = self._issue_transaction(tx)
         return tx_hash
 
@@ -557,7 +597,7 @@ class UplinkJsonRpc(object):
         :param query: query string to send to database
         :return: response to query will be list of assets, accounts, or contracts.
         """
-        result = self._call('Query', params=query, endpoint='')
+        result = self._call(self._make_cmd_data('Query', params=query))
         return self._handle_response(result, many=False)
 
     def uplink_sim_create(self, issuer, script, world=None):
@@ -570,7 +610,7 @@ class UplinkJsonRpc(object):
                 "world": world
             }
         }
-        result = self._call('Simulate', params=params, endpoint='')
+        result = self._call(self._make_cmd_data('Simulate', params=params))
         return self._handle_response(result, many=False)
 
     def uplink_sim_update(self, simulation_id, method_json):
@@ -588,7 +628,7 @@ class UplinkJsonRpc(object):
                 "contents": method_json
             }
         }
-        result = self._call('Simulate', params=params, endpoint='')
+        result = self._call(self._make_cmd_data('Simulate', params=params))
         if self._handle_success(result):
             return result
         else:
@@ -668,7 +708,7 @@ class UplinkJsonRpc(object):
                 }
             }
         }
-        result = self._call('Simulate', params=params, endpoint='')
+        result = self._call(self._make_cmd_data('Simulate', params=params))
         return self._handle_response(result, many=many)
 
     def uplink_sim_query_methods(self, simulation_id):
