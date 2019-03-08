@@ -1,3 +1,3 @@
 {
-    "contract": "\nglobal int x = 0 ;\n\ntransition initial -> set;\ntransition set -> terminal;\n\n@set\nend () {\n  terminate(\"Now I die.\");\n}\n\n@initial\nsetX (int y) {\n  x = 42;\n  transitionTo(:set);\n}"
+    "contract": "\nglobal int x = 0 ;\n\ntransition initial -> set;\ntransition set -> terminal;\n\n@set\nend () {\n  terminate();\n}\n\n@initial\nsetX (int y) {\n  x = 42;\n  transitionTo(:set);\n}"
 }

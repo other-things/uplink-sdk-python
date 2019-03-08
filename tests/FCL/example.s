@@ -5,7 +5,7 @@ transition set -> terminal;
 
 @set
 end () {
-  terminate("Now I die.");
+  terminate();
 }
 
 @initial

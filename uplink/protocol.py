@@ -270,9 +270,9 @@ class VContract(Tagged, Serializable, NamedTuple('VContract', [('contents', str)
         return struct.pack('>b32s', enum.VTypeContract, b58decode(self.contents))
 
 
-class VMsg(Tagged, Serializable, NamedTuple('VMsg', [('contents', str)])):
+class VText(Tagged, Serializable, NamedTuple('VText', [('contents', str)])):
     def to_binary(self):
-        return struct.pack('>bH{}s'.format(str(len(self.contents))), enum.VTypeMsg, len(self.contents),
+        return struct.pack('>bH{}s'.format(str(len(self.contents))), enum.VTypeText, len(self.contents),
                            self.contents.encode())
 
 
@@ -473,7 +473,7 @@ class CreateAccountHeader(Serializable):
         structured = structured + self.metadata.to_binary()
 
         return structured
-  
+
 #    def to_dict(self):
 #        return { "tag" : "CreateAccount", "contents" : self)
 

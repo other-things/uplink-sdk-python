@@ -118,7 +118,7 @@ transition set -> terminal;
 
 @set
 end () {
-  terminate("Now I die.");
+  terminate();
 }
 
 @initial
@@ -134,7 +134,7 @@ setX (int y) {
 @pytest.fixture(scope="session")
 def oracle_contract(contract_gen):
     contract = contract_gen(script="""
-    global datetime timestamp;
+global datetime timestamp;
 global float value;
 
 transition initial -> end;
@@ -153,7 +153,7 @@ set(float v) {
 @end
 end() {
   if (sender() == deployer()) {
-    terminate("This is the end");
+    terminate();
   } else {
     stay();
   };
@@ -174,7 +174,7 @@ int a;
 float b;
 fixed5 c;
 bool d;
-msg e;
+text e;
 account f;
 assetDisc g;
 assetBin  g0;
@@ -232,7 +232,7 @@ fn_bool(bool d_) {{
 }}
 
 @initial [ roles : {{ alice , charlie }} ]
-fn_msg(msg e_) {{
+fn_text(text e_) {{
     e = e_;
     stay();
 }}
@@ -318,7 +318,7 @@ never_called() {{
 @end
 end() {{
   if (sender() == deployer()) {{
-    terminate("This is the end");
+    terminate();
   }} else {{
     stay();
   }};
@@ -344,7 +344,7 @@ setX (float y, contract oracle) {
 
 @set
 end () {
-  terminate("Now I die.");
+  terminate();
 }""")
     return contract
 
@@ -487,10 +487,10 @@ determine_final_level() {{
      if((final_price > (initial_price * threshold_calc))) {{
        payout = (deposit + (deposit * return_calc));
        transferHoldings(issuer, asset_, payout, investor);
-       terminate("returning deposit and profit");
+       terminate();
      }} else {{
        transferHoldings(issuer, asset_, deposit, investor);
-       terminate("returning deposit");
+       terminate();
      }};
    }} else {{
      stay();
@@ -514,7 +514,7 @@ def wait_until_tx_processed(rpc, tx_hash):
     """
     query_tx_status = rpc.uplink_get_transaction_status
     wait_until(lambda: query_tx_status(tx_hash) in ["NonExistent", "Accepted", "Rejected"])
-    return query_tx_status(tx_hash) 
+    return query_tx_status(tx_hash)
 
 def wait_until(pred, tries=20, delay=1):
     """

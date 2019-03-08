@@ -35,7 +35,7 @@ nonce = 42
 test_args = [
     VInt(1), VFloat(3.5), VBool(True),VFixed(Decimal("3.223"), 3),
     VAccount(testAddr), VAsset(testAddr), VContract(testAddr),
-    VMsg("Hello world"),
+    VText("Hello world"),
     VVoid,
     VUndefined,
     VEnum("Foo")
@@ -83,7 +83,7 @@ transition set -> terminal;
 
 @set
 end () {
-  terminate("Now I die.");
+  terminate();
 }
 
 @initial
