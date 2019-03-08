@@ -133,12 +133,8 @@ class Account(object):
         self.public_key = publicKey
         self.address = address
 
-        assert type(metadata) is dict
-
-        if metadata is not None:
-            self.metadata = {k: v for k, v in six.iteritems(metadata)}
-        else:
-            self.metadata = {}
+        assert isinstance(metadata, dict)
+        self.metadata = {k: v for k, v in six.iteritems(metadata)}
 
     def __repr__(self):
         return "<Account(addr=%s)>" % self.address
@@ -589,10 +585,8 @@ class MemPool(Serializable):
             tx_header = elem["header"]
             origin = elem["origin"]
             signature = elem["signature"]
-            timestamp = elem["timestamp"]
 
-            tx = Transaction(tx_header, signature,
-                             timestamp, origin=origin)
+            tx = Transaction(tx_header, signature, origin=origin)
             txs.append(tx)
         self.transactions = txs
 
