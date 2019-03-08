@@ -1,8 +1,8 @@
 {
-    "address": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
+    "address": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve",
     "args": {
-        "contents": "Hello world", 
+        "contents": "Hello world",
         "tag": "VText"
-    }, 
+    },
     "method": "get"
 }

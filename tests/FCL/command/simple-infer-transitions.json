@@ -1,14 +1,15 @@
-{ "reqScriptDefs": [{
-    "reqGDefName": "myGlobalVar",
-    "reqGDefType": "int",
-    "reqGDefValue": "3"
+{ "defs": [{
+    "defName": "myGlobalVar",
+    "defType": "int",
+    "defValue": "3"
   }],
-  "reqScriptEnums": [],
-  "reqScriptMethods": [{
-    "reqMethodInputPlaces": "initial",
-    "reqMethodPreconditions": { "unPreconditions": [] },
-    "reqMethodName": "myMethodName",
-    "reqMethodBodyText": "{ y = 1; terminate();}",
-    "reqMethodArgs": [{"reqMArgName": "hs", "reqMArgType": "text" }]
-  }]
+  "enums": [],
+  "methods": [{
+    "methodInputPlaces": "initial",
+    "methodPreconditions": { "unPreconditions": [] },
+    "methodName": "myMethodName",
+    "methodBodyText": "{ y = 1; terminate();}",
+    "methodArgs": [{"argName": "hs", "argType": "text" }]
+  }],
+  "transitions": []
 }

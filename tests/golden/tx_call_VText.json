@@ -2,19 +2,19 @@
     "header": {
         "contents": {
             "contents": {
-                "address": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
+                "address": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve",
                 "args": [
                     {
-                        "contents": "Hello world", 
+                        "contents": "Hello world",
                         "tag": "VText"
                     }
-                ], 
+                ],
                 "method": "get"
-            }, 
+            },
             "tag": "Call"
-        }, 
+        },
         "tag": "TxContract"
-    }, 
-    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
+    },
+    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve",
     "signature": "AE4xMTUxMzY4MDA4MjA0NTY4MzM3Mzc5OTQxMjY3NzEzODYwMTUwMjYyODcwOTUwMzQ2MjU2MjM2NDQxODYyNzgxMDg5MjY2OTA3Nzk1Njc6AE05OTY4MjgyMDU4MTA3OTgxMTYwNTIxMjIzMzAwMjc2MjE1ODIyODU5NDI5OTM0NzQxNDQ3MTI0MjEwOTU1MTQ0MjQwNDUyNzY2OTQ1OQ=="
 }

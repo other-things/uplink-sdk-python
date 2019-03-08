@@ -561,8 +561,9 @@ def test_validate_invalid_script(rpc):
     try:
         script = open('tests/FCL/bad_example.s').read()
         rpc.uplink_validate_script(script)
+        assert False
     except UplinkJsonRpcError as e:
-        assert (e.response['tag'] == 'TypecheckErr')
+        assert e
 
 def test_command_infer_terminal(rpc):
     command = open('tests/FCL/command/simple-infer-transitions.json').read()
