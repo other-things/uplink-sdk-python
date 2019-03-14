@@ -164,6 +164,11 @@ class UplinkSession(object):
         txs = self.conn.uplink_get_invalid_transactions()
         return txs
 
+    def get_invalid_transaction(self, tx_hash):
+    """Get an invalid transaction"""
+    tx = self.conn.uplink_get_invalid_transaction(tx_hash)
+    return tx
+
     def get_mempool(self):
         """Get list of unconfirmed transactions"""
         pool = self.conn.uplink_get_mempool()
