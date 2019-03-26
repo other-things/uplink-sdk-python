@@ -189,6 +189,7 @@ datetime i;
 void j;
 enum testEnum k;
 fixed2 l;
+sig ss;
 
 global account alice = u'{0}';
 global account bob = u'{1}';
@@ -307,6 +308,12 @@ fn_datetime(datetime i_) {{
 @initial
 fn_enum(enum testEnum k_) {{
     k = k_;
+    stay();
+}}
+
+@initial
+fn_sig(sig ss_) {{
+    ss = ss_;
     stay();
 }}
 

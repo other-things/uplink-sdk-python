@@ -9,6 +9,7 @@ import datetime
 from datetime import timedelta
 import uplink.enum as enum
 from uplink.cryptography import (ecdsa_sign, derive_asset_address)
+from typing import Tuple
 
 
 # ------------------------------------------------------------------------
@@ -245,6 +246,32 @@ class VFixed(Tagged, Serializable, NamedTuple('VFixed', [('contents', Decimal), 
         result = super(VFixed, self)._asdict()
         result['contents'] = {"tag": "Fixed" + str(self.precision), "contents": float(self.contents)}
         return result
+
+def get_sign(v):
+    if v > 0:
+        return 1
+    elif v == 0:
+        return 0
+    else:
+        return -1
+
+def get_word8_bit_length(v):
+    length_bits = v.bit_length()
+    if length_bits % 8 == 0:
+        return length_bits // 8
+    else:
+        return (length_bits // 8) + 1
+
+class VSig(Tagged, Serializable, NamedTuple('VSig', [('contents', Tuple[int, int])])):
+    def to_binary(self):
+        a, b = self.contents
+        a_sign, b_sign = (get_sign(a), get_sign(b))
+        a_len, b_len = (get_word8_bit_length(a), get_word8_bit_length(b))
+
+        return struct.pack('>bbH{}sbH{}s'.format(a_len, b_len), enum.VTypeSig,
+                            a_sign, a_len, to_bytes(a, a_len, byteorder='little'),
+                            b_sign, b_len, to_bytes(b, b_len, byteorder='little')
+                          )
 
 
 class VBool(Tagged, Serializable, NamedTuple('VBool', [('contents', bool)])):

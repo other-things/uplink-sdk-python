@@ -9,7 +9,6 @@ from uplink.fixtures import is_rpc_ok, wait_until
 
 from uplink.version import __version__
 
-
 def test_create_account(alice_account, bob_account):
     # extra checks belong here
 
@@ -367,6 +366,9 @@ def test_principal_protected_simulation(rpc, alice_account, bob_account, asset_g
     underlying = rpc.uplink_sim_query_asset(simKey, pp_asset.address)
     assert (underlying.holdings[bob_addr] == payout)
 
+testSig = \
+  (115136800820456833737994126771386015026287095034625623644186278108926690779567,
+  98245280522003505644797670843107276132602050133082625768706491602875725788467)
 
 @pytest.mark.parametrize(("account", "method_name", "var_name", "arg"), [
     ("alice_account", "fn_int", "a", VInt(404)),
@@ -388,7 +390,8 @@ def test_principal_protected_simulation(rpc, alice_account, bob_account, asset_g
     ("alice_account", "fn_assetFrac6", "g6", VAsset(testAddr)),
     ("alice_account", "fn_contract", "h", VContract(testAddr)),
     ("alice_account", "fn_datetime", "i", VDateTime(datetime.datetime.now())),
-    ("alice_account", "fn_enum", "k", VEnum("Foo"))
+    ("alice_account", "fn_enum", "k", VEnum("Foo")),
+    ("alice_account", "fn_sig", "ss", VSig(testSig))
 ])
 def test_all_args_contract(rpc, all_args_contract, alice_account, bob_account,
         charlie_account, dave_account, account, method_name, var_name, arg):
@@ -492,6 +495,7 @@ def test_get_contract_callable(rpc, all_args_contract, alice_account,
                       u'fn_contract': [[],[[u'h_', u'contract']]],
                       u'fn_datetime': [[],[[u'i_', u'datetime']]],
                       u'fn_enum': [[],[[u'k_', u'enum testEnum']]],
+                      u'fn_sig': [[],[[u'ss_', u'sig']]],
                       u'never_called': [[],[]]
                       }
 

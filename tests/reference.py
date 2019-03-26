@@ -38,7 +38,8 @@ test_args = [
     VText("Hello world"),
     VVoid,
     VUndefined,
-    VEnum("Foo")
+    VEnum("Foo"),
+    VSig((testSig))
 ]
 
 #------------------------------------------------------------------------
