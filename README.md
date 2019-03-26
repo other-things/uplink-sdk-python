@@ -26,9 +26,10 @@ $ pytest -vv integration_tests
 Usage
 -----
 
-For example usage see [example.py](example.py).
+For a basic guided example see [basic-example](./examples/basic-example.md).
+For a more advanced example see [fcl-example](./examples/fcl-example.md)
 
-Most of the following examples will show and explain the simple usage of the
+Most of the following examples will show and explain the usage of the
 ``uplink-sdk-py``. Usage of the SDK can be divided into two types of actions,
 querying the Uplink Ledger for data or acting on it - called *transactions*.
 Such interactions fit in the latter category with the creation of accounts,

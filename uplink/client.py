@@ -26,10 +26,9 @@ UPLINK_PORT = 8545
 class UplinkJsonRpc(object):
     """JSON RPC For Uplink"""
 
-    def __init__(self, host='localhost', port=UPLINK_PORT, tls=False, endpoint=None, privkey=None, pubkey=None):
+    def __init__(self, host='localhost', port=UPLINK_PORT, tls=False):
         self.host = host
         self.port = port
-        self.endpoint = endpoint
         self.tls = tls
 
     def _make_url(self, endpoint):
@@ -46,7 +45,6 @@ class UplinkJsonRpc(object):
 
     def _call(self, data='', method='post', endpoint=''):
         url = self._make_url(endpoint)
-        print(url)
 
         try:
             response = getattr(requests, method)(url, data=data)
