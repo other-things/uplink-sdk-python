@@ -272,7 +272,10 @@ class VSig(Tagged, Serializable, NamedTuple('VSig', [('contents', Tuple[int, int
                             a_sign, a_len, to_bytes(a, a_len, byteorder='little'),
                             b_sign, b_len, to_bytes(b, b_len, byteorder='little')
                           )
-
+    def _asdict(self):
+        result = super(VSig, self)._asdict()
+        result['contents'] = [str(self.contents[0]), str(self.contents[1])]
+        return result
 
 class VBool(Tagged, Serializable, NamedTuple('VBool', [('contents', bool)])):
     def to_binary(self):
