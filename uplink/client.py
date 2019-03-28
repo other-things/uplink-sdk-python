@@ -94,14 +94,14 @@ class UplinkJsonRpc(object):
         :param public_key: public key of primary account
         """
         address = derive_account_address(public_key)
-        r, s = ecdsa_sign(private_key, address)
+        r, s = ecdsa_sign(private_key, address.encode())
         signature = pack_signature(r, s)
 
         params = {
             "method": "ResetDB",
             "params": {
                 "address": address,
-                "signature": signature
+                "signature": signature.decode()
             }
         }
 
