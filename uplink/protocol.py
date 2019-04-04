@@ -358,12 +358,10 @@ class Contract(Serializable):
     """Contracts Object"""
 
     def __init__(self, timestamp, address, storage, methods, script, owner,
-                 state, localStorageVars, localStorage, **kwargs):
+                 state, **kwargs):
         self.timestamp = timestamp
         self.script = script
         self.storage = storage
-        self.localStorageVars = localStorageVars
-        self.localStorage = localStorage
         self.methods = methods
         self.address = address
         self.owner = owner
