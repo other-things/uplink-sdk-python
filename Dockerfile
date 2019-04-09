@@ -4,9 +4,9 @@ WORKDIR /usr/src/app
 
 COPY requirements.txt ./
 COPY dev-requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install --no-cache-dir -r dev-requirements.txt
+RUN pip install pipenv
+RUN pipenv install
 
 COPY . .
 
-ENTRYPOINT [ "pytest", "-vv", "-s", "integration_tests" ]
+ENTRYPOINT [ "pipenv", "run", "pytest", "-vv", "-s", "integration_tests" ]

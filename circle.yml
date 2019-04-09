@@ -21,15 +21,17 @@ jobs:
       - image: circleci/python:2
     steps:
       - checkout
-      - run: sudo pip install tox
-      - run: sudo tox -e py2
+      - run: sudo pip install pipenv
+      - run: pipenv --two install
+      - run: pipenv run pytest -vv -s tests
   py3:
     docker:
       - image: circleci/python:3
     steps:
       - checkout
-      - run: sudo pip install tox
-      - run: sudo tox -e py3
+      - run: sudo pip install pipenv
+      - run: pipenv --three install
+      - run: pipenv run pytest -vv -s tests
 
   typecheck:
     docker:
