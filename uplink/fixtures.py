@@ -171,24 +171,24 @@ def all_args_contract(contract_gen, alice_account, bob_account, charlie_account,
 enum testEnum {{ Foo, Bar }};
 
 int a;
-float b;
-fixed5 c;
+num b;
+decimal<5> c;
 bool d;
 text e;
 account f;
-assetDisc g;
-assetBin  g0;
-assetFrac1 g1;
-assetFrac2 g2;
-assetFrac3 g3;
-assetFrac4 g4;
-assetFrac5 g5;
-assetFrac6 g6;
+asset<int> g;
+asset<bool>  g0;
+asset<decimal<1>> g1;
+asset<decimal<2>> g2;
+asset<decimal<3>> g3;
+asset<decimal<4>> g4
+asset<decimal<5>> g5
+asset<decimal<6>> g6
 contract h;
 datetime i;
 void j;
 enum testEnum k;
-fixed2 l;
+decimal<2> l;
 sig ss;
 
 global account alice = u'{0}';
@@ -208,19 +208,19 @@ fn_int(int a_) {{
 }}
 
 @initial [ roles : {{ bob }} ]
-fn_float(float b_) {{
+fn_float(num b_) {{
     b = b_;
     stay();
 }}
 
 @initial [ roles : {{ charlie }} ]
-fn_fixed5(fixed5 c_) {{
+fn_fixed5(decimal<5> c_) {{
     c = c_;
     stay();
 }}
 
 @initial [ roles : {{ dave }} ]
-fn_fixed2(fixed2 l_) {{
+fn_fixed2(decimal<2> l_) {{
     l = l_;
     stay();
 }}
@@ -245,49 +245,49 @@ fn_account(account f_) {{
 }}
 
 @initial [ roles : {{ bob, charlie }} ]
-fn_assetDisc(assetDisc g_) {{
+fn_assetDisc(asset<int> g_) {{
     g = g_;
     stay();
 }}
 
 @initial [ roles : {{ bob, dave }} ]
-fn_assetBin(assetBin g0_) {{
+fn_assetBin(asset<bool> g0_) {{
     g0 = g0_;
     stay();
 }}
 
 @initial [ roles : {{ charlie, dave }} ]
-fn_assetFrac1(assetFrac1 g1_) {{
+fn_assetFrac1(asset<decimal<1>> g1_) {{
     g1 = g1_;
     stay();
 }}
 
 @initial [ roles : {{ alice, bob, charlie }} ]
-fn_assetFrac2(assetFrac2 g2_) {{
+fn_assetFrac2(asset<decimal<2>> g2_) {{
     g2 = g2_;
     stay();
 }}
 
 @initial [ roles : {{ alice, bob, dave }} ]
-fn_assetFrac3(assetFrac3 g3_) {{
+fn_assetFrac3(asset<decimal<3>> g3_) {{
     g3 = g3_;
     stay();
 }}
 
 @initial [ roles : {{ alice, charlie, dave }} ]
-fn_assetFrac4(assetFrac4 g4_) {{
+fn_assetFrac4(asset<decimal<4>> g4_) {{
     g4 = g4_;
     stay();
 }}
 
 @initial [ roles : {{ bob, charlie, dave }} ]
-fn_assetFrac5(assetFrac5 g5_) {{
+fn_assetFrac5(asset<decimal<5>> g5_) {{
     g5 = g5_;
     stay();
 }}
 
 @initial [ roles : {{ alice, bob, charlie, dave }} ]
-fn_assetFrac6(assetFrac6 g6_) {{
+fn_assetFrac6(asset<decimal<6>> g6_) {{
     g6 = g6_;
     stay();
 }}
@@ -338,7 +338,7 @@ end() {{
 @pytest.fixture(scope="session")
 def contract_using_oracle_contract(contract_gen):
     contract = contract_gen(script="""
-global float x = 0.0;
+global num x = 0.0;
 
 transition initial -> set;
 transition set -> terminal;

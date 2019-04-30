@@ -221,9 +221,15 @@ class VFloat(Tagged, Serializable, NamedTuple('VFloat', [('contents', float)])):
     def to_binary(self):
         return struct.pack('>bd', enum.VTypeFloat, self.contents)
 
-class VNumDecimal(Tagged, Serializable, NamedTuple):
-    decimalPlaces: int
-    decimalIntegerValue: int
+class VNumDecimal(Tagged, Serializable, NamedTuple('VNumDecimal', [('decimalPlaces', int), ('decimalIntegerValue', int)])):
+
+    def _asdict(self):
+        result = super(VNumDecimal, self)._asdict()
+        del result['decimalPlaces']
+        del result['decimalIntegerValue']
+        result['contents'] = {"contents": dict(decimalPlaces=self.decimalPlaces, decimalIntegerValue=self.decimalIntegerValue)}
+        return result
+
 
     def to_binary(self):
         return struct.pack(
@@ -236,11 +242,15 @@ class VNumDecimal(Tagged, Serializable, NamedTuple):
             self.decimalIntegerValue,
         )
 
-
 # TODO proper bigint support for haskell Integer types
-class VNumRational(Tagged, Serializable, NamedTuple):
-    denominator: int
-    numerator: int
+class VNumRational(Tagged, Serializable, NamedTuple("VNumRational", [("denominator", int), ("numerator", int)])):
+
+    def _asdict(self):
+        result = super(VNumRational, self)._asdict()
+        del result['denominator']
+        del result['numerator']
+        result['contents'] = {"contents": dict(denominator=self.denominator, numerator=self.numerator)}
+        return result
 
     def to_binary(self):
         return struct.pack(
@@ -254,8 +264,9 @@ class VNumRational(Tagged, Serializable, NamedTuple):
         )
 
 
-class VNum(Tagged, Serializable, NamedTuple):
-    contents: Union[VNumDecimal, VNumRational]
+# class VNum(Tagged, Serializable, NamedTuple):
+    # pass
+    # contents: Union[VNumDecimal, VNumRational]
 
 class VFixed(Tagged, Serializable, NamedTuple('VFixed', [('contents', Decimal), ('precision', int)])):
     def to_binary(self):
