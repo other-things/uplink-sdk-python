@@ -9,7 +9,7 @@ import datetime
 from datetime import timedelta
 import uplink.enum as enum
 from uplink.cryptography import (ecdsa_sign, derive_asset_address)
-from typing import Tuple
+from typing import Tuple, Union
 
 
 # ------------------------------------------------------------------------
@@ -221,6 +221,41 @@ class VFloat(Tagged, Serializable, NamedTuple('VFloat', [('contents', float)])):
     def to_binary(self):
         return struct.pack('>bd', enum.VTypeFloat, self.contents)
 
+class VNumDecimal(Tagged, Serializable, NamedTuple):
+    decimalPlaces: int
+    decimalIntegerValue: int
+
+    def to_binary(self):
+        return struct.pack(
+            ">bbbibi",
+            enum.VTypeNum,
+            enum.VTypeNumDecimal,
+            0,
+            self.decimalPlaces,
+            0,
+            self.decimalIntegerValue,
+        )
+
+
+# TODO proper bigint support for haskell Integer types
+class VNumRational(Tagged, Serializable, NamedTuple):
+    denominator: int
+    numerator: int
+
+    def to_binary(self):
+        return struct.pack(
+            ">bbbibi",
+            enum.VTypeNum,
+            enum.VTypeNumRational,
+            0,
+            self.denominator,
+            0,
+            self.numerator,
+        )
+
+
+class VNum(Tagged, Serializable, NamedTuple):
+    contents: Union[VNumDecimal, VNumRational]
 
 class VFixed(Tagged, Serializable, NamedTuple('VFixed', [('contents', Decimal), ('precision', int)])):
     def to_binary(self):
@@ -811,3 +846,4 @@ class SyncHeader(Serializable):
         structured = struct.pack(
             ">HH32s", enum.TxTypeSyncLocal[0], enum.TxTypeSyncLocal[1], self.contract)
         return structured
+

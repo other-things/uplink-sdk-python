@@ -46,17 +46,18 @@ AssetDiscrete = "Discrete"
 AssetBinary = "Binary"
 
 # Value types
-VTypeInt = 0
-VTypeFloat = 1
-VTypeFixed = 2
-VTypeBool = 3
-VTypeAccount = 4
-VTypeAsset = 5
-VTypeContract = 6
-VTypeText = 7
-VTypeSig = 8
-VTypeVoid = 9
-VTypeDateTime = 10
-VTypeTimeDelta = 11
-VTypeEnum = 12
-VTypeUndefined = 13
+VTypeNum = 0
+VTypeBool = 1
+VTypeAccount = 2
+VTypeAsset = 3
+VTypeContract =4
+VTypeText = 5
+VTypeSig = 6
+VTypeVoid = 7
+VTypeDateTime = 8
+VTypeTimeDelta = 9
+VTypeEnum = 10
+VTypeUndefined = 10000
+
+VTypeNumDecimal = 0
+VTypeNumRational = 1
