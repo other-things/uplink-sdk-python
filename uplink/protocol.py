@@ -58,6 +58,10 @@ class Serializable(object):
     def to_binary(self):
         raise NotImplementedError
 
+    def to_binary_with_len(self):
+        binary = self.to_binary()
+        return (str(len(binary)) + "s", binary)
+
     def to_json(self, **kwargs):
         return Serializer.serialize(self.to_dict(), **kwargs)
 
@@ -221,25 +225,33 @@ class VFloat(Tagged, Serializable, NamedTuple('VFloat', [('contents', float)])):
     def to_binary(self):
         return struct.pack('>bd', enum.VTypeFloat, self.contents)
 
-class VNumDecimal(Tagged, Serializable, NamedTuple('VNumDecimal', [('decimalPlaces', int), ('decimalIntegerValue', int)])):
-
-    def _asdict(self):
-        result = super(VNumDecimal, self)._asdict()
-        del result['decimalPlaces']
-        del result['decimalIntegerValue']
-        result['contents'] = {"contents": dict(decimalPlaces=self.decimalPlaces, decimalIntegerValue=self.decimalIntegerValue)}
-        return result
-
-
+class NumDecimal(Tagged, Serializable, NamedTuple('NumDecimal', [('decimalPlaces', int), ('decimalIntegerValue', int)])):
     def to_binary(self):
         return struct.pack(
-            ">bbbibi",
-            enum.VTypeNum,
-            enum.VTypeNumDecimal,
+            ">bibi",
             0,
             self.decimalPlaces,
             0,
             self.decimalIntegerValue,
+        )
+
+class VNumDecimal(Tagged, Serializable, NamedTuple('VNumDecimal', [('contents', NumDecimal)])):
+
+    # def _asdict(self):
+    #     result = super(VNumDecimal, self)._asdict()
+    #     del result['decimalPlaces']
+    #     del result['decimalIntegerValue']
+    #     result['contents'] = {"contents": dict(decimalPlaces=self.decimalPlaces, decimalIntegerValue=self.decimalIntegerValue)}
+    #     return result
+
+
+    def to_binary(self):
+        (num_decimal_packstr, num_decimal) = self.contents.to_binary_with_len()
+        return struct.pack(
+            ">bb" + num_decimal_packstr,
+            enum.VTypeNum,
+            enum.VTypeNumDecimal,
+            num_decimal
         )
 
 # TODO proper bigint support for haskell Integer types
@@ -567,7 +579,7 @@ class CreateAssetHeader(Serializable):
                  issuer, precision, metadata):
         asset_type = AssetType(asset_type, precision)
         self.assetName = name
-        self.supply = int(supply)
+        self.supply = NumDecimal(decimalPlaces=0,decimalIntegerValue=supply)
         self.issuer = issuer
         self.reference = str(reference)
         self.assetType = asset_type
@@ -579,31 +591,32 @@ class CreateAssetHeader(Serializable):
         name_len = str(len(self.assetName)) + "s"
         reference_len = str(len(self.reference)) + "s"
         asset_len = str(len(_asset_type)) + "s "
-
+        supply = self.supply.to_binary()
+        supply_len = str(len(supply)) + "s"
         if _asset_type == b'Fractional':
-            package = ">HHH" + name_len + "QHH" + reference_len + "H" + asset_len + "b"
+            package = ">HHH" + name_len + supply_len + "HH" + reference_len + "H" + asset_len + "bi"
             structured = struct.pack(
                 package,
                 enum.TxTypeCreateAsset[0],
                 enum.TxTypeCreateAsset[1],
                 len(self.assetName),
                 self.assetName.encode(),
-                self.supply,
+                supply,
                 1,
                 len(self.reference),
                 self.reference.encode(),
                 len(_asset_type),
-                _asset_type, precision - 1)
+                _asset_type,0, precision)
 
         else:
-            package = ">HHH" + name_len + "QHH" + reference_len + "H" + asset_len
+            package = ">HHH" + name_len + supply_len + "HH" + reference_len + "H" + asset_len
             structured = struct.pack(
                 package,
                 enum.TxTypeCreateAsset[0],
                 enum.TxTypeCreateAsset[1],
                 len(self.assetName),
                 self.assetName.encode(),
-                self.supply,
+                supply,
                 1,
                 len(self.reference),
                 self.reference.encode(),
