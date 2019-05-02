@@ -606,7 +606,10 @@ class CreateAssetHeader(Serializable):
                 len(self.reference),
                 self.reference.encode(),
                 len(_asset_type),
-                _asset_type,0, precision)
+                _asset_type,
+                0,
+                precision
+            )
 
         else:
             package = ">HHH" + name_len + supply_len + "HH" + reference_len + "H" + asset_len
@@ -700,11 +703,17 @@ class TransferAssetHeader(Serializable):
     def __init__(self, assetAddr, toAddr, balance):
         self.assetAddr = assetAddr
         self.toAddr = toAddr
-        self.balance = balance
+        self.balance = NumDecimal(decimalPlaces=0,decimalIntegerValue=balance)
 
     def to_binary(self):
+        (balance_len, balance) = self.balance.to_binary_with_len()
         structured = struct.pack(
-            ">HH32s32sq", enum.TxTypeTransfer[0], enum.TxTypeTransfer[1], b58decode(self.assetAddr), b58decode(self.toAddr), self.balance)
+            ">HH32s32s" + balance_len,
+            enum.TxTypeTransfer[0],
+            enum.TxTypeTransfer[1],
+            b58decode(self.assetAddr),
+            b58decode(self.toAddr),
+            balance)
         return structured
 
 
@@ -726,11 +735,16 @@ class CirculateAssetHeader(Serializable):
 
     def __init__(self, assetAddr, amount):
         self.assetAddr = assetAddr
-        self.amount = amount
+        self.amount = NumDecimal(decimalPlaces=0,decimalIntegerValue=amount)
 
     def to_binary(self):
+        (amount_len, amount) = self.amount.to_binary_with_len()
         structured = struct.pack(
-            ">HH32sq", enum.TxTypeCirculate[0], enum.TxTypeCirculate[1], b58decode(self.assetAddr), self.amount)
+            ">HH32s" + amount_len,
+            enum.TxTypeCirculate[0],
+            enum.TxTypeCirculate[1],
+            b58decode(self.assetAddr),
+            amount)
         return structured
 
 

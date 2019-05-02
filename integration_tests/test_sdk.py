@@ -41,8 +41,8 @@ def test_transfer_asset(rpc, alice_account, bob_account, gold_asset):
     wait_until_tx_accepted(rpc, tx_hash_0)
     circulated_asset = rpc.uplink_get_asset(gold_asset.address)
     # Assert the circulation worked
-    assert circulated_asset.supply == gold_asset.supply - 500
-    assert circulated_asset.holdings[alice_account.address] == 500
+    assert circulated_asset.supply['decimalIntegerValue'] == gold_asset.supply['decimalIntegerValue'] - 500
+    assert circulated_asset.holdings[alice_account.address]['decimalIntegerValue'] == 500
 
     # transfer alice holdings to bob holdings
     tx_hash_1 = rpc.uplink_transfer_asset(private_key=alice_account.private_key,
@@ -53,8 +53,8 @@ def test_transfer_asset(rpc, alice_account, bob_account, gold_asset):
     wait_until_tx_accepted(rpc, tx_hash_1)
     transferred_asset_1 = rpc.uplink_get_asset(gold_asset.address)
     # Assert the transfer worked
-    assert transferred_asset_1.holdings[alice_account.address] == 250
-    assert transferred_asset_1.holdings[bob_account.address] == 250
+    assert transferred_asset_1.holdings[alice_account.address]['decimalIntegerValue'] == 250
+    assert transferred_asset_1.holdings[bob_account.address]['decimalIntegerValue'] == 250
 
     # transfer bob holdings back to alice holdings
     tx_hash_2 = rpc.uplink_transfer_asset(private_key=bob_account.private_key,
@@ -66,8 +66,8 @@ def test_transfer_asset(rpc, alice_account, bob_account, gold_asset):
     wait_until_tx_accepted(rpc, tx_hash_2)
     transferred_asset_2 = rpc.uplink_get_asset(gold_asset.address)
     # Assert the transfer worked
-    assert transferred_asset_2.holdings[bob_account.address] == 200
-    assert transferred_asset_2.holdings[alice_account.address] == 300
+    assert transferred_asset_2.holdings[bob_account.address]['decimalIntegerValue'] == 200
+    assert transferred_asset_2.holdings[alice_account.address]['decimalIntegerValue'] == 300
 
 
 def test_revoke_account(rpc, per_test_account):
