@@ -96,10 +96,10 @@ def test_call_contract(rpc, example_contract, alice_account):
                                       from_address=alice_account.address,
                                       contract_addr=example_contract.address,
                                       method='setX',
-                                      args=[VInt(42)])
+                                      args=[VNum(NumDecimal(Dec(0, 42)))])
     # Check if 'x' = 42
     wait_until_tx_accepted(rpc, txhash)
-    assert get_contract().storage["x"]["contents"] == 42
+    assert get_contract().storage["x"]["contents"]["contents"]["decimalIntegerValue"] == 42
 
     # Terminate the contract
     txhash1 = rpc.uplink_call_contract(private_key=alice_account.private_key,
@@ -121,28 +121,30 @@ def test_oracle_contract(rpc, oracle_contract, alice_account, contract_using_ora
                                       from_address=alice_account.address,
                                       contract_addr=oracle_contract.address,
                                       method='set',
-                                      args=[VFloat(2)])
+                                      args=[VNum(NumDecimal(Dec(0, 2)))])
     wait_until_tx_accepted(rpc, txhash)
-    assert get_contract(oracle_contract.address).storage["value"]["contents"] == 2.0
+    assert get_contract(oracle_contract.address).storage["value"]["contents"]["contents"]["decimalIntegerValue"] == 2
 
     txhash = rpc.uplink_call_contract(private_key=alice_account.private_key,
                                       from_address=alice_account.address,
                                       contract_addr=contract_using_oracle_contract.address,
                                       method='setX',
-                                      args=[VFloat(5.3), VContract(oracle_contract.address)])
+                                      args=[VNum(NumDecimal(Dec(1, 53))),
+                                            VContract(oracle_contract.address)])
 
     wait_until_tx_accepted(rpc, txhash)
-    assert get_contract(contract_using_oracle_contract.address).storage['x']['contents'] == 10.6
+    assert get_contract(contract_using_oracle_contract.address).storage['x']['contents']['contents']['decimalIntegerValue'] == 1060
+    assert get_contract(contract_using_oracle_contract.address).storage['x']['contents']['contents']['decimalPlaces'] == 2
 
 @pytest.mark.parametrize(("asset_name", "supply", "asset_type_name", "precision", "transfer_val"), [
-    ("circ_tran_discrete", 1000000, "Discrete", None, VInt(500000)),
+    ("circ_tran_discrete", 1000000, "Discrete", None, VNum(NumDecimal(Dec(0, 500000)))),
     ("circ_tran_binary", 2, "Binary", None, VBool(True)),
-    ("circ_tran_frac1", 1000000, "Fractional", 1, VFixed(Decimal("50000.0"), 1)),
-    ("circ_tran_frac2", 1000000, "Fractional", 2, VFixed(Decimal("5000.00"), 2)),
-    ("circ_tran_frac3", 1000000, "Fractional", 3, VFixed(Decimal("500.000"), 3)),
-    ("circ_tran_frac4", 1000000, "Fractional", 4, VFixed(Decimal("50.0000"), 4)),
-    ("circ_tran_frac5", 1000000, "Fractional", 5, VFixed(Decimal("5.00000"), 5)),
-    ("circ_tran_frac6", 1000000, "Fractional", 6, VFixed(Decimal(".500000"), 6))
+    ("circ_tran_frac1", 1000000, "Fractional", 1, VNum(NumDecimal(Dec(1, 500000)))),
+    ("circ_tran_frac2", 1000000, "Fractional", 2, VNum(NumDecimal(Dec(2, 500000)))),
+    ("circ_tran_frac3", 1000000, "Fractional", 3, VNum(NumDecimal(Dec(3, 500000)))),
+    ("circ_tran_frac4", 1000000, "Fractional", 4, VNum(NumDecimal(Dec(4, 500000)))),
+    ("circ_tran_frac5", 1000000, "Fractional", 5, VNum(NumDecimal(Dec(5, 500000)))),
+    ("circ_tran_frac6", 1000000, "Fractional", 6, VNum(NumDecimal(Dec(6, 500000))))
 ])
 def test_circulate_and_transfer(rpc, alice_account, bob_account, asset_gen,
                                 circulate_transfer_contract_gen, asset_name,
@@ -156,6 +158,7 @@ def test_circulate_and_transfer(rpc, alice_account, bob_account, asset_gen,
 
     def get_transfer_val_as_int():
         type_name = type(transfer_val).__name__
+        print("type_name", type_name)
         if type_name == "VInt":
             return transfer_val[0]
         elif type_name == "VBool":
@@ -224,14 +227,14 @@ def test_circulate_and_transfer(rpc, alice_account, bob_account, asset_gen,
 
 
 @pytest.mark.parametrize(("asset_name", "supply", "asset_type_name", "precision", "transfer_val"), [
-    ("sim_circ_tran_discrete", 1000000, "Discrete", None, VInt(500000)),
+    ("sim_circ_tran_discrete", 1000000, "Discrete", None, VNum(NumDecimal(Dec(1, 500000)))),
     ("sim_circ_tran_binary", 2, "Binary", None, VBool(True)),
-    ("sim_circ_tran_frac1", 1000000, "Fractional", 1, VFixed(Decimal("50000.0"), 1)),
-    ("sim_circ_tran_frac2", 1000000, "Fractional", 2, VFixed(Decimal("5000.00"), 2)),
-    ("sim_circ_tran_frac3", 1000000, "Fractional", 3, VFixed(Decimal("500.000"), 3)),
-    ("sim_circ_tran_frac4", 1000000, "Fractional", 4, VFixed(Decimal("50.0000"), 4)),
-    ("sim_circ_tran_frac5", 1000000, "Fractional", 5, VFixed(Decimal("5.00000"), 5)),
-    ("sim_circ_tran_frac6", 1000000, "Fractional", 6, VFixed(Decimal(".500000"), 6))
+    ("sim_circ_tran_frac1", 1000000, "Fractional", 1, VNum(NumDecimal(Dec(1, 500000)))),
+    ("sim_circ_tran_frac2", 1000000, "Fractional", 2, VNum(NumDecimal(Dec(2, 500000)))),
+    ("sim_circ_tran_frac3", 1000000, "Fractional", 3, VNum(NumDecimal(Dec(3, 500000)))),
+    ("sim_circ_tran_frac4", 1000000, "Fractional", 4, VNum(NumDecimal(Dec(4, 500000)))),
+    ("sim_circ_tran_frac5", 1000000, "Fractional", 5, VNum(NumDecimal(Dec(5, 500000)))),
+    ("sim_circ_tran_frac6", 1000000, "Fractional", 6, VNum(NumDecimal(Dec(6, 500000))))
 ])
 def test_circulate_and_transfer_simulation(rpc, alice_account, bob_account, asset_gen,
                                            circulate_transfer_contract_gen, asset_name,
@@ -371,12 +374,12 @@ testSig = \
   98245280522003505644797670843107276132602050133082625768706491602875725788467)
 
 @pytest.mark.parametrize(("account", "method_name", "var_name", "arg"), [
-    ("alice_account", "fn_int", "a", VInt(404)),
-    ("bob_account", "fn_float", "b", VFloat(2.123456789)),
-    ("charlie_account", "fn_fixed5", "c", VFixed(Decimal("6.54321"),5)),
-    ("charlie_account", "fn_fixed5", "c", VFixed(Decimal("-6.54321"), 5)),
-    ("dave_account", "fn_fixed2", "c", VFixed(Decimal("6.54"), 2)),
-    ("dave_account", "fn_fixed2", "c", VFixed(Decimal("2.00"), 2)),
+    ("alice_account", "fn_int", "a", VNum(NumDecimal(Dec(0, 404)))),
+    ("bob_account", "fn_float", "b", VNum(NumDecimal(Dec(9, 2123456789)))),
+    ("charlie_account", "fn_fixed5", "c", VNum(NumDecimal(Dec(5, 654321)))),
+    ("charlie_account", "fn_fixed5", "c", VNum(NumDecimal(Dec(5, -654321)))),
+    ("dave_account", "fn_fixed2", "c", VNum(NumDecimal(Dec(2, 654)))),
+    ("dave_account", "fn_fixed2", "c", VNum(NumDecimal(Dec(2, 200)))),
     ("alice_account", "fn_bool", "d", VBool(False)),
     ("alice_account", "fn_text", "e", VText("Hello World")),
     ("alice_account", "fn_account", "f", VAccount(testAddr)),

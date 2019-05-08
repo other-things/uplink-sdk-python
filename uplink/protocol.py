@@ -16,6 +16,14 @@ from typing import Tuple, Union
 # Serializers
 # ------------------------------------------------------------------------
 
+def to_decimal(x):
+    v = Decimal(str(x))
+    e = abs(v.as_tuple().exponent)
+    w = int(float(v) * (10 ** e))
+    return Dec(e, w)
+
+def to_num_decimal(x):
+    return NumDecimal(to_decimal(x))
 
 class Serializer(object):
     @staticmethod
@@ -216,16 +224,16 @@ class AssetRef(Serializable):
         return struct.pack(fmt, len(self.ref), byts)
 
 
-class VInt(Tagged, Serializable, NamedTuple("VInt", [('contents', int)])):
-    def to_binary(self):
-        return struct.pack('>bq', enum.VTypeInt, self.contents)
+# class VInt(Tagged, Serializable, NamedTuple("VInt", [('contents', int)])):
+#     def to_binary(self):
+#         return struct.pack('>bq', enum.VTypeInt, self.contents)
 
 
-class VFloat(Tagged, Serializable, NamedTuple('VFloat', [('contents', float)])):
-    def to_binary(self):
-        return struct.pack('>bd', enum.VTypeFloat, self.contents)
+# class VFloat(Tagged, Serializable, NamedTuple('VFloat', [('contents', float)])):
+#     def to_binary(self):
+#         return struct.pack('>bd', enum.VTypeFloat, self.contents)
 
-class NumDecimal(Tagged, Serializable, NamedTuple('NumDecimal', [('decimalPlaces', int), ('decimalIntegerValue', int)])):
+class Dec(Tagged, Serializable, NamedTuple('Decimal', [('decimalPlaces', int), ('decimalIntegerValue', int)])):
     def to_binary(self):
         return struct.pack(
             ">bibi",
@@ -235,16 +243,21 @@ class NumDecimal(Tagged, Serializable, NamedTuple('NumDecimal', [('decimalPlaces
             self.decimalIntegerValue,
         )
 
-class VNumDecimal(Tagged, Serializable, NamedTuple('VNumDecimal', [('contents', NumDecimal)])):
-
+class NumDecimal(Tagged, Serializable, NamedTuple('NumDecimal', [('contents', Dec)])):
     # def _asdict(self):
-    #     result = super(VNumDecimal, self)._asdict()
+    #     result = super(NumDecimal, self)._asdict()
     #     del result['decimalPlaces']
     #     del result['decimalIntegerValue']
-    #     result['contents'] = {"contents": dict(decimalPlaces=self.decimalPlaces, decimalIntegerValue=self.decimalIntegerValue)}
+    #     result['contents'] = dict(decimalPlaces=self.decimalPlaces, decimalIntegerValue=self.decimalIntegerValue)
     #     return result
+    def to_binary(self):
+        (num_decimal_packstr, num_decimal) = self.contents.to_binary_with_len()
+        return struct.pack(
+            ">" + num_decimal_packstr,
+            num_decimal
+        )
 
-
+class VNum(Tagged, Serializable, NamedTuple('VNum', [('contents', NumDecimal)])):
     def to_binary(self):
         (num_decimal_packstr, num_decimal) = self.contents.to_binary_with_len()
         return struct.pack(
@@ -274,7 +287,6 @@ class VNumRational(Tagged, Serializable, NamedTuple("VNumRational", [("denominat
             0,
             self.numerator,
         )
-
 
 # class VNum(Tagged, Serializable, NamedTuple):
     # pass
@@ -579,7 +591,7 @@ class CreateAssetHeader(Serializable):
                  issuer, precision, metadata):
         asset_type = AssetType(asset_type, precision)
         self.assetName = name
-        self.supply = NumDecimal(decimalPlaces=0,decimalIntegerValue=supply)
+        self.supply = to_decimal(supply)
         self.issuer = issuer
         self.reference = str(reference)
         self.assetType = asset_type
@@ -703,7 +715,7 @@ class TransferAssetHeader(Serializable):
     def __init__(self, assetAddr, toAddr, balance):
         self.assetAddr = assetAddr
         self.toAddr = toAddr
-        self.balance = NumDecimal(decimalPlaces=0,decimalIntegerValue=balance)
+        self.balance = to_decimal(balance)
 
     def to_binary(self):
         (balance_len, balance) = self.balance.to_binary_with_len()
@@ -735,7 +747,7 @@ class CirculateAssetHeader(Serializable):
 
     def __init__(self, assetAddr, amount):
         self.assetAddr = assetAddr
-        self.amount = NumDecimal(decimalPlaces=0,decimalIntegerValue=amount)
+        self.amount = to_decimal(amount)
 
     def to_binary(self):
         (amount_len, amount) = self.amount.to_binary_with_len()
@@ -794,7 +806,10 @@ class RevokeAssetHeader(Serializable):
 
     def to_binary(self):
         structured = struct.pack(
-            ">HH32s", enum.TxTypeRevokeAsset[0], enum.TxTypeRevokeAsset[1], b58decode(self.address))
+            ">HH32s",
+            enum.TxTypeRevokeAsset[0],
+            enum.TxTypeRevokeAsset[1],
+            b58decode(self.address))
         return structured
 
 
@@ -823,10 +838,14 @@ class CallHeader(Serializable):
         binary_args = b''.join([arg.to_binary() for arg in self.args])
 
         structured = struct.pack(
-            ">HH32sQ{}sQ{}s".format(str(len(self.method)), str(
-                len(binary_args))), enum.TxTypeCall[0], enum.TxTypeCall[1],
+            ">HH32sQ{}sQ{}s".format(str(len(self.method)), str(len(binary_args))),
+            enum.TxTypeCall[0],
+            enum.TxTypeCall[1],
             b58decode(self.address),
-            len(self.method), self.method.encode(), len(self.args), binary_args)
+            len(self.method),
+            self.method.encode(),
+            len(self.args),
+            binary_args)
         return structured
 
 
@@ -856,7 +875,11 @@ class BindHeader(Serializable):
 
         structured = struct.pack(
             ">HH32s32s{}s".format(len(self.proof)),
-             enum.TxTypeBind[0], enum.TxTypeBind[1], self.contract.encode(), self.asset.encode(), self.proof)
+            enum.TxTypeBind[0],
+            enum.TxTypeBind[1],
+            self.contract.encode(),
+            self.asset.encode(),
+            self.proof)
         return structured
 
 
@@ -882,6 +905,9 @@ class SyncHeader(Serializable):
     def to_binary(self):
         """Convert bytes for syncing local contract"""
         structured = struct.pack(
-            ">HH32s", enum.TxTypeSyncLocal[0], enum.TxTypeSyncLocal[1], self.contract)
+            ">HH32s",
+            enum.TxTypeSyncLocal[0],
+            enum.TxTypeSyncLocal[1],
+            self.contract)
         return structured
 

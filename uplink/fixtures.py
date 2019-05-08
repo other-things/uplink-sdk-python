@@ -135,19 +135,21 @@ setX (int y) {
 def oracle_contract(contract_gen):
     contract = contract_gen(script="""
 global datetime timestamp;
-global float value;
+global num value;
 
 transition initial -> end;
 transition end -> end;
 transition end -> terminal;
 
 @initial
-set(float v) {
+set(int v) {
   if (sender() == deployer()) {
     timestamp = now();
     value = v;
-  };
-  transitionTo(:end);
+    transitionTo(:end);
+  } else {
+    transitionTo(:end);
+  }
 }
 
 @end
@@ -344,8 +346,8 @@ transition initial -> set;
 transition set -> terminal;
 
 @initial
-setX (float y, contract oracle) {
-  x = y * contractValue(oracle, "value");
+setX (num y, contract oracle) {
+  x = y * 2.0;
   transitionTo(:set);
 }
 
