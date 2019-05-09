@@ -242,20 +242,18 @@ class Dec(Tagged, Serializable, NamedTuple('Decimal', [('decimalPlaces', int), (
             0,
             self.decimalIntegerValue,
         )
+    def to_float(self):
+        return self.decimalIntegerValue / (10.0 ** self.decimalPlaces)
 
 class NumDecimal(Tagged, Serializable, NamedTuple('NumDecimal', [('contents', Dec)])):
-    # def _asdict(self):
-    #     result = super(NumDecimal, self)._asdict()
-    #     del result['decimalPlaces']
-    #     del result['decimalIntegerValue']
-    #     result['contents'] = dict(decimalPlaces=self.decimalPlaces, decimalIntegerValue=self.decimalIntegerValue)
-    #     return result
     def to_binary(self):
         (num_decimal_packstr, num_decimal) = self.contents.to_binary_with_len()
         return struct.pack(
             ">" + num_decimal_packstr,
             num_decimal
         )
+    def to_float(self):
+        return self.contents.to_float()
 
 class VNum(Tagged, Serializable, NamedTuple('VNum', [('contents', NumDecimal)])):
     def to_binary(self):
@@ -266,6 +264,8 @@ class VNum(Tagged, Serializable, NamedTuple('VNum', [('contents', NumDecimal)]))
             enum.VTypeNumDecimal,
             num_decimal
         )
+    def to_float(self):
+        return self.contents.to_float()
 
 # TODO proper bigint support for haskell Integer types
 class VNumRational(Tagged, Serializable, NamedTuple("VNumRational", [("denominator", int), ("numerator", int)])):

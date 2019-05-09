@@ -372,14 +372,14 @@ def mk_circulate_transfer_script(asset_type_name, precision):
     _asset_type_name = "asset"
     holdings_type_name = ""
     if asset_type_name == "Discrete":
-        _asset_type_name += "Disc"
+        _asset_type_name += "<int>"
         holdings_type_name = "int"
     elif asset_type_name == "Binary":
-        _asset_type_name += "Bin"
+        _asset_type_name += "<bool>"
         holdings_type_name = "bool"
     elif asset_type_name == "Fractional" and precision is not None:
         _asset_type_name += "Frac" + str(precision)
-        holdings_type_name = "fixed" + str(precision)
+        holdings_type_name = "decimal<" + str(precision) + ">"
     else:
         raise ValueError("Argument must be 'Discrete', 'Binary', or 'Fractional'")
 
@@ -422,22 +422,22 @@ global account issuer = u'{0}';
 global account datafeed = u'{1}';
 global account investor;
 
-global assetFrac2 asset_ = a'{2}';
-global fixed2 minimum_deposit = 1000.00f;
-global fixed2 return_calc = 0.20f;
-global fixed2 threshold_calc = 0.95f;
-global fixed2 deposit = 0.00f;
+global asset<decimal<2>> asset_ = a'{2}';
+global decimal<2> minimum_deposit = 1000.00f;
+global decimal<2> return_calc = 0.20f;
+global decimal<2> threshold_calc = 0.95f;
+global decimal<2> deposit = 0.00f;
 
 global datetime closingDate  = "2018-02-03T00:00:00+00:00";
 global datetime strikeDate   = "2018-02-04T00:00:00+00:00";
 global datetime finalDate    = "2018-02-05T00:00:00+00:00";
 global datetime maturityDate = "2018-02-24T00:00:00+00:00";
 
-global fixed2 counter = 0.00f;
-global fixed2 closing_level_sum = 0.00f;
-global fixed2 initial_price;
-global fixed2 final_price;
-global fixed2 payout;
+global decimal<2> counter = 0.00f;
+global decimal<2> closing_level_sum = 0.00f;
+global decimal<2> initial_price;
+global decimal<2> final_price;
+global decimal<2> payout;
 
 transition initial -> confirmation;
 transition initial -> terminal;
@@ -450,7 +450,7 @@ transition calculate_level -> calculate_level;
 transition determine_final_level -> determine_final_level;
 
 @initial
-init(fixed2 new_deposit) {{
+init(decimal<2> new_deposit) {{
    if (now() < closingDate) {{
       if((sender() != issuer) && (new_deposit >= minimum_deposit)) {{
          investor = sender();
@@ -466,7 +466,7 @@ init(fixed2 new_deposit) {{
 }}
 
 @confirmation
-confirmation(fixed2 close_price) {{
+confirmation(decimal<2> close_price) {{
    if ((now() > strikeDate) && (sender() == datafeed)) {{
     initial_price = close_price;
     transitionTo(:calculate_level);
@@ -476,7 +476,7 @@ confirmation(fixed2 close_price) {{
 }}
 
 @calculate_level
-calculate_level(fixed2 close_price) {{
+calculate_level(decimal<2> close_price) {{
    if ((now() > finalDate) && (now() < maturityDate) && (sender() == datafeed) && isBusinessDayUK(now())) {{
      closing_level_sum = closing_level_sum + close_price;
      counter = counter + 1.00f;
