@@ -3,7 +3,8 @@ from ecdsa.ecdsa import *
 from ecdsa.curves import *
 import json
 from uplink import *
-
+from uplink.protocol import *
+from decimal import *
 from uplink.fixtures import *
 from uplink.fixtures import is_rpc_ok, wait_until
 
@@ -85,7 +86,6 @@ def test_revoke_account(rpc, per_test_account):
 
     assert check_revoked_account()
 
-
 def test_call_contract(rpc, example_contract, alice_account):
     def get_contract():
         """ Shorter alias for contract query """
@@ -139,12 +139,12 @@ def test_oracle_contract(rpc, oracle_contract, alice_account, contract_using_ora
 @pytest.mark.parametrize(("asset_name", "supply", "asset_type_name", "precision", "transfer_val"), [
     ("circ_tran_discrete", 1000000, "Discrete", None, VNum(NumDecimal(Dec(0, 500000)))),
     ("circ_tran_binary", 2, "Binary", None, VBool(True)),
-    ("circ_tran_frac1", 1000000, "Fractional", 1, VNum(NumDecimal(Dec(1, 500000)))),
-    ("circ_tran_frac2", 1000000, "Fractional", 2, VNum(NumDecimal(Dec(2, 500000)))),
-    ("circ_tran_frac3", 1000000, "Fractional", 3, VNum(NumDecimal(Dec(3, 500000)))),
-    ("circ_tran_frac4", 1000000, "Fractional", 4, VNum(NumDecimal(Dec(4, 500000)))),
-    ("circ_tran_frac5", 1000000, "Fractional", 5, VNum(NumDecimal(Dec(5, 500000)))),
-    ("circ_tran_frac6", 1000000, "Fractional", 6, VNum(NumDecimal(Dec(6, 500000))))
+    ("circ_tran_frac1", 1000000, "Fractional", 1, VNum(NumDecimal(Dec(1, 5000000)))),
+    ("circ_tran_frac2", 1000000, "Fractional", 2, VNum(NumDecimal(Dec(2, 50000000)))),
+    ("circ_tran_frac3", 1000000, "Fractional", 3, VNum(NumDecimal(Dec(3, 500000000)))),
+    ("circ_tran_frac4", 1000000, "Fractional", 4, VNum(NumDecimal(Dec(4, 5000000000)))),
+    ("circ_tran_frac5", 1000000, "Fractional", 5, VNum(NumDecimal(Dec(5, 50000000000)))),
+    ("circ_tran_frac6", 1000000, "Fractional", 6, VNum(NumDecimal(Dec(6, 500000000000))))
 ])
 def test_circulate_and_transfer(rpc, alice_account, bob_account, asset_gen,
                                 circulate_transfer_contract_gen, asset_name,
@@ -161,7 +161,7 @@ def test_circulate_and_transfer(rpc, alice_account, bob_account, asset_gen,
         if type_name == "VBool":
             return int(transfer_val[0])
         elif type_name == "VNum":
-            return transfer_val.to_float()
+            return transfer_val[0].contents.decimalIntegerValue
         else:
             raise TypeError
 
@@ -219,7 +219,10 @@ def test_circulate_and_transfer(rpc, alice_account, bob_account, asset_gen,
     wait_until_tx_accepted(rpc, txhash4)
     # Bob should have all the holdings
     transfer2_asset = rpc.uplink_get_asset(circ_tran_asset.address)
-    assert transfer2_asset.holdings[bob_account.address]['decimalIntegerValue'] == supply
+    assert convert_amount_incoming(
+        transfer2_asset.holdings[bob_account.address]['decimalIntegerValue'],
+        transfer2_asset.holdings[bob_account.address]['decimalPlaces']
+        ) == supply
     assert (len(transfer2_asset.holdings) == 1)
 
 

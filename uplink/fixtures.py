@@ -378,7 +378,7 @@ def mk_circulate_transfer_script(asset_type_name, precision):
         _asset_type_name += "<bool>"
         holdings_type_name = "bool"
     elif asset_type_name == "Fractional" and precision is not None:
-        _asset_type_name += "Frac" + str(precision)
+        _asset_type_name += "<decimal<" + str(precision) + ">>"
         holdings_type_name = "decimal<" + str(precision) + ">"
     else:
         raise ValueError("Argument must be 'Discrete', 'Binary', or 'Fractional'")

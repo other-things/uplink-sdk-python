@@ -25,6 +25,19 @@ def to_decimal(x):
 def to_num_decimal(x):
     return NumDecimal(to_decimal(x))
 
+def convert_amount_for_uplink(value: Decimal, desired_precision: int = 2):
+    if desired_precision is not None:
+        value = value.quantize(Decimal(10) ** -desired_precision)
+    value = value.as_tuple()
+    supply = int("".join(map(str, value.digits)))
+    return supply
+
+
+def convert_amount_incoming(value, desired_precision=2):
+    if not value:
+        return 0
+    return value * pow(10, (-desired_precision))
+
 class Serializer(object):
     @staticmethod
     def serialize(object, **kwargs):
