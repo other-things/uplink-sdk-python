@@ -143,8 +143,7 @@ def test_oracle_contract(rpc, oracle_contract, alice_account, contract_using_ora
     ("circ_tran_frac2", 10000, "Fractional", 2, VNum(NumDecimal(Dec(2, 500000)))),
     ("circ_tran_frac3", 10000, "Fractional", 3, VNum(NumDecimal(Dec(3, 5000000)))),
     ("circ_tran_frac4", 10000, "Fractional", 4, VNum(NumDecimal(Dec(4, 50000000)))),
-    ("circ_tran_frac5", 10000, "Fractional", 5, VNum(NumDecimal(Dec(5, 500000000)))),
-    ("circ_tran_frac6", 10000, "Fractional", 6, VNum(NumDecimal(Dec(6, 5000000000))))
+    ("circ_tran_frac5", 10000, "Fractional", 5, VNum(NumDecimal(Dec(5, 500000000))))
 ])
 def test_circulate_and_transfer(rpc, alice_account, bob_account, asset_gen,
                                 circulate_transfer_contract_gen, asset_name,
@@ -280,7 +279,6 @@ def test_circulate_and_transfer_simulation(rpc, alice_account, bob_account, asse
                                         VAccount(bob_account.address),
                                         transfer_val])
     assert is_rpc_ok(result4)
-# transfer_val[0].contents.decimalIntegerValue
     asset = rpc.uplink_sim_query_asset(simKey, circ_tran_asset.address)
     # Bob should have all the holdings
     assert (convert_amount_incoming(

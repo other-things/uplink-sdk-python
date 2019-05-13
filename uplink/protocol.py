@@ -16,27 +16,25 @@ from typing import Tuple, Union
 # Serializers
 # ------------------------------------------------------------------------
 
+# Convert number to Dec
+# E.g. to_decimal(3.25) == Dec(2, 325)
 def to_decimal(x):
     v = Decimal(str(x))
     e = abs(v.as_tuple().exponent)
     w = int(float(v) * (10 ** e))
     return Dec(e, w)
 
+# Convert number to NumDecimal
+# E.g. to_num_decimal(3.25) == NumDecimal(Dec(2, 325))
 def to_num_decimal(x):
     return NumDecimal(to_decimal(x))
 
-def convert_amount_for_uplink(value, desired_precision = 2):
-    if desired_precision is not None:
-        value = value.quantize(Decimal(10) ** -desired_precision)
-    value = value.as_tuple()
-    supply = int("".join(map(str, value.digits)))
-    return supply
-
-
+# Convert number splitted by integer value and precision to a double
+# E.g. convert_amount_incoming(325, 2) == 3.25
 def convert_amount_incoming(value, desired_precision=2):
     if not value:
         return 0
-    return value / pow(10, (desired_precision))
+    return value / pow(10, desired_precision)
 
 class Serializer(object):
     @staticmethod
@@ -231,15 +229,6 @@ class AssetRef(Serializable):
         byts = struct.pack(fmt, len(self.ref))
         return struct.pack(fmt, len(self.ref), byts)
 
-
-# class VInt(Tagged, Serializable, NamedTuple("VInt", [('contents', int)])):
-#     def to_binary(self):
-#         return struct.pack('>bq', enum.VTypeInt, self.contents)
-
-
-# class VFloat(Tagged, Serializable, NamedTuple('VFloat', [('contents', float)])):
-#     def to_binary(self):
-#         return struct.pack('>bd', enum.VTypeFloat, self.contents)
 
 class Dec(Tagged, Serializable, NamedTuple('Decimal', [('decimalPlaces', int), ('decimalIntegerValue', int)])):
     def to_binary(self):
@@ -611,8 +600,7 @@ class CreateAssetHeader(Serializable):
         name_len = str(len(self.assetName)) + "s"
         reference_len = str(len(self.reference)) + "s"
         asset_len = str(len(_asset_type)) + "s "
-        supply = self.supply.to_binary()
-        supply_len = str(len(supply)) + "s"
+        (supply_len, supply) = self.supply.to_binary_with_len()
         if _asset_type == b'Fractional':
             package = ">HHH" + name_len + supply_len + "HH" + reference_len + "H" + asset_len + "bi"
             structured = struct.pack(
