@@ -183,9 +183,9 @@ asset<bool>  g0;
 asset<decimal<1>> g1;
 asset<decimal<2>> g2;
 asset<decimal<3>> g3;
-asset<decimal<4>> g4
-asset<decimal<5>> g5
-asset<decimal<6>> g6
+asset<decimal<4>> g4;
+asset<decimal<5>> g5;
+asset<decimal<6>> g6;
 contract h;
 datetime i;
 void j;
@@ -421,50 +421,39 @@ def mk_principal_protected_script(issuer, datafeed, asset):
 global account issuer = u'{0}';
 global account datafeed = u'{1}';
 global account investor;
-
 global asset<decimal<2>> asset_ = a'{2}';
-global decimal<2> minimum_deposit = 1000.00f;
-global decimal<2> return_calc = 0.20f;
-global decimal<2> threshold_calc = 0.95f;
-global decimal<2> deposit = 0.00f;
-
+global decimal<2> minimum_deposit = 1000.00;
+global decimal<2> return_calc = 0.20;
+global decimal<2> threshold_calc = 0.95;
+global decimal<2> deposit = 0.00;
 global datetime closingDate  = "2018-02-03T00:00:00+00:00";
 global datetime strikeDate   = "2018-02-04T00:00:00+00:00";
 global datetime finalDate    = "2018-02-05T00:00:00+00:00";
 global datetime maturityDate = "2018-02-24T00:00:00+00:00";
-
-global decimal<2> counter = 0.00f;
-global decimal<2> closing_level_sum = 0.00f;
+global decimal<2> counter = 0.00;
+global decimal<2> closing_level_sum = 0.00;
 global decimal<2> initial_price;
 global decimal<2> final_price;
 global decimal<2> payout;
-
 transition initial -> confirmation;
 transition initial -> terminal;
 transition confirmation -> calculate_level;
 transition calculate_level -> determine_final_level;
 transition determine_final_level -> terminal;
-transition initial -> initial;
 transition confirmation -> confirmation;
 transition calculate_level -> calculate_level;
 transition determine_final_level -> determine_final_level;
-
 @initial
 init(decimal<2> new_deposit) {{
    if (now() < closingDate) {{
-      if((sender() != issuer) && (new_deposit >= minimum_deposit)) {{
          investor = sender();
          deposit = new_deposit;
          transferHoldings(investor, asset_, deposit, issuer);
          transitionTo(:confirmation);
-      }} else {{
-         stay();
-      }};
    }} else {{
       transitionTo(:terminal);
    }};
 }}
-
 @confirmation
 confirmation(decimal<2> close_price) {{
    if ((now() > strikeDate) && (sender() == datafeed)) {{
@@ -474,27 +463,24 @@ confirmation(decimal<2> close_price) {{
     stay();
    }};
 }}
-
 @calculate_level
 calculate_level(decimal<2> close_price) {{
    if ((now() > finalDate) && (now() < maturityDate) && (sender() == datafeed) && isBusinessDayUK(now())) {{
      closing_level_sum = closing_level_sum + close_price;
-     counter = counter + 1.00f;
+     counter = counter + 1.00;
    }};
-
    if (now() > maturityDate) {{
      transitionTo(:determine_final_level);
    }} else {{
      stay();
    }};
 }}
-
 @determine_final_level
 determine_final_level() {{
    if ((now() > maturityDate) && (sender() == investor) || (sender() == issuer)) {{
-     final_price = closing_level_sum / counter;
+     final_price = round(2, closing_level_sum / counter);
      if((final_price > (initial_price * threshold_calc))) {{
-       payout = (deposit + (deposit * return_calc));
+       payout = round(2, deposit + (deposit * return_calc));
        transferHoldings(issuer, asset_, payout, investor);
        terminate();
      }} else {{

@@ -36,7 +36,7 @@ def convert_amount_for_uplink(value: Decimal, desired_precision: int = 2):
 def convert_amount_incoming(value, desired_precision=2):
     if not value:
         return 0
-    return value * pow(10, (-desired_precision))
+    return value / pow(10, (desired_precision))
 
 class Serializer(object):
     @staticmethod
@@ -192,12 +192,7 @@ class AssetType(Serializable):
         if asset_type in asset_types:
             self.type = asset_type
             if self.type == enum.AssetFractional:
-                if precision in [x for x in range(1, 7)]:
-                    self.precision = precision or None
-                else:
-                    self.precision = None
-                    valerr = "Invalid precision for Fractional asset type."
-                    raise ValueError(valerr)
+                self.precision = precision or None
             elif precision is not None:
                 self.precision = None
                 valerr = "Cannot specify precision of Non-Fractional asset."
