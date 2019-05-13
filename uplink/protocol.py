@@ -25,7 +25,7 @@ def to_decimal(x):
 def to_num_decimal(x):
     return NumDecimal(to_decimal(x))
 
-def convert_amount_for_uplink(value: Decimal, desired_precision: int = 2):
+def convert_amount_for_uplink(value, desired_precision = 2):
     if desired_precision is not None:
         value = value.quantize(Decimal(10) ** -desired_precision)
     value = value.as_tuple()
