@@ -1,0 +1,20 @@
+{
+    "header": {
+        "contents": {
+            "contents": {
+                "address": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve",
+                "args": [
+                    {
+                        "contents": "Hello world",
+                        "tag": "VText"
+                    }
+                ],
+                "method": "get"
+            },
+            "tag": "Call"
+        },
+        "tag": "TxContract"
+    },
+    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve",
+    "signature": "AE4xMTUxMzY4MDA4MjA0NTY4MzM3Mzc5OTQxMjY3NzEzODYwMTUwMjYyODcwOTUwMzQ2MjU2MjM2NDQxODYyNzgxMDg5MjY2OTA3Nzk1Njc6AEw1MzMyMjg0NTIxOTQ5NTk5ODU2ODQwNTQ0OTg4MDkyMzM2OTYyNzU0NTU1NzYxNTY2NTQ4ODM3MDI5OTc5MjY1NzY3NDYyMTM1Mzg2"
+}

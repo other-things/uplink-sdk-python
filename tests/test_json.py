@@ -56,7 +56,7 @@ def test_revoke_account_hdr():
 def test_call(args):
     tx = reference.testCall(args)
 
-    golden_json("tx_call_hdr_{}.json".format(type(args).__name__), tx)
+    golden_json("tx_call_hdr_{}.json".format(str(args)), tx)
 
 
 def test_bind_hdr():
@@ -100,13 +100,13 @@ def test_revoke():
 def test_call_tx(arg):
 
     tx = reference.testTx(TxContract, Call, reference.testCall([arg]))
-    golden_json("tx_call_{}.json".format(type(arg).__name__), tx)
+    golden_json("tx_call_{}.json".format(str(arg)), tx)
 
 
 @pytest.mark.parametrize(("arg_count"), range(0,5))
 def test_call_arg_length(arg_count):
 
-    tx = reference.testTx(TxContract, Call, reference.testCall([VInt(1)] * arg_count))
+    tx = reference.testTx(TxContract, Call, reference.testCall([VNum(NumDecimal(Dec(0, 1)))] * arg_count))
     golden_json("tx_call_{}_args.json".format(arg_count), tx)
 
 

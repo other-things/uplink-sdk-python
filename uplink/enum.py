@@ -57,7 +57,7 @@ VTypeVoid = 7
 VTypeDateTime = 8
 VTypeTimeDelta = 9
 VTypeEnum = 10
-VTypeUndefined = 10000
+VTypeUndefined = 100
 
 VTypeNumDecimal = 0
 VTypeNumRational = 1

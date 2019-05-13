@@ -1,0 +1,20 @@
+{
+    "header": {
+        "contents": {
+            "contents": {
+                "address": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve",
+                "args": [
+                    {
+                        "contents": "Foo",
+                        "tag": "VEnum"
+                    }
+                ],
+                "method": "get"
+            },
+            "tag": "Call"
+        },
+        "tag": "TxContract"
+    },
+    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve",
+    "signature": "AE4xMTUxMzY4MDA4MjA0NTY4MzM3Mzc5OTQxMjY3NzEzODYwMTUwMjYyODcwOTUwMzQ2MjU2MjM2NDQxODYyNzgxMDg5MjY2OTA3Nzk1Njc6AE0zMzA3MzczMTUwMjM3MTQxMzg2NzE3ODk1MTk1MDU3OTQ1OTQzODk2NTE4OTI4NDE4ODYwMDY5MjI4NTQ3MTQ2NDAzMDk4ODM1NzA5NQ=="
+}
