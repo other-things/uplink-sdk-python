@@ -285,10 +285,6 @@ class VNumRational(Tagged, Serializable, NamedTuple("VNumRational", [("denominat
             self.numerator,
         )
 
-# class VNum(Tagged, Serializable, NamedTuple):
-    # pass
-    # contents: Union[VNumDecimal, VNumRational]
-
 class VFixed(Tagged, Serializable, NamedTuple('VFixed', [('contents', Decimal), ('precision', int)])):
     def to_binary(self):
         value = self.contents.as_tuple()
