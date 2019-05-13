@@ -1,0 +1,20 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[dev-packages]
+
+[packages]
+requests = "==2.20.0"
+ecdsa = "==0.13"
+cryptography = ">=1.7.1"
+pytest = "== 3.2.2"
+"pysha3" = ">=1.0.2"
+"base58" = "==0.2.5"
+typing = "*"
+hexdump = "*"
+uplink-sdk-py = {git = "git://github.com/adjoint-io/uplink-sdk-python.git", ref = "f40bb14e924b1862c930b4780eb6c7d4c7843c4a"}
+
+[requires]
+python_version = "2.7"
