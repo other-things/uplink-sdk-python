@@ -52,12 +52,12 @@ def test_create_asset():
 def test_call(arg):
     tx = reference.testCall([arg])
 
-    golden_binary("tx_call_{}.bin".format(type(arg).__name__), tx)
+    golden_binary("tx_call_{}.bin".format(str(arg)), tx)
 
 
 @pytest.mark.parametrize(("arg_count"), range(0, 5))
 def test_call_arg_length(arg_count):
-    tx = reference.testCall([VInt(1)] * arg_count)
+    tx = reference.testCall([VNum(NumDecimal(Dec(0, 1)))] * arg_count)
     golden_binary("tx_call_{}_args.bin".format(arg_count), tx)
 
 

@@ -1,0 +1,23 @@
+{
+    "header": {
+        "contents": {
+            "contents": {
+                "address": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve",
+                "args": [
+                    {
+                        "contents": [
+                            "115136800820456833737994126771386015026287095034625623644186278108926690779567",
+                            "98245280522003505644797670843107276132602050133082625768706491602875725788467"
+                        ],
+                        "tag": "VSig"
+                    }
+                ],
+                "method": "get"
+            },
+            "tag": "Call"
+        },
+        "tag": "TxContract"
+    },
+    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve",
+    "signature": "AE4xMTUxMzY4MDA4MjA0NTY4MzM3Mzc5OTQxMjY3NzEzODYwMTUwMjYyODcwOTUwMzQ2MjU2MjM2NDQxODYyNzgxMDg5MjY2OTA3Nzk1Njc6AE03NzkyMTc5NjMwOTE4NDc2ODQ2NzI1MTIzNzQxNDcwNjIwNjA3NTg3ODk0NDI5MDg1NzI2NzMyMzA0NTM4MDAzMDI0NTcxNzQ0ODAzNA=="
+}

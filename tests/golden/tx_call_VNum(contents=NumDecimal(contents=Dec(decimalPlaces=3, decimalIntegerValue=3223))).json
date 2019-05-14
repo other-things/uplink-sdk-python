@@ -1,0 +1,27 @@
+{
+    "header": {
+        "contents": {
+            "contents": {
+                "address": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve",
+                "args": [
+                    {
+                        "contents": {
+                            "contents": {
+                                "decimalIntegerValue": 3223,
+                                "decimalPlaces": 3,
+                                "tag": "Dec"
+                            },
+                            "tag": "NumDecimal"
+                        },
+                        "tag": "VNum"
+                    }
+                ],
+                "method": "get"
+            },
+            "tag": "Call"
+        },
+        "tag": "TxContract"
+    },
+    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve",
+    "signature": "AE4xMTUxMzY4MDA4MjA0NTY4MzM3Mzc5OTQxMjY3NzEzODYwMTUwMjYyODcwOTUwMzQ2MjU2MjM2NDQxODYyNzgxMDg5MjY2OTA3Nzk1Njc6AE03MTA5ODAzMTU0MzM0NzU4NzI4NzYxNzc2NDIyMTU4Nzc0MDE5NTc1ODAwNTU1OTQ5MTYyNTIwODcwNzcwNDI4OTQ4NDkzMjEwOTQ1MQ=="
+}

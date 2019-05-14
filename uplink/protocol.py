@@ -9,13 +9,32 @@ import datetime
 from datetime import timedelta
 import uplink.enum as enum
 from uplink.cryptography import (ecdsa_sign, derive_asset_address)
-from typing import Tuple
+from typing import Tuple, Union
 
 
 # ------------------------------------------------------------------------
 # Serializers
 # ------------------------------------------------------------------------
 
+# Convert number to Dec
+# E.g. to_decimal(3.25) == Dec(2, 325)
+def to_decimal(x):
+    v = Decimal(str(x))
+    e = abs(v.as_tuple().exponent)
+    w = int(float(v) * (10 ** e))
+    return Dec(e, w)
+
+# Convert number to NumDecimal
+# E.g. to_num_decimal(3.25) == NumDecimal(Dec(2, 325))
+def to_num_decimal(x):
+    return NumDecimal(to_decimal(x))
+
+# Convert number splitted by integer value and precision to a double
+# E.g. convert_amount_incoming(325, 2) == 3.25
+def convert_amount_incoming(value, desired_precision=2):
+    if not value:
+        return 0
+    return value / pow(10, desired_precision)
 
 class Serializer(object):
     @staticmethod
@@ -57,6 +76,10 @@ class Serializable(object):
 
     def to_binary(self):
         raise NotImplementedError
+
+    def to_binary_with_len(self):
+        binary = self.to_binary()
+        return (str(len(binary)) + "s", binary)
 
     def to_json(self, **kwargs):
         return Serializer.serialize(self.to_dict(), **kwargs)
@@ -167,12 +190,7 @@ class AssetType(Serializable):
         if asset_type in asset_types:
             self.type = asset_type
             if self.type == enum.AssetFractional:
-                if precision in [x for x in range(1, 7)]:
-                    self.precision = precision or None
-                else:
-                    self.precision = None
-                    valerr = "Invalid precision for Fractional asset type."
-                    raise ValueError(valerr)
+                self.precision = precision or None
             elif precision is not None:
                 self.precision = None
                 valerr = "Cannot specify precision of Non-Fractional asset."
@@ -212,15 +230,60 @@ class AssetRef(Serializable):
         return struct.pack(fmt, len(self.ref), byts)
 
 
-class VInt(Tagged, Serializable, NamedTuple("VInt", [('contents', int)])):
+class Dec(Tagged, Serializable, NamedTuple('Decimal', [('decimalPlaces', int), ('decimalIntegerValue', int)])):
     def to_binary(self):
-        return struct.pack('>bq', enum.VTypeInt, self.contents)
+        return struct.pack(
+            ">bibi",
+            0,
+            self.decimalPlaces,
+            0,
+            self.decimalIntegerValue,
+        )
+    def to_float(self):
+        return self.decimalIntegerValue / (10.0 ** self.decimalPlaces)
 
-
-class VFloat(Tagged, Serializable, NamedTuple('VFloat', [('contents', float)])):
+class NumDecimal(Tagged, Serializable, NamedTuple('NumDecimal', [('contents', Dec)])):
     def to_binary(self):
-        return struct.pack('>bd', enum.VTypeFloat, self.contents)
+        (num_decimal_packstr, num_decimal) = self.contents.to_binary_with_len()
+        return struct.pack(
+            ">" + num_decimal_packstr,
+            num_decimal
+        )
+    def to_float(self):
+        return self.contents.to_float()
 
+class VNum(Tagged, Serializable, NamedTuple('VNum', [('contents', NumDecimal)])):
+    def to_binary(self):
+        (num_decimal_packstr, num_decimal) = self.contents.to_binary_with_len()
+        return struct.pack(
+            ">bb" + num_decimal_packstr,
+            enum.VTypeNum,
+            enum.VTypeNumDecimal,
+            num_decimal
+        )
+    def to_float(self):
+        return self.contents.to_float()
+
+# TODO proper bigint support for haskell Integer types
+class VNumRational(Tagged, Serializable, NamedTuple("VNumRational", [("denominator", int), ("numerator", int)])):
+
+    def _asdict(self):
+        result = super(VNumRational, self)._asdict()
+        del result['denominator']
+        del result['numerator']
+        result['contents'] = {"contents": dict(denominator=self.denominator, numerator=self.numerator)}
+        return result
+
+    def to_binary(self):
+        return struct.pack(
+            ">bbbibi",
+            enum.VTypeNum,
+            enum.VTypeNumRational,
+            0,
+            self.denominator,
+            0,
+            self.numerator,
+        )
 
 class VFixed(Tagged, Serializable, NamedTuple('VFixed', [('contents', Decimal), ('precision', int)])):
     def to_binary(self):
@@ -521,7 +584,7 @@ class CreateAssetHeader(Serializable):
                  issuer, precision, metadata):
         asset_type = AssetType(asset_type, precision)
         self.assetName = name
-        self.supply = int(supply)
+        self.supply = to_decimal(supply)
         self.issuer = issuer
         self.reference = str(reference)
         self.assetType = asset_type
@@ -533,31 +596,34 @@ class CreateAssetHeader(Serializable):
         name_len = str(len(self.assetName)) + "s"
         reference_len = str(len(self.reference)) + "s"
         asset_len = str(len(_asset_type)) + "s "
-
+        (supply_len, supply) = self.supply.to_binary_with_len()
         if _asset_type == b'Fractional':
-            package = ">HHH" + name_len + "QHH" + reference_len + "H" + asset_len + "b"
+            package = ">HHH" + name_len + supply_len + "HH" + reference_len + "H" + asset_len + "bi"
             structured = struct.pack(
                 package,
                 enum.TxTypeCreateAsset[0],
                 enum.TxTypeCreateAsset[1],
                 len(self.assetName),
                 self.assetName.encode(),
-                self.supply,
+                supply,
                 1,
                 len(self.reference),
                 self.reference.encode(),
                 len(_asset_type),
-                _asset_type, precision - 1)
+                _asset_type,
+                0,
+                precision
+            )
 
         else:
-            package = ">HHH" + name_len + "QHH" + reference_len + "H" + asset_len
+            package = ">HHH" + name_len + supply_len + "HH" + reference_len + "H" + asset_len
             structured = struct.pack(
                 package,
                 enum.TxTypeCreateAsset[0],
                 enum.TxTypeCreateAsset[1],
                 len(self.assetName),
                 self.assetName.encode(),
-                self.supply,
+                supply,
                 1,
                 len(self.reference),
                 self.reference.encode(),
@@ -641,11 +707,17 @@ class TransferAssetHeader(Serializable):
     def __init__(self, assetAddr, toAddr, balance):
         self.assetAddr = assetAddr
         self.toAddr = toAddr
-        self.balance = balance
+        self.balance = to_decimal(balance)
 
     def to_binary(self):
+        (balance_len, balance) = self.balance.to_binary_with_len()
         structured = struct.pack(
-            ">HH32s32sq", enum.TxTypeTransfer[0], enum.TxTypeTransfer[1], b58decode(self.assetAddr), b58decode(self.toAddr), self.balance)
+            ">HH32s32s" + balance_len,
+            enum.TxTypeTransfer[0],
+            enum.TxTypeTransfer[1],
+            b58decode(self.assetAddr),
+            b58decode(self.toAddr),
+            balance)
         return structured
 
 
@@ -667,11 +739,16 @@ class CirculateAssetHeader(Serializable):
 
     def __init__(self, assetAddr, amount):
         self.assetAddr = assetAddr
-        self.amount = amount
+        self.amount = to_decimal(amount)
 
     def to_binary(self):
+        (amount_len, amount) = self.amount.to_binary_with_len()
         structured = struct.pack(
-            ">HH32sq", enum.TxTypeCirculate[0], enum.TxTypeCirculate[1], b58decode(self.assetAddr), self.amount)
+            ">HH32s" + amount_len,
+            enum.TxTypeCirculate[0],
+            enum.TxTypeCirculate[1],
+            b58decode(self.assetAddr),
+            amount)
         return structured
 
 
@@ -721,7 +798,10 @@ class RevokeAssetHeader(Serializable):
 
     def to_binary(self):
         structured = struct.pack(
-            ">HH32s", enum.TxTypeRevokeAsset[0], enum.TxTypeRevokeAsset[1], b58decode(self.address))
+            ">HH32s",
+            enum.TxTypeRevokeAsset[0],
+            enum.TxTypeRevokeAsset[1],
+            b58decode(self.address))
         return structured
 
 
@@ -750,10 +830,14 @@ class CallHeader(Serializable):
         binary_args = b''.join([arg.to_binary() for arg in self.args])
 
         structured = struct.pack(
-            ">HH32sQ{}sQ{}s".format(str(len(self.method)), str(
-                len(binary_args))), enum.TxTypeCall[0], enum.TxTypeCall[1],
+            ">HH32sQ{}sQ{}s".format(str(len(self.method)), str(len(binary_args))),
+            enum.TxTypeCall[0],
+            enum.TxTypeCall[1],
             b58decode(self.address),
-            len(self.method), self.method.encode(), len(self.args), binary_args)
+            len(self.method),
+            self.method.encode(),
+            len(self.args),
+            binary_args)
         return structured
 
 
@@ -783,7 +867,11 @@ class BindHeader(Serializable):
 
         structured = struct.pack(
             ">HH32s32s{}s".format(len(self.proof)),
-             enum.TxTypeBind[0], enum.TxTypeBind[1], self.contract.encode(), self.asset.encode(), self.proof)
+            enum.TxTypeBind[0],
+            enum.TxTypeBind[1],
+            self.contract.encode(),
+            self.asset.encode(),
+            self.proof)
         return structured
 
 
@@ -809,5 +897,9 @@ class SyncHeader(Serializable):
     def to_binary(self):
         """Convert bytes for syncing local contract"""
         structured = struct.pack(
-            ">HH32s", enum.TxTypeSyncLocal[0], enum.TxTypeSyncLocal[1], self.contract)
+            ">HH32s",
+            enum.TxTypeSyncLocal[0],
+            enum.TxTypeSyncLocal[1],
+            self.contract)
         return structured
+

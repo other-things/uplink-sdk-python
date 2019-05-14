@@ -2,6 +2,7 @@ from ecdsa.keys import *
 from ecdsa.ecdsa import Public_key, generator_secp256k1, curve_secp256k1
 from ecdsa.curves import *
 
+from uplink.protocol import *
 from uplink import *
 
 # uplink testPriv
@@ -33,8 +34,13 @@ testTimestamp = 1231006505
 nonce = 42
 
 test_args = [
-    VInt(1), VFloat(3.5), VBool(True),VFixed(Decimal("3.223"), 3),
-    VAccount(testAddr), VAsset(testAddr), VContract(testAddr),
+    VNum(NumDecimal(Dec(0, 1))),
+    VNum(NumDecimal(Dec(1, 35))),
+    VBool(True),
+    VNum(NumDecimal(to_decimal("3.223"))),
+    VAccount(testAddr),
+    VAsset(testAddr),
+    VContract(testAddr),
     VText("Hello world"),
     VVoid,
     VUndefined,

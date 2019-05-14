@@ -1,0 +1,15 @@
+{
+    "address": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve",
+    "args": {
+        "contents": {
+            "contents": {
+                "decimalIntegerValue": 1,
+                "decimalPlaces": 0,
+                "tag": "Dec"
+            },
+            "tag": "NumDecimal"
+        },
+        "tag": "VNum"
+    },
+    "method": "get"
+}

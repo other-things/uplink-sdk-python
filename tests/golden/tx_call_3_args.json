@@ -2,27 +2,48 @@
     "header": {
         "contents": {
             "contents": {
-                "address": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
+                "address": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve",
                 "args": [
                     {
-                        "contents": 1, 
-                        "tag": "VInt"
-                    }, 
+                        "contents": {
+                            "contents": {
+                                "decimalIntegerValue": 1,
+                                "decimalPlaces": 0,
+                                "tag": "Dec"
+                            },
+                            "tag": "NumDecimal"
+                        },
+                        "tag": "VNum"
+                    },
                     {
-                        "contents": 1, 
-                        "tag": "VInt"
-                    }, 
+                        "contents": {
+                            "contents": {
+                                "decimalIntegerValue": 1,
+                                "decimalPlaces": 0,
+                                "tag": "Dec"
+                            },
+                            "tag": "NumDecimal"
+                        },
+                        "tag": "VNum"
+                    },
                     {
-                        "contents": 1, 
-                        "tag": "VInt"
+                        "contents": {
+                            "contents": {
+                                "decimalIntegerValue": 1,
+                                "decimalPlaces": 0,
+                                "tag": "Dec"
+                            },
+                            "tag": "NumDecimal"
+                        },
+                        "tag": "VNum"
                     }
-                ], 
+                ],
                 "method": "get"
-            }, 
+            },
             "tag": "Call"
-        }, 
+        },
         "tag": "TxContract"
-    }, 
-    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
-    "signature": "AE4xMTUxMzY4MDA4MjA0NTY4MzM3Mzc5OTQxMjY3NzEzODYwMTUwMjYyODcwOTUwMzQ2MjU2MjM2NDQxODYyNzgxMDg5MjY2OTA3Nzk1Njc6AE04OTU4Nzk1ODIzMzQ5NTM0NTQ4ODMyNzgxNTA2NjcxMjE1OTIwNjE0MzcwNTI3ODkxOTk3OTMyNzc2NzQyNDA3OTM3MTczNzIyMTc2OQ=="
+    },
+    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve",
+    "signature": "AE4xMTUxMzY4MDA4MjA0NTY4MzM3Mzc5OTQxMjY3NzEzODYwMTUwMjYyODcwOTUwMzQ2MjU2MjM2NDQxODYyNzgxMDg5MjY2OTA3Nzk1Njc6AE03MjYwMTY0NzY2MTE1NzA0NTE3ODcxODE5MDUxNTYwNzM1NzQzNzEyNDc0OTQ3ODkxNjYzNTQ2NzI4NTA5NzkwODQyNDM4OTUzNzEwNA=="
 }

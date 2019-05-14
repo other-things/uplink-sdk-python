@@ -3,7 +3,8 @@ from ecdsa.ecdsa import *
 from ecdsa.curves import *
 import json
 from uplink import *
-
+from uplink.protocol import *
+from decimal import *
 from uplink.fixtures import *
 from uplink.fixtures import is_rpc_ok, wait_until
 
@@ -41,8 +42,8 @@ def test_transfer_asset(rpc, alice_account, bob_account, gold_asset):
     wait_until_tx_accepted(rpc, tx_hash_0)
     circulated_asset = rpc.uplink_get_asset(gold_asset.address)
     # Assert the circulation worked
-    assert circulated_asset.supply == gold_asset.supply - 500
-    assert circulated_asset.holdings[alice_account.address] == 500
+    assert circulated_asset.supply['decimalIntegerValue'] == gold_asset.supply['decimalIntegerValue'] - 500
+    assert circulated_asset.holdings[alice_account.address]['decimalIntegerValue'] == 500
 
     # transfer alice holdings to bob holdings
     tx_hash_1 = rpc.uplink_transfer_asset(private_key=alice_account.private_key,
@@ -53,8 +54,8 @@ def test_transfer_asset(rpc, alice_account, bob_account, gold_asset):
     wait_until_tx_accepted(rpc, tx_hash_1)
     transferred_asset_1 = rpc.uplink_get_asset(gold_asset.address)
     # Assert the transfer worked
-    assert transferred_asset_1.holdings[alice_account.address] == 250
-    assert transferred_asset_1.holdings[bob_account.address] == 250
+    assert transferred_asset_1.holdings[alice_account.address]['decimalIntegerValue'] == 250
+    assert transferred_asset_1.holdings[bob_account.address]['decimalIntegerValue'] == 250
 
     # transfer bob holdings back to alice holdings
     tx_hash_2 = rpc.uplink_transfer_asset(private_key=bob_account.private_key,
@@ -66,8 +67,8 @@ def test_transfer_asset(rpc, alice_account, bob_account, gold_asset):
     wait_until_tx_accepted(rpc, tx_hash_2)
     transferred_asset_2 = rpc.uplink_get_asset(gold_asset.address)
     # Assert the transfer worked
-    assert transferred_asset_2.holdings[bob_account.address] == 200
-    assert transferred_asset_2.holdings[alice_account.address] == 300
+    assert transferred_asset_2.holdings[bob_account.address]['decimalIntegerValue'] == 200
+    assert transferred_asset_2.holdings[alice_account.address]['decimalIntegerValue'] == 300
 
 
 def test_revoke_account(rpc, per_test_account):
@@ -85,7 +86,6 @@ def test_revoke_account(rpc, per_test_account):
 
     assert check_revoked_account()
 
-
 def test_call_contract(rpc, example_contract, alice_account):
     def get_contract():
         """ Shorter alias for contract query """
@@ -96,10 +96,10 @@ def test_call_contract(rpc, example_contract, alice_account):
                                       from_address=alice_account.address,
                                       contract_addr=example_contract.address,
                                       method='setX',
-                                      args=[VInt(42)])
+                                      args=[VNum(NumDecimal(Dec(0, 42)))])
     # Check if 'x' = 42
     wait_until_tx_accepted(rpc, txhash)
-    assert get_contract().storage["x"]["contents"] == 42
+    assert get_contract().storage["x"]["contents"]["contents"]["decimalIntegerValue"] == 42
 
     # Terminate the contract
     txhash1 = rpc.uplink_call_contract(private_key=alice_account.private_key,
@@ -121,28 +121,29 @@ def test_oracle_contract(rpc, oracle_contract, alice_account, contract_using_ora
                                       from_address=alice_account.address,
                                       contract_addr=oracle_contract.address,
                                       method='set',
-                                      args=[VFloat(2)])
+                                      args=[VNum(NumDecimal(Dec(0, 2)))])
     wait_until_tx_accepted(rpc, txhash)
-    assert get_contract(oracle_contract.address).storage["value"]["contents"] == 2.0
+    assert get_contract(oracle_contract.address).storage["value"]["contents"]["contents"]["decimalIntegerValue"] == 2
 
     txhash = rpc.uplink_call_contract(private_key=alice_account.private_key,
                                       from_address=alice_account.address,
                                       contract_addr=contract_using_oracle_contract.address,
                                       method='setX',
-                                      args=[VFloat(5.3), VContract(oracle_contract.address)])
+                                      args=[VNum(NumDecimal(Dec(1, 53))),
+                                            VContract(oracle_contract.address)])
 
     wait_until_tx_accepted(rpc, txhash)
-    assert get_contract(contract_using_oracle_contract.address).storage['x']['contents'] == 10.6
+    assert get_contract(contract_using_oracle_contract.address).storage['x']['contents']['contents']['decimalIntegerValue'] == 1060
+    assert get_contract(contract_using_oracle_contract.address).storage['x']['contents']['contents']['decimalPlaces'] == 2
 
 @pytest.mark.parametrize(("asset_name", "supply", "asset_type_name", "precision", "transfer_val"), [
-    ("circ_tran_discrete", 1000000, "Discrete", None, VInt(500000)),
+    ("circ_tran_discrete", 10000, "Discrete", None, VNum(NumDecimal(Dec(0, 5000)))),
     ("circ_tran_binary", 2, "Binary", None, VBool(True)),
-    ("circ_tran_frac1", 1000000, "Fractional", 1, VFixed(Decimal("50000.0"), 1)),
-    ("circ_tran_frac2", 1000000, "Fractional", 2, VFixed(Decimal("5000.00"), 2)),
-    ("circ_tran_frac3", 1000000, "Fractional", 3, VFixed(Decimal("500.000"), 3)),
-    ("circ_tran_frac4", 1000000, "Fractional", 4, VFixed(Decimal("50.0000"), 4)),
-    ("circ_tran_frac5", 1000000, "Fractional", 5, VFixed(Decimal("5.00000"), 5)),
-    ("circ_tran_frac6", 1000000, "Fractional", 6, VFixed(Decimal(".500000"), 6))
+    ("circ_tran_frac1", 10000, "Fractional", 1, VNum(NumDecimal(Dec(1, 50000)))),
+    ("circ_tran_frac2", 10000, "Fractional", 2, VNum(NumDecimal(Dec(2, 500000)))),
+    ("circ_tran_frac3", 10000, "Fractional", 3, VNum(NumDecimal(Dec(3, 5000000)))),
+    ("circ_tran_frac4", 10000, "Fractional", 4, VNum(NumDecimal(Dec(4, 50000000)))),
+    ("circ_tran_frac5", 10000, "Fractional", 5, VNum(NumDecimal(Dec(5, 500000000))))
 ])
 def test_circulate_and_transfer(rpc, alice_account, bob_account, asset_gen,
                                 circulate_transfer_contract_gen, asset_name,
@@ -156,12 +157,10 @@ def test_circulate_and_transfer(rpc, alice_account, bob_account, asset_gen,
 
     def get_transfer_val_as_int():
         type_name = type(transfer_val).__name__
-        if type_name == "VInt":
-            return transfer_val[0]
-        elif type_name == "VBool":
+        if type_name == "VBool":
             return int(transfer_val[0])
-        elif type_name == "VFixed":
-            return int(float(transfer_val[0]) * 10.0**precision)
+        elif type_name == "VNum":
+            return transfer_val[0].contents.decimalIntegerValue
         else:
             raise TypeError
 
@@ -176,8 +175,8 @@ def test_circulate_and_transfer(rpc, alice_account, bob_account, asset_gen,
                                              transfer_val])
     wait_until_tx_accepted(rpc, txhash1)
     circulated1_asset = rpc.uplink_get_asset(circ_tran_asset.address)
-    assert circulated1_asset.supply == transfer_val_int
-    assert circulated1_asset.holdings[alice_account.address] == transfer_val_int
+    assert circulated1_asset.supply['decimalIntegerValue'] == transfer_val_int
+    assert circulated1_asset.holdings[alice_account.address]['decimalIntegerValue'] == transfer_val_int
 
     # Transfer all holdings from alice to bob
     txhash2 = rpc.uplink_call_contract(private_key=alice_account.private_key,
@@ -190,7 +189,7 @@ def test_circulate_and_transfer(rpc, alice_account, bob_account, asset_gen,
                                              transfer_val])
     wait_until_tx_accepted(rpc, txhash2)
     transfer1_asset= rpc.uplink_get_asset(circ_tran_asset.address)
-    assert transfer1_asset.holdings[bob_account.address] == transfer_val_int
+    assert transfer1_asset.holdings[bob_account.address]['decimalIntegerValue'] == transfer_val_int
     assert (len(transfer1_asset.holdings) == 1)
 
     # Circulate remaining supply to alice (0 supply left)
@@ -204,8 +203,8 @@ def test_circulate_and_transfer(rpc, alice_account, bob_account, asset_gen,
     wait_until_tx_accepted(rpc, txhash3)
     # entire asset supply should be circulated now
     circulated2_asset = rpc.uplink_get_asset(circ_tran_asset.address)
-    assert circulated2_asset.supply == 0
-    assert circulated2_asset.holdings[alice_account.address] == transfer_val_int
+    assert circulated2_asset.supply['decimalIntegerValue'] == 0
+    assert circulated2_asset.holdings[alice_account.address]['decimalIntegerValue'] == transfer_val_int
 
     # Transfer all from alice to bob (alice should have 0 holdings)
     txhash4 = rpc.uplink_call_contract(private_key=alice_account.private_key,
@@ -219,19 +218,22 @@ def test_circulate_and_transfer(rpc, alice_account, bob_account, asset_gen,
     wait_until_tx_accepted(rpc, txhash4)
     # Bob should have all the holdings
     transfer2_asset = rpc.uplink_get_asset(circ_tran_asset.address)
-    assert transfer2_asset.holdings[bob_account.address] == supply
+    assert convert_amount_incoming(
+        transfer2_asset.holdings[bob_account.address]['decimalIntegerValue'],
+        transfer2_asset.holdings[bob_account.address]['decimalPlaces']
+        ) == supply
     assert (len(transfer2_asset.holdings) == 1)
 
 
 @pytest.mark.parametrize(("asset_name", "supply", "asset_type_name", "precision", "transfer_val"), [
-    ("sim_circ_tran_discrete", 1000000, "Discrete", None, VInt(500000)),
+    ("sim_circ_tran_discrete", 1000000, "Discrete", None, VNum(NumDecimal(Dec(0, 500000)))),
     ("sim_circ_tran_binary", 2, "Binary", None, VBool(True)),
-    ("sim_circ_tran_frac1", 1000000, "Fractional", 1, VFixed(Decimal("50000.0"), 1)),
-    ("sim_circ_tran_frac2", 1000000, "Fractional", 2, VFixed(Decimal("5000.00"), 2)),
-    ("sim_circ_tran_frac3", 1000000, "Fractional", 3, VFixed(Decimal("500.000"), 3)),
-    ("sim_circ_tran_frac4", 1000000, "Fractional", 4, VFixed(Decimal("50.0000"), 4)),
-    ("sim_circ_tran_frac5", 1000000, "Fractional", 5, VFixed(Decimal("5.00000"), 5)),
-    ("sim_circ_tran_frac6", 1000000, "Fractional", 6, VFixed(Decimal(".500000"), 6))
+    ("sim_circ_tran_frac1", 1000000, "Fractional", 1, VNum(NumDecimal(Dec(1, 5000000)))),
+    ("sim_circ_tran_frac2", 1000000, "Fractional", 2, VNum(NumDecimal(Dec(2, 50000000)))),
+    ("sim_circ_tran_frac3", 1000000, "Fractional", 3, VNum(NumDecimal(Dec(3, 500000000)))),
+    ("sim_circ_tran_frac4", 1000000, "Fractional", 4, VNum(NumDecimal(Dec(4, 5000000000)))),
+    ("sim_circ_tran_frac5", 1000000, "Fractional", 5, VNum(NumDecimal(Dec(5, 50000000000)))),
+    ("sim_circ_tran_frac6", 1000000, "Fractional", 6, VNum(NumDecimal(Dec(6, 500000000000))))
 ])
 def test_circulate_and_transfer_simulation(rpc, alice_account, bob_account, asset_gen,
                                            circulate_transfer_contract_gen, asset_name,
@@ -268,7 +270,7 @@ def test_circulate_and_transfer_simulation(rpc, alice_account, bob_account, asse
     assert is_rpc_ok(result3)
 
     # entire asset supply should be circulated now
-    assert(rpc.uplink_sim_query_asset(simKey, circ_tran_asset.address).supply == 0)
+    assert(rpc.uplink_sim_query_asset(simKey, circ_tran_asset.address).supply['decimalIntegerValue'] == 0)
 
     # Transfer all from alice to bob (alice should have 0 holdings)
     result4 = rpc.uplink_sim_call(simKey, caller=alice_addr, method='transfer2',
@@ -277,19 +279,21 @@ def test_circulate_and_transfer_simulation(rpc, alice_account, bob_account, asse
                                         VAccount(bob_account.address),
                                         transfer_val])
     assert is_rpc_ok(result4)
-
     asset = rpc.uplink_sim_query_asset(simKey, circ_tran_asset.address)
     # Bob should have all the holdings
-    assert(asset.holdings[bob_account.address] == supply)
+    assert (convert_amount_incoming(
+        asset.holdings[bob_account.address]['decimalIntegerValue'],
+        asset.holdings[bob_account.address]['decimalPlaces']
+        ) == supply)
     assert (len(asset.holdings) == 1)
 
 
 def mkFixed2(n):
-    return VFixed(Decimal(str(n)), 2)
+    return VNum(NumDecimal(Dec(2, n)))
 
 @pytest.mark.parametrize(("deposit", "initial_price", "final_price", "payout"), [
-     (mkFixed2(1000.00), mkFixed2(7250.00), mkFixed2(6250.00), 100000),
-     (mkFixed2(1000.00), mkFixed2(7250.00), mkFixed2(7250.00), 120000)
+     (mkFixed2(10000000), mkFixed2(72500000), mkFixed2(62500000), 100000),
+     (mkFixed2(10000000), mkFixed2(72500000), mkFixed2(72500000), 120000)
 ])
 def test_principal_protected_simulation(rpc, alice_account, bob_account, asset_gen,
                                         deposit, initial_price, final_price, payout):
@@ -313,15 +317,15 @@ def test_principal_protected_simulation(rpc, alice_account, bob_account, asset_g
                                     from_address=alice_account.address,
                                     amount=100000000,
                                     asset_address=pp_asset.address)
-    wait_until(lambda: rpc.uplink_get_asset(pp_asset.address).supply == 0)
-    wait_until(lambda: rpc.uplink_get_asset(pp_asset.address).holdings[alice_account.address] == 100000000)
+    wait_until(lambda: rpc.uplink_get_asset(pp_asset.address).supply['decimalIntegerValue'] == 0)
+    wait_until(lambda: rpc.uplink_get_asset(pp_asset.address).holdings[alice_account.address]['decimalIntegerValue'] == 100000000)
     t2 = rpc.uplink_transfer_asset(private_key=alice_account.private_key,
                                    from_address=alice_account.address,
                                    to_address=bob_account.address,
                                    balance=100000,
                                    asset_address=pp_asset.address)
-    wait_until(lambda: rpc.uplink_get_asset(pp_asset.address).holdings[alice_account.address] == 99900000)
-    wait_until(lambda: rpc.uplink_get_asset(pp_asset.address).holdings[bob_account.address] == 100000)
+    wait_until(lambda: rpc.uplink_get_asset(pp_asset.address).holdings[alice_account.address]['decimalIntegerValue'] == 99900000)
+    wait_until(lambda: rpc.uplink_get_asset(pp_asset.address).holdings[bob_account.address]['decimalIntegerValue'] == 100000)
 
     # create simulation of principal protected contract
     pp_script = mk_principal_protected_script(alice_addr,
@@ -364,19 +368,22 @@ def test_principal_protected_simulation(rpc, alice_account, bob_account, asset_g
 
     # check if investor has $1950.00 holdings (deposit + (deposit * threshold_calc))
     underlying = rpc.uplink_sim_query_asset(simKey, pp_asset.address)
-    assert (underlying.holdings[bob_addr] == payout)
+    assert (convert_amount_incoming(
+        underlying.holdings[bob_account.address]['decimalIntegerValue'],
+        underlying.holdings[bob_account.address]['decimalPlaces']
+        ) == payout)
 
 testSig = \
   (115136800820456833737994126771386015026287095034625623644186278108926690779567,
   98245280522003505644797670843107276132602050133082625768706491602875725788467)
 
 @pytest.mark.parametrize(("account", "method_name", "var_name", "arg"), [
-    ("alice_account", "fn_int", "a", VInt(404)),
-    ("bob_account", "fn_float", "b", VFloat(2.123456789)),
-    ("charlie_account", "fn_fixed5", "c", VFixed(Decimal("6.54321"),5)),
-    ("charlie_account", "fn_fixed5", "c", VFixed(Decimal("-6.54321"), 5)),
-    ("dave_account", "fn_fixed2", "c", VFixed(Decimal("6.54"), 2)),
-    ("dave_account", "fn_fixed2", "c", VFixed(Decimal("2.00"), 2)),
+    ("alice_account", "fn_int", "a", VNum(NumDecimal(Dec(0, 404)))),
+    ("bob_account", "fn_float", "b", VNum(NumDecimal(Dec(9, 2123456789)))),
+    ("charlie_account", "fn_fixed5", "c", VNum(NumDecimal(Dec(5, 654321)))),
+    ("charlie_account", "fn_fixed5", "c", VNum(NumDecimal(Dec(5, -654321)))),
+    ("dave_account", "fn_fixed2", "c", VNum(NumDecimal(Dec(2, 654)))),
+    ("dave_account", "fn_fixed2", "c", VNum(NumDecimal(Dec(2, 200)))),
     ("alice_account", "fn_bool", "d", VBool(False)),
     ("alice_account", "fn_text", "e", VText("Hello World")),
     ("alice_account", "fn_account", "f", VAccount(testAddr)),
@@ -470,28 +477,28 @@ def test_get_contract_callable(rpc, all_args_contract, alice_account,
 
     result = rpc.uplink_get_contract_callable(all_args_contract.address)
     assert result == {u'fn_int': [[alice_addr],[[u'a_', u'int']]],
-                      u'fn_float': [[bob_addr],[[u'b_', u'float']]],
-                      u'fn_fixed5': [[charlie_addr],[[u'c_', u'fixed5']]],
-                      u'fn_fixed2': [[dave_addr],[[u'l_', u'fixed2']]],
+                      u'fn_float': [[bob_addr],[[u'b_', u'num']]],
+                      u'fn_fixed5': [[charlie_addr],[[u'c_', u'decimal<5>']]],
+                      u'fn_fixed2': [[dave_addr],[[u'l_', u'decimal<2>']]],
                       u'fn_bool': [sorted([alice_addr,bob_addr]),[[u'd_', u'bool']]],
                       u'fn_text': [sorted([alice_addr,charlie_addr]),[[u'e_', u'text']]],
                       u'fn_account': [sorted([alice_addr,dave_addr]),[[u'f_', u'account']]],
                       u'fn_assetDisc': [sorted([bob_addr,charlie_addr]),[[u'g_',
-                          u'assetDisc']]],
+                          u'asset<int>']]],
                       u'fn_assetBin':
-                          [sorted([bob_addr,dave_addr]),[[u'g0_', u'assetBin']]],
+                          [sorted([bob_addr,dave_addr]),[[u'g0_', u'asset<bool>']]],
                       u'fn_assetFrac1':
-                          [sorted([charlie_addr,dave_addr]),[[u'g1_', u'assetFrac1']]],
+                          [sorted([charlie_addr,dave_addr]),[[u'g1_', u'asset<decimal<1>>']]],
                       u'fn_assetFrac2':
-                          [sorted([alice_addr,bob_addr,charlie_addr]),[[u'g2_', u'assetFrac2']]],
+                          [sorted([alice_addr,bob_addr,charlie_addr]),[[u'g2_', u'asset<decimal<2>>']]],
                       u'fn_assetFrac3':
-                          [sorted([alice_addr,bob_addr,dave_addr]),[[u'g3_', u'assetFrac3']]],
+                          [sorted([alice_addr,bob_addr,dave_addr]),[[u'g3_', u'asset<decimal<3>>']]],
                       u'fn_assetFrac4':
-                          [sorted([alice_addr,charlie_addr,dave_addr]),[[u'g4_',u'assetFrac4']]],
+                          [sorted([alice_addr,charlie_addr,dave_addr]),[[u'g4_',u'asset<decimal<4>>']]],
                       u'fn_assetFrac5':
-                          [sorted([bob_addr,charlie_addr,dave_addr]),[[u'g5_', u'assetFrac5']]],
+                          [sorted([bob_addr,charlie_addr,dave_addr]),[[u'g5_', u'asset<decimal<5>>']]],
                       u'fn_assetFrac6':
-                          [sorted([alice_addr,bob_addr,charlie_addr,dave_addr]),[[u'g6_', u'assetFrac6']]],
+                          [sorted([alice_addr,bob_addr,charlie_addr,dave_addr]),[[u'g6_', u'asset<decimal<6>>']]],
                       u'fn_contract': [[],[[u'h_', u'contract']]],
                       u'fn_datetime': [[],[[u'i_', u'datetime']]],
                       u'fn_enum': [[],[[u'k_', u'enum testEnum']]],

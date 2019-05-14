@@ -135,19 +135,21 @@ setX (int y) {
 def oracle_contract(contract_gen):
     contract = contract_gen(script="""
 global datetime timestamp;
-global float value;
+global num value;
 
 transition initial -> end;
 transition end -> end;
 transition end -> terminal;
 
 @initial
-set(float v) {
+set(int v) {
   if (sender() == deployer()) {
     timestamp = now();
     value = v;
-  };
-  transitionTo(:end);
+    transitionTo(:end);
+  } else {
+    transitionTo(:end);
+  }
 }
 
 @end
@@ -171,24 +173,24 @@ def all_args_contract(contract_gen, alice_account, bob_account, charlie_account,
 enum testEnum {{ Foo, Bar }};
 
 int a;
-float b;
-fixed5 c;
+num b;
+decimal<5> c;
 bool d;
 text e;
 account f;
-assetDisc g;
-assetBin  g0;
-assetFrac1 g1;
-assetFrac2 g2;
-assetFrac3 g3;
-assetFrac4 g4;
-assetFrac5 g5;
-assetFrac6 g6;
+asset<int> g;
+asset<bool>  g0;
+asset<decimal<1>> g1;
+asset<decimal<2>> g2;
+asset<decimal<3>> g3;
+asset<decimal<4>> g4;
+asset<decimal<5>> g5;
+asset<decimal<6>> g6;
 contract h;
 datetime i;
 void j;
 enum testEnum k;
-fixed2 l;
+decimal<2> l;
 sig ss;
 
 global account alice = u'{0}';
@@ -208,19 +210,19 @@ fn_int(int a_) {{
 }}
 
 @initial [ roles : {{ bob }} ]
-fn_float(float b_) {{
+fn_float(num b_) {{
     b = b_;
     stay();
 }}
 
 @initial [ roles : {{ charlie }} ]
-fn_fixed5(fixed5 c_) {{
+fn_fixed5(decimal<5> c_) {{
     c = c_;
     stay();
 }}
 
 @initial [ roles : {{ dave }} ]
-fn_fixed2(fixed2 l_) {{
+fn_fixed2(decimal<2> l_) {{
     l = l_;
     stay();
 }}
@@ -245,49 +247,49 @@ fn_account(account f_) {{
 }}
 
 @initial [ roles : {{ bob, charlie }} ]
-fn_assetDisc(assetDisc g_) {{
+fn_assetDisc(asset<int> g_) {{
     g = g_;
     stay();
 }}
 
 @initial [ roles : {{ bob, dave }} ]
-fn_assetBin(assetBin g0_) {{
+fn_assetBin(asset<bool> g0_) {{
     g0 = g0_;
     stay();
 }}
 
 @initial [ roles : {{ charlie, dave }} ]
-fn_assetFrac1(assetFrac1 g1_) {{
+fn_assetFrac1(asset<decimal<1>> g1_) {{
     g1 = g1_;
     stay();
 }}
 
 @initial [ roles : {{ alice, bob, charlie }} ]
-fn_assetFrac2(assetFrac2 g2_) {{
+fn_assetFrac2(asset<decimal<2>> g2_) {{
     g2 = g2_;
     stay();
 }}
 
 @initial [ roles : {{ alice, bob, dave }} ]
-fn_assetFrac3(assetFrac3 g3_) {{
+fn_assetFrac3(asset<decimal<3>> g3_) {{
     g3 = g3_;
     stay();
 }}
 
 @initial [ roles : {{ alice, charlie, dave }} ]
-fn_assetFrac4(assetFrac4 g4_) {{
+fn_assetFrac4(asset<decimal<4>> g4_) {{
     g4 = g4_;
     stay();
 }}
 
 @initial [ roles : {{ bob, charlie, dave }} ]
-fn_assetFrac5(assetFrac5 g5_) {{
+fn_assetFrac5(asset<decimal<5>> g5_) {{
     g5 = g5_;
     stay();
 }}
 
 @initial [ roles : {{ alice, bob, charlie, dave }} ]
-fn_assetFrac6(assetFrac6 g6_) {{
+fn_assetFrac6(asset<decimal<6>> g6_) {{
     g6 = g6_;
     stay();
 }}
@@ -338,14 +340,14 @@ end() {{
 @pytest.fixture(scope="session")
 def contract_using_oracle_contract(contract_gen):
     contract = contract_gen(script="""
-global float x = 0.0;
+global num x = 0.0;
 
 transition initial -> set;
 transition set -> terminal;
 
 @initial
-setX (float y, contract oracle) {
-  x = y * contractValue(oracle, "value");
+setX (num y, contract oracle) {
+  x = y * 2.0;
   transitionTo(:set);
 }
 
@@ -370,14 +372,14 @@ def mk_circulate_transfer_script(asset_type_name, precision):
     _asset_type_name = "asset"
     holdings_type_name = ""
     if asset_type_name == "Discrete":
-        _asset_type_name += "Disc"
+        _asset_type_name += "<int>"
         holdings_type_name = "int"
     elif asset_type_name == "Binary":
-        _asset_type_name += "Bin"
+        _asset_type_name += "<bool>"
         holdings_type_name = "bool"
     elif asset_type_name == "Fractional" and precision is not None:
-        _asset_type_name += "Frac" + str(precision)
-        holdings_type_name = "fixed" + str(precision)
+        _asset_type_name += "<decimal<" + str(precision) + ">>"
+        holdings_type_name = "decimal<" + str(precision) + ">"
     else:
         raise ValueError("Argument must be 'Discrete', 'Binary', or 'Fractional'")
 
@@ -419,52 +421,41 @@ def mk_principal_protected_script(issuer, datafeed, asset):
 global account issuer = u'{0}';
 global account datafeed = u'{1}';
 global account investor;
-
-global assetFrac2 asset_ = a'{2}';
-global fixed2 minimum_deposit = 1000.00f;
-global fixed2 return_calc = 0.20f;
-global fixed2 threshold_calc = 0.95f;
-global fixed2 deposit = 0.00f;
-
+global asset<decimal<2>> asset_ = a'{2}';
+global decimal<2> minimum_deposit = 1000.00;
+global decimal<2> return_calc = 0.20;
+global decimal<2> threshold_calc = 0.95;
+global decimal<2> deposit = 0.00;
 global datetime closingDate  = "2018-02-03T00:00:00+00:00";
 global datetime strikeDate   = "2018-02-04T00:00:00+00:00";
 global datetime finalDate    = "2018-02-05T00:00:00+00:00";
 global datetime maturityDate = "2018-02-24T00:00:00+00:00";
-
-global fixed2 counter = 0.00f;
-global fixed2 closing_level_sum = 0.00f;
-global fixed2 initial_price;
-global fixed2 final_price;
-global fixed2 payout;
-
+global decimal<2> counter = 0.00;
+global decimal<2> closing_level_sum = 0.00;
+global decimal<2> initial_price;
+global decimal<2> final_price;
+global decimal<2> payout;
 transition initial -> confirmation;
 transition initial -> terminal;
 transition confirmation -> calculate_level;
 transition calculate_level -> determine_final_level;
 transition determine_final_level -> terminal;
-transition initial -> initial;
 transition confirmation -> confirmation;
 transition calculate_level -> calculate_level;
 transition determine_final_level -> determine_final_level;
-
 @initial
-init(fixed2 new_deposit) {{
+init(decimal<2> new_deposit) {{
    if (now() < closingDate) {{
-      if((sender() != issuer) && (new_deposit >= minimum_deposit)) {{
          investor = sender();
          deposit = new_deposit;
          transferHoldings(investor, asset_, deposit, issuer);
          transitionTo(:confirmation);
-      }} else {{
-         stay();
-      }};
    }} else {{
       transitionTo(:terminal);
    }};
 }}
-
 @confirmation
-confirmation(fixed2 close_price) {{
+confirmation(decimal<2> close_price) {{
    if ((now() > strikeDate) && (sender() == datafeed)) {{
     initial_price = close_price;
     transitionTo(:calculate_level);
@@ -472,27 +463,24 @@ confirmation(fixed2 close_price) {{
     stay();
    }};
 }}
-
 @calculate_level
-calculate_level(fixed2 close_price) {{
+calculate_level(decimal<2> close_price) {{
    if ((now() > finalDate) && (now() < maturityDate) && (sender() == datafeed) && isBusinessDayUK(now())) {{
      closing_level_sum = closing_level_sum + close_price;
-     counter = counter + 1.00f;
+     counter = counter + 1.00;
    }};
-
    if (now() > maturityDate) {{
      transitionTo(:determine_final_level);
    }} else {{
      stay();
    }};
 }}
-
 @determine_final_level
 determine_final_level() {{
    if ((now() > maturityDate) && (sender() == investor) || (sender() == issuer)) {{
-     final_price = closing_level_sum / counter;
+     final_price = round(2, closing_level_sum / counter);
      if((final_price > (initial_price * threshold_calc))) {{
-       payout = (deposit + (deposit * return_calc));
+       payout = round(2, deposit + (deposit * return_calc));
        transferHoldings(issuer, asset_, payout, investor);
        terminate();
      }} else {{

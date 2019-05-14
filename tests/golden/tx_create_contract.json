@@ -3,11 +3,11 @@
         "contents": {
             "contents": {
                 "contract": "\nglobal int x = 0 ;\n\ntransition initial -> set;\ntransition set -> terminal;\n\n@set\nend () {\n  terminate();\n}\n\n@initial\nsetX (int y) {\n  x = 42;\n  transitionTo(:set);\n}"
-            }, 
+            },
             "tag": "CreateContract"
-        }, 
+        },
         "tag": "TxContract"
-    }, 
-    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve", 
+    },
+    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve",
     "signature": "AE4xMTUxMzY4MDA4MjA0NTY4MzM3Mzc5OTQxMjY3NzEzODYwMTUwMjYyODcwOTUwMzQ2MjU2MjM2NDQxODYyNzgxMDg5MjY2OTA3Nzk1Njc6AE04OTQ2OTYxNzM1ODY3Njg2MzUyMjgyODcyNTMxOTE0NTA1MjU1NDk0MDA1MDk0MzU0Nzc5MzIzNTU5NTc4NTcyNTE5NjkxODI4OTQ5Mg=="
 }

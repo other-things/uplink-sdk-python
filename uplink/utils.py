@@ -1,5 +1,5 @@
 import codecs
-
+from decimal import *
 
 def hexkey(key):
     return codecs.encode(key.to_string(), 'hex')
@@ -11,3 +11,4 @@ def to_bytes(n, length, byteorder='big'):
     h = '%x' % n
     s = codecs.decode(('0' * (len(h) % 2) + h).zfill(length * 2), 'hex')
     return s if byteorder == 'big' else s[::-1]
+

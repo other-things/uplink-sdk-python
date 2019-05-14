@@ -1,0 +1,20 @@
+{
+    "header": {
+        "contents": {
+            "contents": {
+                "address": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve",
+                "args": [
+                    {
+                        "contents": true,
+                        "tag": "VBool"
+                    }
+                ],
+                "method": "get"
+            },
+            "tag": "Call"
+        },
+        "tag": "TxContract"
+    },
+    "origin": "fwBVDsVh8SYQy98CzYpNPcbyTRczVUZ96HszhNRB8Ve",
+    "signature": "AE4xMTUxMzY4MDA4MjA0NTY4MzM3Mzc5OTQxMjY3NzEzODYwMTUwMjYyODcwOTUwMzQ2MjU2MjM2NDQxODYyNzgxMDg5MjY2OTA3Nzk1Njc6AE0yOTcwMzk2MDUxOTk1NzQ0MjIyODUzMDM0MDE1NzM5MTk1NTA0NzE0NTUyNTA4MTAxNzk4MTI1MDY2NTAzNzcxMzY2MTcyMDQ5NzY5Nw=="
+}
