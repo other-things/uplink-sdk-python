@@ -6,7 +6,7 @@ name = "pypi"
 [dev-packages]
 
 [packages]
-requests = "==2.20.0"
+requests = "==2.22.0"
 ecdsa = "==0.13"
 cryptography = ">=1.7.1"
 pytest = "== 3.2.2"
